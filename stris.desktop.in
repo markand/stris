@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Categories=Game;BlocksGame
+Name=STris
+Comment=A Tetris game
+Type=Application
+Icon=@CMAKE_INSTALL_PREFIX@/@PATH_INSTALL_DATA@/icon.ico
+Exec=sd-tris

@@ -1,0 +1,29 @@
+SD-Tris
+-----------------------------------------------------------
+
+Authors
+-----------------------------------------------------------
+	o David Demelier <markand@malikania.fr>
+		Main developer
+
+Prerequisites
+-----------------------------------------------------------
+
+SD-Tris requires all of these libraries to be installed:
+	o SDL		(http://www.libsdl.org/)
+	o SDL_image	(http://www.libsdl.org/projects/SDL_image/)
+	o SDL_ttf	(http://www.libsdl.org/projects/SDL_ttf/)
+	o wing		(http://hg.malikania.fr/wing)
+
+SD-Tris also needs these tools:
+	o cmake		(http://cmake.org/)
+
+Compile from Unix
+-----------------------------------------------------------
+
+Compiling:
+	$ mkdir _build_
+	$ cd _build_
+	$ cmake .. -DPREFIX=/usr/local
+	$ make
+	# make install

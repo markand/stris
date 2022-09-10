@@ -1,0 +1,139 @@
+# SD-Tris game
+# Copyright (C) 2012
+# This file is distributed under the same license as the sd-tris package.
+#
+# David Demelier <markand@malikania.fr>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-06-26 23:15+0200\n"
+"PO-Revision-Date: 2012-06-19 21:40+0200\n"
+"Last-Translator: David Demelier <EMAIL@ADDRESS>\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/ui.c:475 ../src/ui.c:500
+msgid "Activate"
+msgstr "Sélectionner"
+
+#: ../src/ui.c:420
+msgid "Audio"
+msgstr "Son"
+
+#: ../src/ui.c:432 ../src/ui.c:450 ../src/ui.c:478 ../src/ui.c:503
+msgid "Back"
+msgstr "Retour"
+
+#: ../src/ui.c:476 ../src/ui.c:501
+msgid "Cancel"
+msgstr "Annuler"
+
+#: ../src/ui.c:467
+msgid "Down"
+msgstr "Bas"
+
+#: ../src/ui.c:474 ../src/ui.c:499
+msgid "Drop"
+msgstr "Lâcher"
+
+#: ../src/ui.c:627
+msgid "Edit key"
+msgstr "Saisir touche"
+
+#: ../src/ui.c:419
+msgid "Fullscreen"
+msgstr "Plein écran"
+
+#: ../src/draw.c:139
+msgid "Game over"
+msgstr "Perdu"
+
+#: ../src/ui.c:600
+msgid "Go to the main menu?"
+msgstr "Retour au menu ?"
+
+#: ../src/ui.c:550
+msgid "High scores"
+msgstr "Meilleurs scores"
+
+#: ../src/ui.c:428
+msgid "Joystick"
+msgstr "Joystick"
+
+#: ../src/ui.c:426
+msgid "Keyboard"
+msgstr "Clavier"
+
+#: ../src/ui.c:469
+msgid "Left"
+msgstr "Gauche"
+
+#: ../src/draw.c:279
+msgid "Level"
+msgstr "Niveau"
+
+#: ../src/draw.c:274
+msgid "Lines"
+msgstr "Lignes"
+
+#: ../src/draw.c:131
+msgid "New high score"
+msgstr "Meilleur score"
+
+#: ../src/ui.c:520
+msgid "No"
+msgstr "Non"
+
+#: ../src/ui.c:548
+msgid "Options"
+msgstr "Options"
+
+#: ../src/ui.c:473 ../src/ui.c:498
+msgid "Pause"
+msgstr "Pause"
+
+#: ../src/ui.c:547
+msgid "Play"
+msgstr "Jouer"
+
+#: ../src/draw.c:134
+msgid "Please enter your name"
+msgstr "Entrez votre nom"
+
+#: ../src/ui.c:634
+msgid "Press key or backspace to cancel"
+msgstr "Retour pour annuler"
+
+#: ../src/ui.c:552
+msgid "Quit"
+msgstr "Quitter"
+
+#: ../src/ui.c:470
+msgid "Right"
+msgstr "Droite"
+
+#: ../src/ui.c:471 ../src/ui.c:496
+msgid "Rotate left"
+msgstr "Tourner à gauche"
+
+#: ../src/ui.c:472 ../src/ui.c:497
+msgid "Rotate right"
+msgstr "Tourner à droite"
+
+#: ../src/draw.c:269
+msgid "Score"
+msgstr "Score"
+
+#: ../src/ui.c:468
+msgid "Up"
+msgstr "Haut"
+
+#: ../src/ui.c:519
+msgid "Yes"
+msgstr "Oui"

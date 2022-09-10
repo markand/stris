@@ -1,0 +1,15 @@
+SD-Tris
+-----------------------------------------------------------
+
+SD-Tris is yet another tetris game, developed completely in C with SDL and the
+grapical library Wing.
+
+The game currently supports the following features:
+	o Score, level handling
+	o Top 10 high scores list
+	o Fullscreen support
+	o Joystick support
+	o Key and joystick settings
+
+The game lacks these features and will be added ASAP:
+	o Sounds,

@@ -1,0 +1,27 @@
+# object files.
+\.a$
+\.d$
+\.o$
+^data/.*\.h$
+
+# vim/emacs specific.
+^tags$
+^tags\.lock$
+^tags\.temp$
+^cscope\.out$
+\.swp$
+\.swo$
+
+# macOS specific.
+\.DS_Store$
+\.dSYM.*
+
+# executables.
+^src\stris$
+^extern/bcc/bcc$
+
+# tests.
+^tests/test-board$
+
+# Distribution files.
+^stris-\d\.\d.\d\.tar\.xz(\.asc)?$
