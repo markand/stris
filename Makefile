@@ -82,6 +82,9 @@ all: ${PROG}
 
 -include ${DEPS}
 
+extern/bcc/bcc: extern/bcc/bcc.c
+	${CC} ${CFLAGS} -o $@ extern/bcc/bcc.c ${LDFLAGS}
+
 ${DATA}: extern/bcc/bcc
 
 ${OBJS}: ${DATA}
