@@ -16,9 +16,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "key.h"
 #include "menuitem.h"
 #include "state-menu.h"
 #include "state.h"
+#include "stris.h"
 #include "tex.h"
 #include "ui.h"
 
@@ -47,12 +49,25 @@ static struct {
 static struct {
 	struct menuitem menu[4];
 	int h;
+	int sel;
 } main;
 
 static inline void
 move(struct menuitem *m, int y)
 {
 	menuitem_move(m, (UI_W - m->w) / 2, y);
+}
+
+static void
+handle_select(void)
+{
+	switch (main.sel) {
+	case 3:
+		stris_quit();
+		break;
+	default:
+		break;
+	}
 }
 
 static void
@@ -89,8 +104,31 @@ start(void)
 }
 
 static void
-onkey(int key)
+onkey(enum key key)
 {
+	int newsel = main.sel;
+
+	switch (key) {
+	case KEY_UP:
+		if (newsel > 0)
+			newsel--;
+		break;
+	case KEY_DOWN:
+		if (newsel < 3)
+			newsel++;
+		break;
+	case KEY_SELECT:
+		handle_select();
+		break;
+	default:
+		break;
+	}
+
+	// We also need to reset old one.
+	if (newsel != main.sel) {
+		menuitem_unselect(&main.menu[main.sel]);
+		menuitem_select(&main.menu[main.sel = newsel]);
+	}
 }
 
 static void

@@ -43,7 +43,7 @@ static struct {
 	[UI_FONT_SPLASH] = {
 		.data = data_fonts_typography_ties,
 		.datasz = sizeof (data_fonts_typography_ties),
-		.size = 54
+		.size = 58
 	},
 	[UI_FONT_TITLE] = {
 		.data = data_fonts_actionj,

@@ -1,7 +1,7 @@
 /*
- * menuitem.h -- menu item
+ * key.h -- key handling
  *
- * Copyright (c) 2011-2021 David Demelier <markand@malikania.fr>
+ * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,37 +16,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_MENUITEM_H
-#define STRIS_MENUITEM_H
+#ifndef STRIS_KEY_H
+#define STRIS_KEY_H
 
-struct menuitem {
-	int x;
-	int y;
-	int w;
-	int h;
-	int selected;
-	int spent;
-	unsigned long colorcur;
-	unsigned long colordst;
-	const char *text;
+enum key {
+	KEY_UP,
+	KEY_RIGHT,
+	KEY_DOWN,
+	KEY_LEFT,
+	KEY_CANCEL,
+	KEY_SELECT,
+	KEY_LAST
 };
 
-void
-menuitem_init(struct menuitem *, const char *);
-
-void
-menuitem_select(struct menuitem *);
-
-void
-menuitem_unselect(struct menuitem *);
-
-void
-menuitem_move(struct menuitem *, int, int);
-
-void
-menuitem_update(struct menuitem *, int);
-
-void
-menuitem_draw(const struct menuitem *);
-
-#endif /* !STRIS_MENUITEM_H */
+#endif /* !STRIS_KEY_H */

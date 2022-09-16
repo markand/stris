@@ -24,16 +24,6 @@
 #define UI_W 360
 #define UI_H 640
 
-enum ui_key {
-	UI_KEY_UP,
-	UI_KEY_RIGHT,
-	UI_KEY_DOWN,
-	UI_KEY_LEFT,
-	UI_KEY_CANCEL,
-	UI_KEY_SELECT,
-	UI_KEY_LAST
-};
-
 enum ui_font {
 	UI_FONT_SPLASH,
 	UI_FONT_TITLE,
@@ -53,11 +43,6 @@ struct tex;
 /* Global window and its renderer. */
 extern SDL_Window *ui_win;
 extern SDL_Renderer *ui_rdr;
-
-#if 0
-/* Keys used in the game. */
-extern int ui_keys[UI_KEY_LAST];
-#endif
 
 void
 ui_init(void);

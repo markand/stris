@@ -18,6 +18,7 @@
 
 #include <assert.h>
 
+#include "key.h"
 #include "sound.h"
 #include "state-splash.h"
 #include "state.h"
@@ -38,6 +39,12 @@ stris_switch(struct state *s)
 	assert(s);
 
 	stris.state_next = s;
+}
+
+void
+stris_quit(void)
+{
+	run = 0;
 }
 
 int
@@ -72,6 +79,28 @@ main(int argc, char **argv)
 			switch (ev.type) {
 			case SDL_QUIT:
 				run = 0;
+				break;
+			case SDL_KEYDOWN:
+				// TODO: Add options mapping here.
+				switch (ev.key.keysym.scancode) {
+				case SDL_SCANCODE_RETURN:
+					state_onkey(stris.state, KEY_SELECT);
+					break;
+				case SDL_SCANCODE_UP:
+					state_onkey(stris.state, KEY_UP);
+					break;
+				case SDL_SCANCODE_RIGHT:
+					state_onkey(stris.state, KEY_RIGHT);
+					break;
+				case SDL_SCANCODE_DOWN:
+					state_onkey(stris.state, KEY_DOWN);
+					break;
+				case SDL_SCANCODE_LEFT:
+					state_onkey(stris.state, KEY_LEFT);
+					break;
+				default:
+					break;
+				}
 				break;
 			default:
 				break;

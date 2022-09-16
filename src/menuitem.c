@@ -51,6 +51,7 @@ menuitem_init(struct menuitem *m, const char *text)
 	memset(m, 0, sizeof (*m));
 	m->text = text;
 	m->colorcur = UI_PALETTE_FG;
+	m->colordst = UI_PALETTE_FG;;
 	ui_clip(UI_FONT_MENU, &m->w, &m->h, m->text);
 }
 
@@ -61,8 +62,19 @@ menuitem_select(struct menuitem *m)
 
 	m->selected = 1;
 	m->spent = 0;
+	m->colorcur = UI_PALETTE_MENU_SEL;
+	m->colordst = UI_PALETTE_FG;
+}
+
+void
+menuitem_unselect(struct menuitem *m)
+{
+	assert(m);
+
+	m->selected = 0;
+	m->spent = 0;
 	m->colorcur = UI_PALETTE_FG;
-	m->colordst = UI_PALETTE_MENU_SEL;
+	m->colordst = UI_PALETTE_FG;;
 }
 
 void

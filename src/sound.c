@@ -52,6 +52,9 @@ load_sound(const void *data, size_t datasz)
 void
 sound_init(void)
 {
+	// No special file types yet.
+	Mix_Init(0);
+
 	if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 512) < 0)
 		die("abort: %s\n", SDL_GetError());
 
@@ -70,4 +73,9 @@ sound_play(enum sound snd)
 void
 sound_finish(void)
 {
+	for (size_t i = 0; i < LEN(sounds); ++i)
+		Mix_FreeChunk(sounds[i].snd);
+
+	Mix_CloseAudio();
+	Mix_Quit();
 }

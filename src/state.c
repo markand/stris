@@ -18,6 +18,7 @@
 
 #include <assert.h>
 
+#include "key.h"
 #include "state.h"
 
 void
@@ -66,7 +67,7 @@ state_onclick(struct state *s, int x, int y)
 }
 
 void
-state_onkey(struct state *s, int key)
+state_onkey(struct state *s, enum key key)
 {
 	assert(s);
 

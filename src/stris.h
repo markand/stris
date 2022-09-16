@@ -49,4 +49,7 @@ extern struct stris stris;
 void
 stris_switch(struct state *);
 
+void
+stris_quit(void);
+
 #endif /* STRIS_H */

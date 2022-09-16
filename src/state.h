@@ -19,13 +19,15 @@
 #ifndef STRIS_STATE_H
 #define STRIS_STATE_H
 
+enum key;
+
 struct state {
 	void (*start)(void);
 	void (*suspend)(void);
 	void (*resume)(void);
 	void (*onmouse)(int, int);
 	void (*onclick)(int, int);
-	void (*onkey)(int);
+	void (*onkey)(enum key);
 	void (*update)(int);
 	void (*draw)(void);
 	void (*finish)(void);
@@ -47,7 +49,7 @@ void
 state_onclick(struct state *, int, int);
 
 void
-state_onkey(struct state *, int);
+state_onkey(struct state *, enum key);
 
 void
 state_update(struct state *, int);
