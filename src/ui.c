@@ -167,7 +167,7 @@ ui_present(void)
 }
 
 void
-ui_quit(void)
+ui_finish(void)
 {
 	SDL_DestroyRenderer(ui_rdr);
 	SDL_DestroyWindow(ui_win);

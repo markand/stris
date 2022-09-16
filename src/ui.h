@@ -60,6 +60,6 @@ void
 ui_present(void);
 
 void
-ui_quit(void);
+ui_finish(void);
 
 #endif /* !STRIS_UI_H */

@@ -110,11 +110,15 @@ onkey(enum key key)
 
 	switch (key) {
 	case KEY_UP:
-		if (newsel > 0)
+		if (newsel == 0)
+			newsel = 3;
+		else
 			newsel--;
 		break;
 	case KEY_DOWN:
-		if (newsel < 3)
+		if (newsel >= 3)
+			newsel = 0;
+		else
 			newsel++;
 		break;
 	case KEY_SELECT:

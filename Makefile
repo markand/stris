@@ -74,7 +74,10 @@ INCS=                   -Idata \
                         ${SDL2_INCS} \
                         ${SDL2_IMAGE_INCS} \
                         ${SDL2_TTF_INCS}
-LIBS=                   ${SDL2_LIBS} ${SDL2_IMAGE_LIBS} ${SDL2_MIXER_LIBS} ${SDL2_TTF_LIBS}
+LIBS=                   ${SDL2_LIBS} \
+                        ${SDL2_IMAGE_LIBS} \
+                        ${SDL2_MIXER_LIBS} \
+                        ${SDL2_TTF_LIBS}
 
 .SUFFIXES:
 .SUFFIXES: .h .o .c .png .ttf .wav
@@ -85,7 +88,7 @@ all: ${PROG}
 	${CC} ${INCS} ${CFLAGS} -o $@ $< ${OBJS} ${LIBS} ${LDFLAGS}
 
 .c.o:
-	${CC} ${INCS} ${NLS_CFLAGS} ${CFLAGS} -MMD -c $< -o $@
+	${CC} ${INCS} ${CFLAGS} -MMD -c $< -o $@
 
 .png.h .ttf.h .wav.h:
 	extern/bcc/bcc -sc0 $< $< > $@

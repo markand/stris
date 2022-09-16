@@ -19,32 +19,7 @@
 #ifndef STRIS_H
 #define STRIS_H
 
-#include <stdio.h>
-
-#if defined(WITH_NLS)
-#       include <libintl.h>
-#       define _(str)   gettext(str)
-#else
-#       define _(str)   str
-#endif
-
-#define STRIS_WIDTH     (350)
-#define STRIS_HEIGHT    (450)
-
-struct stris {
-	int audio;
-	int fullscreen;
-
-	char path_conf[FILENAME_MAX + 1];
-	char path_score[FILENAME_MAX + 1];
-	char path_data[FILENAME_MAX + 1];
-	char path_nls[FILENAME_MAX + 1];
-
-	struct state *state;
-	struct state *state_next;
-};
-
-extern struct stris stris;
+struct state;
 
 void
 stris_switch(struct state *);

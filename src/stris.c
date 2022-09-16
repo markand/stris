@@ -25,13 +25,120 @@
 #include "stris.h"
 #include "ui.h"
 
-struct stris stris = {
-	.audio = 1,
-	.fullscreen = 1,
+static struct {
+	int run;
+	struct state *state;
+	struct state *state_next;
+} stris = {
+	.run = 1,
 	.state = &state_splash
 };
 
-static int run = 1;
+static void
+init(void)
+{
+	ui_init();
+	sound_init();
+	state_start(stris.state);
+}
+
+static void
+change(void)
+{
+	if (stris.state_next) {
+		state_suspend(stris.state);
+		state_start(stris.state_next);
+
+		stris.state = stris.state_next;
+		stris.state_next = NULL;
+	}
+}
+
+static void
+handle(void)
+{
+	SDL_Event ev;
+
+	while (SDL_PollEvent(&ev)) {
+		switch (ev.type) {
+		case SDL_QUIT:
+			stris.run = 0;
+			break;
+		case SDL_KEYDOWN:
+			// TODO: Add options mapping here.
+			switch (ev.key.keysym.scancode) {
+			case SDL_SCANCODE_RETURN:
+				state_onkey(stris.state, KEY_SELECT);
+				break;
+			case SDL_SCANCODE_UP:
+				state_onkey(stris.state, KEY_UP);
+				break;
+			case SDL_SCANCODE_RIGHT:
+				state_onkey(stris.state, KEY_RIGHT);
+				break;
+			case SDL_SCANCODE_DOWN:
+				state_onkey(stris.state, KEY_DOWN);
+				break;
+			case SDL_SCANCODE_LEFT:
+				state_onkey(stris.state, KEY_LEFT);
+				break;
+			default:
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+static inline void
+update(int diff)
+{
+	state_update(stris.state, diff);
+}
+
+static inline void
+draw(void)
+{
+	state_draw(stris.state);
+}
+
+static void
+loop(void)
+{
+	Uint32 start, end, diff;
+	Uint64 fstart, fend;
+	float fspent;
+
+	start = end = SDL_GetTicks();
+
+	while (stris.run) {
+		diff = end - start;
+		start = SDL_GetTicks();
+		fstart = SDL_GetPerformanceCounter();
+
+		change();
+		handle();
+		update(diff);
+		draw();
+
+		fend = SDL_GetPerformanceCounter();
+		fspent = (fend - fstart) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
+
+		if (fspent < 16.666f)
+			SDL_Delay(floor(16.666f - fspent));
+
+		end = SDL_GetTicks();
+	}
+}
+
+static void
+finish(void)
+{
+	sound_finish();
+	ui_finish();
+}
 
 void
 stris_switch(struct state *s)
@@ -44,82 +151,15 @@ stris_switch(struct state *s)
 void
 stris_quit(void)
 {
-	run = 0;
+	stris.run = 0;
 }
 
 int
 main(int argc, char **argv)
 {
-	SDL_Event ev;
-	Uint32 start, end, diff;
-	Uint64 fstart, fend;
-	float fspent;
-
-	ui_init();
-	sound_init();
-
-	state_start(stris.state);
-
-	start = end = SDL_GetTicks();
-
-	while (run) {
-		diff = end - start;
-		start = SDL_GetTicks();
-		fstart = SDL_GetPerformanceCounter();
-
-		if (stris.state_next) {
-			state_suspend(stris.state);
-			state_start(stris.state_next);
-
-			stris.state = stris.state_next;
-			stris.state_next = NULL;
-		}
-
-		while (SDL_PollEvent(&ev)) {
-			switch (ev.type) {
-			case SDL_QUIT:
-				run = 0;
-				break;
-			case SDL_KEYDOWN:
-				// TODO: Add options mapping here.
-				switch (ev.key.keysym.scancode) {
-				case SDL_SCANCODE_RETURN:
-					state_onkey(stris.state, KEY_SELECT);
-					break;
-				case SDL_SCANCODE_UP:
-					state_onkey(stris.state, KEY_UP);
-					break;
-				case SDL_SCANCODE_RIGHT:
-					state_onkey(stris.state, KEY_RIGHT);
-					break;
-				case SDL_SCANCODE_DOWN:
-					state_onkey(stris.state, KEY_DOWN);
-					break;
-				case SDL_SCANCODE_LEFT:
-					state_onkey(stris.state, KEY_LEFT);
-					break;
-				default:
-					break;
-				}
-				break;
-			default:
-				break;
-			}
-		}
-
-		state_update(stris.state, diff);
-		state_draw(stris.state);
-		fend = SDL_GetPerformanceCounter();
-
-		fspent = (fend - fstart) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
-
-		if (fspent < 16.666f)
-			SDL_Delay(floor(16.666f - fspent));
-
-		end = SDL_GetTicks();
-	}
-
-	ui_quit();
+	init();
+	loop();
+	finish();
 
 	return 0;
 }
