@@ -56,8 +56,7 @@ update(int ticks)
 static void
 draw(void)
 {
-	ui_set_color(UI_PALETTE_SPLASH_BG);
-	ui_clear();
+	ui_clear(UI_PALETTE_SPLASH_BG);
 	tex_draw(&title, (UI_W - title.w) / 2, (UI_H - title.h) / 2);
 	ui_present();
 }

@@ -141,8 +141,7 @@ update(int ticks)
 static void
 draw(void)
 {
-	ui_set_color(UI_PALETTE_MENU_BG);
-	ui_clear();
+	ui_clear(UI_PALETTE_MENU_BG);
 
 	tex_draw(&title.tex[1], title.x + 1, title.y + 1);
 	tex_draw(&title.tex[0], title.x, title.y);
