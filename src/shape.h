@@ -34,6 +34,7 @@ enum shape_kind {
 	SHAPE_L,
 	SHAPE_J,
 	SHAPE_T,
+	SHAPE_LAST,
 	SHAPE_RANDOM
 };
 

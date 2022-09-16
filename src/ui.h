@@ -28,7 +28,8 @@ enum ui_font {
 	UI_FONT_SPLASH,
 	UI_FONT_TITLE,
 	UI_FONT_MENU,
-	UI_FONT_MENU_SMALL
+	UI_FONT_MENU_SMALL,
+	UI_FONT_STATS
 };
 
 enum ui_palette : unsigned long {
@@ -37,6 +38,7 @@ enum ui_palette : unsigned long {
 	UI_PALETTE_MENU_BG      = 0xa7b8c2ff,
 	UI_PALETTE_MENU_SEL     = 0xff8766ff,
 	UI_PALETTE_SHADOW       = 0x372840ff,
+	UI_PALETTE_BORDER       = 0x242b4aff
 };
 
 struct tex;
@@ -56,6 +58,9 @@ ui_clip(enum ui_font, int *, int *, const char *, ...);
 
 void
 ui_clear(enum ui_palette);
+
+void
+ui_draw_line(enum ui_palette, int, int, int, int);
 
 void
 ui_present(void);

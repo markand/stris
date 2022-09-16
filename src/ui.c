@@ -21,11 +21,13 @@
 #include <stdio.h>
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_ttf.h>
 
 #include "fonts/actionj.h"
 #include "fonts/cartoon-relief.h"
 #include "fonts/dejavu-sans.h"
+#include "fonts/paradroid-mono-light.h"
 #include "fonts/typography-ties.h"
 
 #include "ui.h"
@@ -59,7 +61,12 @@ static struct {
 	[UI_FONT_MENU_SMALL] = {
 		.data = data_fonts_dejavu_sans,
 		.datasz = sizeof (data_fonts_dejavu_sans),
-		.size = 20
+		.size = 40
+	},
+	[UI_FONT_STATS] = {
+		.data = data_fonts_paradroid_mono_light,
+		.datasz = sizeof (data_fonts_paradroid_mono_light),
+		.size = 18
 	}
 };
 
@@ -107,12 +114,27 @@ render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, va
 	SDL_FreeSurface(sf);
 }
 
+static inline void
+set_color(unsigned long color)
+{
+	SDL_SetRenderDrawColor(ui_rdr,
+	    (color >> 24) & 0xff,
+	    (color >> 16) & 0xff,
+	    (color >> 8)  & 0xff,
+	    0xff
+	);
+}
+
 void
 ui_init(void)
 {
+	int flags = IMG_INIT_PNG;
+
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 		die("abort: %s\n", SDL_GetError());
 	if (TTF_Init() < 0)
+		die("abort: %s\n", SDL_GetError());
+	if (IMG_Init(flags) != flags)
 		die("abort: %s\n", SDL_GetError());
 	if (SDL_CreateWindowAndRenderer(UI_W, UI_H, 0, &ui_win, &ui_rdr) < 0)
 		die("abort: %s\n", SDL_GetError());
@@ -157,13 +179,15 @@ ui_clip(enum ui_font f, int *w, int *h, const char *fmt, ...)
 void
 ui_clear(enum ui_palette color)
 {
-	SDL_SetRenderDrawColor(ui_rdr,
-	    (color >> 24) & 0xff,
-	    (color >> 16) & 0xff,
-	    (color >> 8)  & 0xff,
-	    0xff
-	);
+	set_color(color);
 	SDL_RenderClear(ui_rdr);
+}
+
+void
+ui_draw_line(enum ui_palette color, int x1, int y1, int x2, int y2)
+{
+	set_color(color);
+	SDL_RenderDrawLine(ui_rdr, x1, y1, x2, y2);
 }
 
 void

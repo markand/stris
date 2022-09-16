@@ -28,13 +28,19 @@
 #include "ui.h"
 #include "util.h"
 
+#define NO_SPLASH
+
 static struct {
 	int run;
 	struct state *state;
 	struct state *state_next;
 } stris = {
 	.run = 1,
+#if defined(NO_SPLASH)
+	.state_next = &state_menu
+#else
 	.state_next = &state_splash
+#endif
 };
 
 static struct state *states[] = {

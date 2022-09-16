@@ -19,11 +19,16 @@
 #ifndef STRIS_TEX_H
 #define STRIS_TEX_H
 
+#include <stddef.h>
+
 struct tex {
 	int w;
 	int h;
 	void *handle;
 };
+
+void
+tex_load(struct tex *, const void *, size_t);
 
 void
 tex_draw(struct tex *, int, int);

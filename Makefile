@@ -55,15 +55,16 @@ DATA=                   data/fonts/actionj.h \
                         data/fonts/cartoon-relief.h \
                         data/fonts/dejavu-sans.h \
                         data/fonts/go-boom.h \
+                        data/fonts/paradroid-mono-light.h \
                         data/fonts/typography-ties.h \
-                        data/img/blue.h \
-                        data/img/cyan.h \
-                        data/img/green.h \
-                        data/img/orange.h \
-                        data/img/panel.h \
-                        data/img/purple.h \
-                        data/img/red.h \
-                        data/img/yellow.h \
+                        data/img/block1.h \
+                        data/img/block2.h \
+                        data/img/block3.h \
+                        data/img/block4.h \
+                        data/img/block5.h \
+                        data/img/block6.h \
+                        data/img/block7.h \
+                        data/img/block8.h \
                         data/sound/startup.h
 
 TESTS=                  tests/test-board.c
