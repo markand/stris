@@ -48,13 +48,30 @@ state_resume(struct state *s)
 }
 
 void
-state_handle(struct state *s, const SDL_Event *ev)
+state_onmouse(struct state *s, int x, int y)
 {
 	assert(s);
-	assert(ev);
 
-	if (s->handle)
-		s->handle(ev);
+	if (s->onmouse)
+		s->onmouse(x, y);
+}
+
+void
+state_onclick(struct state *s, int x, int y)
+{
+	assert(s);
+
+	if (s->onclick)
+		s->onclick(x, y);
+}
+
+void
+state_onkey(struct state *s, int key)
+{
+	assert(s);
+
+	if (s->onkey)
+		s->onkey(key);
 }
 
 void
@@ -73,4 +90,13 @@ state_draw(struct state *s)
 
 	if (s->draw)
 		s->draw();
+}
+
+void
+state_finish(struct state *s)
+{
+	assert(s);
+
+	if (s->finish)
+		s->finish();
 }

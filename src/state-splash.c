@@ -16,33 +16,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-//#include "state-menu.h"
+#include "state-menu.h"
 #include "state-splash.h"
 #include "state.h"
+#include "stris.h"
+#include "tex.h"
 #include "ui.h"
 
-static int spent = 0;
+static int spent;
+static int alpha;
+static struct tex title;
+
+static void
+start(void)
+{
+	alpha = 255;
+	ui_render(&title, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
+}
 
 static void
 update(int ticks)
 {
 	spent += ticks;
 
-#if 0
-	if (spent >= 1500)
-		state_switch(&state_menu);
-#endif
+	if (spent >= 500)
+		stris_switch(&state_menu);
 }
 
 static void
 draw(void)
 {
-	ui_set_color(ui_palette[0]);
+	ui_set_color(UI_PALETTE_SPLASH_BG);
 	ui_clear();
+	tex_draw(&title, (UI_W - title.w) / 2, (UI_H - title.h) / 2);
 	ui_present();
 }
 
 struct state state_splash = {
+	.start = start,
 	.update = update,
 	.draw = draw
 };

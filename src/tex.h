@@ -1,7 +1,7 @@
 /*
- * state.h -- game state
+ * tex.h -- texture management
  *
- * Copyright (c) 2011-2021 David Demelier <markand@malikania.fr>
+ * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,46 +16,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_STATE_H
-#define STRIS_STATE_H
+#ifndef STRIS_TEX_H
+#define STRIS_TEX_H
 
-struct state {
-	void (*start)(void);
-	void (*suspend)(void);
-	void (*resume)(void);
-	void (*onmouse)(int, int);
-	void (*onclick)(int, int);
-	void (*onkey)(int);
-	void (*update)(int);
-	void (*draw)(void);
-	void (*finish)(void);
+struct tex {
+	int w;
+	int h;
+	void *handle;
 };
 
 void
-state_start(struct state *);
+tex_draw(struct tex *, int, int);
 
 void
-state_suspend(struct state *);
+tex_finish(struct tex *);
 
-void
-state_resume(struct state *);
-
-void
-state_onmouse(struct state *, int, int);
-
-void
-state_onclick(struct state *, int, int);
-
-void
-state_onkey(struct state *, int);
-
-void
-state_update(struct state *, int);
-
-void
-state_draw(struct state *);
-
-void
-state_finish(struct state *);
-
-#endif /* !STRIS_STATE_H */
+#endif /* !STRIS_TEX_H */

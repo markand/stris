@@ -16,46 +16,179 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 #include <SDL.h>
+#include <SDL_ttf.h>
+
+#include "fonts/cartoon-relief.h"
+#include "fonts/actionj.h"
+#include "fonts/typography-ties.h"
 
 #include "ui.h"
 #include "util.h"
+#include "tex.h"
 
+#if 0
 const unsigned long ui_palette[16] = {
-	0x1a1c2c,
-	0x5d275d,
-	0xb13e53,
-	0xef7d57,
-	0xffcd75,
-	0xa7f070,
-	0x38b764,
-	0x257179,
-	0x29366f,
-	0x3b5dc9,
-	0x41a6f6,
-	0x73eff7,
-	0xf4f4f4,
-	0x94b0c2,
-	0x566c86,
-	0x333c57
+#if 0
+	0x1a1c2cff,
+	0x5d275dff,
+	0xb13e53ff,
+	0xef7d57ff,
+	0xffcd75ff,
+	0xa7f070ff,
+	0x38b764ff,
+	0x257179ff,
+	0x29366fff,
+	0x3b5dc9ff,
+	0x41a6f6ff,
+	0x73eff7ff,
+	0xf4f4f4ff,
+	0x94b0c2ff,
+	0x566c86ff,
+	0x333c57ff
+#endif
+	[UI_PALETTE_SPLASH_BG]  = 0x242b4aff,
+	[UI_PALETTE_FG]         = 0xdfededff,
+	[UI_PALETTE_MENU_BG]    = 0xa7b8c2ff,
+	[UI_PALETTE_SHADOW]     = 0x372840ff
 };
+#endif
 
 SDL_Window *ui_win = NULL;
 SDL_Renderer *ui_rdr = NULL;
+
+static struct {
+	const unsigned char *data;
+	size_t datasz;
+	int size;
+	TTF_Font *font;
+} fonts[] = {
+	[UI_FONT_SPLASH] = {
+		.data = data_fonts_typography_ties,
+		.datasz = sizeof (data_fonts_typography_ties),
+		.size = 54
+	},
+	[UI_FONT_TITLE] = {
+		.data = data_fonts_actionj,
+		.datasz = sizeof (data_fonts_actionj),
+		.size = 80
+	},
+	[UI_FONT_MENU] = {
+		.data = data_fonts_cartoon_relief,
+		.datasz = sizeof (data_fonts_cartoon_relief),
+		.size = 80
+	}
+};
+
+static TTF_Font *
+load_font(const unsigned char *data, size_t datasz, int size)
+{
+	SDL_RWops *ops;
+	TTF_Font *font;
+
+	if (!(ops = SDL_RWFromConstMem(data, datasz)))
+		die("abort: %s\n", SDL_GetError());
+	if (!(font = TTF_OpenFontRW(ops, 1, size)))
+		die("abort: %s\n", SDL_GetError());
+
+	return font;
+}
+
+static inline void
+load_fonts(void)
+{
+	for (size_t i = 0; i < LEN(fonts); ++i)
+		fonts[i].font = load_font(fonts[i].data, fonts[i].datasz, fonts[i].size);
+}
 
 void
 ui_init(void)
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 		die("abort: %s\n", SDL_GetError());
+	if (TTF_Init() < 0)
+		die("abort: %s\n", SDL_GetError());
 	if (SDL_CreateWindowAndRenderer(UI_W, UI_H, 0, &ui_win, &ui_rdr) < 0)
 		die("abort: %s\n", SDL_GetError());
+
+	SDL_SetWindowTitle(ui_win, "STris");
+
+	load_fonts();
 }
 
 void
-ui_set_color(unsigned long c)
+ui_set_color(enum ui_palette color)
 {
-	SDL_SetRenderDrawColor(ui_rdr, c & 0xff0000, c & 0x00ff00, c & 0x0000ff, 0xff);
+	SDL_SetRenderDrawColor(ui_rdr,
+	    (color >> 24) & 0xff,
+	    (color >> 16) & 0xff,
+	    (color >> 8)  & 0xff,
+	    0xff
+	);
+}
+
+void
+ui_draw_background(void)
+{
+}
+
+static void
+render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, va_list ap)
+{
+	char buf[128];
+	SDL_Color c = {
+		.r = (color >> 24) & 0xff,
+		.g = (color >> 16) & 0xff,
+		.b = (color >> 8)  & 0xff
+	};
+	SDL_Surface *sf;
+
+	vsnprintf(buf, sizeof (buf), fmt, ap);
+
+	if (!(sf = TTF_RenderUTF8_Blended(fonts[f].font, buf, c)))
+		die("abort: %s\n", SDL_GetError());
+	if (!(t->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
+		die("abort: %s\n", SDL_GetError());
+	if (SDL_QueryTexture(t->handle, NULL, NULL, &t->w, &t->h) < 0)
+		die("abort: %s\n", SDL_GetError());
+
+	SDL_FreeSurface(sf);
+}
+
+void
+ui_render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, ...)
+{
+	assert(fmt);
+
+	va_list ap;
+
+	va_start(ap, fmt);
+	render(t, f, color, fmt, ap);
+	va_end(ap);
+}
+
+void
+ui_clip(enum ui_font f, int *w, int *h, const char *fmt, ...)
+{
+	assert(w);
+	assert(h);
+	assert(fmt);
+
+	struct tex tex;
+	va_list ap;
+
+	va_start(ap, fmt);
+	render(&tex, f, 0, fmt, ap);
+	va_end(ap);
+
+	*w = tex.w;
+	*h = tex.h;
+
+	tex_finish(&tex);
 }
 
 void

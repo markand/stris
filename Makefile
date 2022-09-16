@@ -34,10 +34,13 @@ include config.mk
 
 PROG=                   src/stris
 SRCS=                   src/board.c \
+                        src/menuitem.c \
                         src/score.c \
                         src/shape.c \
                         src/state.c \
+                        src/state-menu.c \
                         src/state-splash.c \
+                        src/tex.c \
                         src/ui.c \
                         src/util.c
 OBJS=                   ${SRCS:.c=.o}
@@ -47,6 +50,7 @@ DATA=                   data/fonts/actionj.h \
                         data/fonts/cartoon-relief.h \
                         data/fonts/dejavu-sans.h \
                         data/fonts/go-boom.h \
+                        data/fonts/typography-ties.h \
                         data/img/blue.h \
                         data/img/cyan.h \
                         data/img/green.h \
@@ -59,7 +63,8 @@ DATA=                   data/fonts/actionj.h \
 TESTS=                  tests/test-board.c
 TESTS_OBJS=             ${TESTS:.c=}
 
-INCS=                   -Iextern/libdt \
+INCS=                   -Idata \
+                        -Iextern/libdt \
                         -Isrc \
                         ${SDL2_INCS} \
                         ${SDL2_IMAGE_INCS} \

@@ -24,16 +24,55 @@
 #define UI_W 360
 #define UI_H 640
 
+enum ui_key {
+	UI_KEY_UP,
+	UI_KEY_RIGHT,
+	UI_KEY_DOWN,
+	UI_KEY_LEFT,
+	UI_KEY_CANCEL,
+	UI_KEY_SELECT,
+	UI_KEY_LAST
+};
+
+enum ui_font {
+	UI_FONT_SPLASH,
+	UI_FONT_TITLE,
+	UI_FONT_MENU
+};
+
+enum ui_palette : unsigned long {
+	UI_PALETTE_SPLASH_BG    = 0x242b4aff,
+	UI_PALETTE_FG           = 0xdfededff,
+	UI_PALETTE_MENU_BG      = 0xa7b8c2ff,
+	UI_PALETTE_MENU_SEL     = 0xff8766ff,
+	UI_PALETTE_SHADOW       = 0x372840ff,
+};
+
+struct tex;
+
+/* Global window and its renderer. */
 extern SDL_Window *ui_win;
 extern SDL_Renderer *ui_rdr;
 
-extern const unsigned long ui_palette[16];
+#if 0
+/* Keys used in the game. */
+extern int ui_keys[UI_KEY_LAST];
+#endif
 
 void
 ui_init(void);
 
 void
-ui_set_color(unsigned long);
+ui_set_color(enum ui_palette);
+
+void
+ui_draw_background(void);
+
+void
+ui_render(struct tex *, enum ui_font, enum ui_palette, const char *, ...);
+
+void
+ui_clip(enum ui_font, int *, int *, const char *, ...);
 
 void
 ui_clear(void);

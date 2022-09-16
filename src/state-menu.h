@@ -1,5 +1,5 @@
 /*
- * state.h -- game state
+ * state-menu.h -- main menu
  *
  * Copyright (c) 2011-2021 David Demelier <markand@malikania.fr>
  *
@@ -16,46 +16,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_STATE_H
-#define STRIS_STATE_H
+#ifndef STRIS_STATE_MENU_H
+#define STRIS_STATE_MENU_H
 
-struct state {
-	void (*start)(void);
-	void (*suspend)(void);
-	void (*resume)(void);
-	void (*onmouse)(int, int);
-	void (*onclick)(int, int);
-	void (*onkey)(int);
-	void (*update)(int);
-	void (*draw)(void);
-	void (*finish)(void);
-};
+extern struct state state_menu;
 
-void
-state_start(struct state *);
-
-void
-state_suspend(struct state *);
-
-void
-state_resume(struct state *);
-
-void
-state_onmouse(struct state *, int, int);
-
-void
-state_onclick(struct state *, int, int);
-
-void
-state_onkey(struct state *, int);
-
-void
-state_update(struct state *, int);
-
-void
-state_draw(struct state *);
-
-void
-state_finish(struct state *);
-
-#endif /* !STRIS_STATE_H */
+#endif /* !STRIS_STATE_MENU_H */

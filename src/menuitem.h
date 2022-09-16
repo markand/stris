@@ -1,5 +1,5 @@
 /*
- * state.h -- game state
+ * menuitem.h -- menu item
  *
  * Copyright (c) 2011-2021 David Demelier <markand@malikania.fr>
  *
@@ -16,46 +16,34 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_STATE_H
-#define STRIS_STATE_H
+#ifndef STRIS_MENUITEM_H
+#define STRIS_MENUITEM_H
 
-struct state {
-	void (*start)(void);
-	void (*suspend)(void);
-	void (*resume)(void);
-	void (*onmouse)(int, int);
-	void (*onclick)(int, int);
-	void (*onkey)(int);
-	void (*update)(int);
-	void (*draw)(void);
-	void (*finish)(void);
+struct menuitem {
+	int x;
+	int y;
+	int w;
+	int h;
+	int selected;
+	int spent;
+	unsigned long colorcur;
+	unsigned long colordst;
+	const char *text;
 };
 
 void
-state_start(struct state *);
+menuitem_init(struct menuitem *, const char *);
 
 void
-state_suspend(struct state *);
+menuitem_select(struct menuitem *);
 
 void
-state_resume(struct state *);
+menuitem_move(struct menuitem *, int, int);
 
 void
-state_onmouse(struct state *, int, int);
+menuitem_update(struct menuitem *, int);
 
 void
-state_onclick(struct state *, int, int);
+menuitem_draw(const struct menuitem *);
 
-void
-state_onkey(struct state *, int);
-
-void
-state_update(struct state *, int);
-
-void
-state_draw(struct state *);
-
-void
-state_finish(struct state *);
-
-#endif /* !STRIS_STATE_H */
+#endif /* !STRIS_MENUITEM_H */
