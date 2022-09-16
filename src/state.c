@@ -22,12 +22,12 @@
 #include "state.h"
 
 void
-state_start(struct state *s)
+state_init(struct state *s)
 {
 	assert(s);
 
-	if (s->start)
-		s->start();
+	if (s->init)
+		s->init();
 }
 
 void

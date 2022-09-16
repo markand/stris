@@ -23,8 +23,9 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#include "fonts/cartoon-relief.h"
 #include "fonts/actionj.h"
+#include "fonts/cartoon-relief.h"
+#include "fonts/dejavu-sans.h"
 #include "fonts/typography-ties.h"
 
 #include "ui.h"
@@ -54,6 +55,11 @@ static struct {
 		.data = data_fonts_cartoon_relief,
 		.datasz = sizeof (data_fonts_cartoon_relief),
 		.size = 60
+	},
+	[UI_FONT_MENU_SMALL] = {
+		.data = data_fonts_dejavu_sans,
+		.datasz = sizeof (data_fonts_dejavu_sans),
+		.size = 20
 	}
 };
 

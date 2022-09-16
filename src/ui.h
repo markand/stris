@@ -27,7 +27,8 @@
 enum ui_font {
 	UI_FONT_SPLASH,
 	UI_FONT_TITLE,
-	UI_FONT_MENU
+	UI_FONT_MENU,
+	UI_FONT_MENU_SMALL
 };
 
 enum ui_palette : unsigned long {

@@ -22,19 +22,36 @@
 enum key;
 
 struct state {
-	void (*start)(void);
+	// Only once at startup.
+	void (*init)(void);
+
+	// When leaving the state.
 	void (*suspend)(void);
+
+	// When (re-)entering the state.
 	void (*resume)(void);
+
+	// On mouse motion.
 	void (*onmouse)(int, int);
+
+	// On mouse click.
 	void (*onclick)(int, int);
+
+	// On keypress.
 	void (*onkey)(enum key);
+
+	// Update the state logic.
 	void (*update)(int);
+
+	// Draw the state.
 	void (*draw)(void);
+
+	// Only once when quitting the application.
 	void (*finish)(void);
 };
 
 void
-state_start(struct state *);
+state_init(struct state *);
 
 void
 state_suspend(struct state *);

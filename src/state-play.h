@@ -1,7 +1,7 @@
 /*
- * key.h -- key handling
+ * state-play.h -- game state
  *
- * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
+ * Copyright (c) 2011-2021 David Demelier <markand@malikania.fr>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,18 +16,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_KEY_H
-#define STRIS_KEY_H
+#ifndef STRIS_STATE_PLAY
+#define STRIS_STATE_PLAY
 
-enum key {
-	KEY_UP,
-	KEY_RIGHT,
-	KEY_DOWN,
-	KEY_LEFT,
-	KEY_CANCEL,
-	KEY_SELECT,
-	KEY_ANY,
-	KEY_LAST
-};
+extern struct state state_play;
 
-#endif /* !STRIS_KEY_H */
+#endif /* !STRIS_STATE_PLAY */

@@ -1,5 +1,5 @@
 /*
- * state-splash.c -- simple advertising splash screen
+ * state-play.c -- game state
  *
  * Copyright (c) 2011-2021 David Demelier <markand@malikania.fr>
  *
@@ -16,58 +16,79 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "sound.h"
+#include "board.h"
+#include "key.h"
 #include "state-menu.h"
-#include "state-splash.h"
+#include "state-play.h"
 #include "state.h"
 #include "stris.h"
 #include "tex.h"
 #include "ui.h"
 
-static int played;
-static int spent;
-static struct tex title;
+static struct {
+	int paused;
+	struct tex pausetex;
+	Board board;
+} game;
 
 static void
 init(void)
 {
-	ui_render(&title, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
+	ui_render(&game.pausetex, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "pause");
+}
+
+static void
+resume(void)
+{
+	game.paused = 0;
+}
+
+static void
+onkey(enum key key)
+{
+	switch (key) {
+	case KEY_CANCEL:
+		// Already in pause, escape to main menu then.
+		if (game.paused)
+			stris_switch(&state_menu);
+		else
+			game.paused = 1;
+		break;
+	default:
+		break;
+	}
 }
 
 static void
 update(int ticks)
 {
-	spent += ticks;
-
-	//
-	// We wait a little before playing sound because the window may take
-	// time to open.
-	//
-	if (spent >= 100 && !played) {
-		played = 1;
-		sound_play(SOUND_CHIME);
-	}
-	if (spent >= 2000)
-		stris_switch(&state_menu);
 }
 
 static void
 draw(void)
 {
-	ui_clear(UI_PALETTE_SPLASH_BG);
-	tex_draw(&title, (UI_W - title.w) / 2, (UI_H - title.h) / 2);
+	ui_clear(0);
+
+	if (game.paused) {
+		tex_draw(&game.pausetex, 0, 0);
+	} else {
+		puts("draw normal...");
+	}
+
 	ui_present();
 }
 
 static void
 finish(void)
 {
-	tex_finish(&title);
+	tex_finish(&game.pausetex);
 }
 
-struct state state_splash = {
+struct state state_play = {
 	.init = init,
+	.resume = resume,
 	.update = update,
 	.draw = draw,
+	.onkey = onkey,
 	.finish = finish
 };

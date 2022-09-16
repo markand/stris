@@ -42,6 +42,7 @@ SRCS=                   src/board.c \
                         src/shape.c \
                         src/sound.c \
                         src/state-menu.c \
+                        src/state-play.c \
                         src/state-splash.c \
                         src/state.c \
                         src/tex.c \

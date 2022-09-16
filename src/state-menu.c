@@ -19,6 +19,7 @@
 #include "key.h"
 #include "menuitem.h"
 #include "state-menu.h"
+#include "state-play.h"
 #include "state.h"
 #include "stris.h"
 #include "tex.h"
@@ -62,6 +63,9 @@ static void
 handle_select(void)
 {
 	switch (main.sel) {
+	case 0:
+		stris_switch(&state_play);
+		break;
 	case 3:
 		stris_quit();
 		break;
@@ -71,7 +75,7 @@ handle_select(void)
 }
 
 static void
-start(void)
+init(void)
 {
 	int menuh, menuv, menuy;
 
@@ -99,7 +103,12 @@ start(void)
 		move(&main.menu[i], menuy);
 		menuy += main.menu[i].h + menuv;
 	}
+}
 
+static void
+resume(void)
+{
+	main.sel = 0;
 	menuitem_select(&main.menu[0]);
 }
 
@@ -164,7 +173,8 @@ finish(void)
 }
 
 struct state state_menu = {
-	.start = start,
+	.init = init,
+	.resume = resume,
 	.onkey = onkey,
 	.update = update,
 	.draw = draw,

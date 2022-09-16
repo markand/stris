@@ -1,1 +1,1 @@
-CFLAGS= -fsanitize=address,undefined -g -O0
+CFLAGS= -fsanitize=address,undefined -g -O0 -Wall -Wextra

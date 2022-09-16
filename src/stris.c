@@ -20,10 +20,13 @@
 
 #include "key.h"
 #include "sound.h"
+#include "state-menu.h"
+#include "state-play.h"
 #include "state-splash.h"
 #include "state.h"
 #include "stris.h"
 #include "ui.h"
+#include "util.h"
 
 static struct {
 	int run;
@@ -31,7 +34,13 @@ static struct {
 	struct state *state_next;
 } stris = {
 	.run = 1,
-	.state = &state_splash
+	.state_next = &state_splash
+};
+
+static struct state *states[] = {
+	&state_menu,
+	&state_play,
+	&state_splash
 };
 
 static void
@@ -39,15 +48,19 @@ init(void)
 {
 	ui_init();
 	sound_init();
-	state_start(stris.state);
+
+	for (size_t i = 0; i < LEN(states); ++i)
+		state_init(states[i]);
 }
 
 static void
 change(void)
 {
 	if (stris.state_next) {
-		state_suspend(stris.state);
-		state_start(stris.state_next);
+		if (stris.state)
+			state_suspend(stris.state);
+
+		state_resume(stris.state_next);
 
 		stris.state = stris.state_next;
 		stris.state_next = NULL;
@@ -67,6 +80,9 @@ handle(void)
 		case SDL_KEYDOWN:
 			// TODO: Add options mapping here.
 			switch (ev.key.keysym.scancode) {
+			case SDL_SCANCODE_ESCAPE:
+				state_onkey(stris.state, KEY_CANCEL);
+				break;
 			case SDL_SCANCODE_RETURN:
 				state_onkey(stris.state, KEY_SELECT);
 				break;
@@ -136,6 +152,9 @@ loop(void)
 static void
 finish(void)
 {
+	for (size_t i = 0; i < LEN(states); ++i)
+		state_init(states[i]);
+
 	sound_finish();
 	ui_finish();
 }
@@ -157,6 +176,9 @@ stris_quit(void)
 int
 main(int argc, char **argv)
 {
+	(void)argc;
+	(void)argv;
+
 	init();
 	loop();
 	finish();

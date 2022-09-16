@@ -82,8 +82,6 @@ score_list_is_top(const struct score_list *list, const struct score *sc)
 	assert(list);
 	assert(sc);
 
-	struct score *s;
-
 	if (list->scoresz < SCORE_COUNT_MAX)
 		return 1;
 
@@ -121,7 +119,6 @@ score_list_add(struct score_list *list, const struct score *sc)
 void
 score_list_write(const struct score_list *list, const char *path)
 {
-	struct score *s;
 	FILE *fp;
 
 	if (!(fp = fopen(path, "w")))
