@@ -16,6 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "sound.h"
 #include "state-menu.h"
 #include "state-splash.h"
 #include "state.h"
@@ -23,6 +24,7 @@
 #include "tex.h"
 #include "ui.h"
 
+static int played;
 static int spent;
 static int alpha;
 static struct tex title;
@@ -39,7 +41,15 @@ update(int ticks)
 {
 	spent += ticks;
 
-	if (spent >= 500)
+	//
+	// We wait a little before playing sound because the window may take
+	// time to open.
+	//
+	if (spent >= 100 && !played) {
+		played = 1;
+		sound_play(SOUND_CHIME);
+	}
+	if (spent >= 2000)
 		stris_switch(&state_menu);
 }
 

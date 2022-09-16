@@ -27,6 +27,9 @@ SDL2_LIBS=              `pkg-config --libs sdl2`
 SDL2_IMAGE_INCS=        `pkg-config --cflags SDL2_image`
 SDL2_IMAGE_LIBS=        `pkg-config --libs SDL2_image`
 
+SDL2_MIXER_INCS=        `pkg-config --cflags SDL2_mixer`
+SDL2_MIXER_LIBS=        `pkg-config --libs SDL2_mixer`
+
 SDL2_TTF_INCS=          `pkg-config --cflags SDL2_ttf`
 SDL2_TTF_LIBS=          `pkg-config --libs SDL2_ttf`
 
@@ -37,9 +40,10 @@ SRCS=                   src/board.c \
                         src/menuitem.c \
                         src/score.c \
                         src/shape.c \
-                        src/state.c \
+                        src/sound.c \
                         src/state-menu.c \
                         src/state-splash.c \
+                        src/state.c \
                         src/tex.c \
                         src/ui.c \
                         src/util.c
@@ -58,7 +62,8 @@ DATA=                   data/fonts/actionj.h \
                         data/img/panel.h \
                         data/img/purple.h \
                         data/img/red.h \
-                        data/img/yellow.h
+                        data/img/yellow.h \
+                        data/sound/startup.h
 
 TESTS=                  tests/test-board.c
 TESTS_OBJS=             ${TESTS:.c=}
@@ -69,10 +74,10 @@ INCS=                   -Idata \
                         ${SDL2_INCS} \
                         ${SDL2_IMAGE_INCS} \
                         ${SDL2_TTF_INCS}
-LIBS=                   ${SDL2_LIBS} ${SDL2_IMAGE_LIBS} ${SDL2_TTF_LIBS}
+LIBS=                   ${SDL2_LIBS} ${SDL2_IMAGE_LIBS} ${SDL2_MIXER_LIBS} ${SDL2_TTF_LIBS}
 
 .SUFFIXES:
-.SUFFIXES: .h .o .c .png .ttf
+.SUFFIXES: .h .o .c .png .ttf .wav
 
 all: ${PROG}
 
@@ -82,7 +87,7 @@ all: ${PROG}
 .c.o:
 	${CC} ${INCS} ${NLS_CFLAGS} ${CFLAGS} -MMD -c $< -o $@
 
-.ttf.h .png.h:
+.png.h .ttf.h .wav.h:
 	extern/bcc/bcc -sc0 $< $< > $@
 
 -include ${DEPS}

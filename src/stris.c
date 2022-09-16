@@ -18,6 +18,7 @@
 
 #include <assert.h>
 
+#include "sound.h"
 #include "state-splash.h"
 #include "state.h"
 #include "stris.h"
@@ -48,6 +49,8 @@ main(int argc, char **argv)
 	float fspent;
 
 	ui_init();
+	sound_init();
+
 	state_start(stris.state);
 
 	start = end = SDL_GetTicks();

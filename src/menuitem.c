@@ -107,6 +107,10 @@ menuitem_draw(const struct menuitem *m)
 
 	struct tex tex;
 
+	ui_render(&tex, UI_FONT_MENU, UI_PALETTE_SHADOW, m->text);
+	tex_draw(&tex, m->x + 1, m->y + 1);
+	tex_finish(&tex);
+
 	ui_render(&tex, UI_FONT_MENU, m->colorcur, m->text);
 	tex_draw(&tex, m->x, m->y);
 	tex_finish(&tex);

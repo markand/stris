@@ -31,33 +31,6 @@
 #include "util.h"
 #include "tex.h"
 
-#if 0
-const unsigned long ui_palette[16] = {
-#if 0
-	0x1a1c2cff,
-	0x5d275dff,
-	0xb13e53ff,
-	0xef7d57ff,
-	0xffcd75ff,
-	0xa7f070ff,
-	0x38b764ff,
-	0x257179ff,
-	0x29366fff,
-	0x3b5dc9ff,
-	0x41a6f6ff,
-	0x73eff7ff,
-	0xf4f4f4ff,
-	0x94b0c2ff,
-	0x566c86ff,
-	0x333c57ff
-#endif
-	[UI_PALETTE_SPLASH_BG]  = 0x242b4aff,
-	[UI_PALETTE_FG]         = 0xdfededff,
-	[UI_PALETTE_MENU_BG]    = 0xa7b8c2ff,
-	[UI_PALETTE_SHADOW]     = 0x372840ff
-};
-#endif
-
 SDL_Window *ui_win = NULL;
 SDL_Renderer *ui_rdr = NULL;
 
@@ -80,7 +53,7 @@ static struct {
 	[UI_FONT_MENU] = {
 		.data = data_fonts_cartoon_relief,
 		.datasz = sizeof (data_fonts_cartoon_relief),
-		.size = 80
+		.size = 60
 	}
 };
 
@@ -103,6 +76,29 @@ load_fonts(void)
 {
 	for (size_t i = 0; i < LEN(fonts); ++i)
 		fonts[i].font = load_font(fonts[i].data, fonts[i].datasz, fonts[i].size);
+}
+
+static void
+render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, va_list ap)
+{
+	char buf[128];
+	SDL_Color c = {
+		.r = (color >> 24) & 0xff,
+		.g = (color >> 16) & 0xff,
+		.b = (color >> 8)  & 0xff
+	};
+	SDL_Surface *sf;
+
+	vsnprintf(buf, sizeof (buf), fmt, ap);
+
+	if (!(sf = TTF_RenderUTF8_Blended(fonts[f].font, buf, c)))
+		die("abort: %s\n", SDL_GetError());
+	if (!(t->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
+		die("abort: %s\n", SDL_GetError());
+	if (SDL_QueryTexture(t->handle, NULL, NULL, &t->w, &t->h) < 0)
+		die("abort: %s\n", SDL_GetError());
+
+	SDL_FreeSurface(sf);
 }
 
 void
@@ -134,29 +130,6 @@ ui_set_color(enum ui_palette color)
 void
 ui_draw_background(void)
 {
-}
-
-static void
-render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, va_list ap)
-{
-	char buf[128];
-	SDL_Color c = {
-		.r = (color >> 24) & 0xff,
-		.g = (color >> 16) & 0xff,
-		.b = (color >> 8)  & 0xff
-	};
-	SDL_Surface *sf;
-
-	vsnprintf(buf, sizeof (buf), fmt, ap);
-
-	if (!(sf = TTF_RenderUTF8_Blended(fonts[f].font, buf, c)))
-		die("abort: %s\n", SDL_GetError());
-	if (!(t->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
-		die("abort: %s\n", SDL_GetError());
-	if (SDL_QueryTexture(t->handle, NULL, NULL, &t->w, &t->h) < 0)
-		die("abort: %s\n", SDL_GetError());
-
-	SDL_FreeSurface(sf);
 }
 
 void

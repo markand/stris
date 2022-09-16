@@ -17,7 +17,7 @@
 \.dSYM.*
 
 # executables.
-^src\stris$
+^src/stris$
 ^extern/bcc/bcc$
 
 # tests.
