@@ -19,14 +19,8 @@
 #ifndef STRIS_SHAPE_H
 #define STRIS_SHAPE_H
 
-struct shape {
-	int x;
-	int y;
-	int o;
-	int def[4][4][4];
-};
-
 enum shape_kind {
+	SHAPE_NONE,
 	SHAPE_O,
 	SHAPE_I,
 	SHAPE_S,
@@ -36,6 +30,14 @@ enum shape_kind {
 	SHAPE_T,
 	SHAPE_LAST,
 	SHAPE_RANDOM
+};
+
+struct shape {
+	enum shape_kind k;
+	int x;
+	int y;
+	int o;
+	int def[4][4][4];
 };
 
 void

@@ -231,9 +231,15 @@ void
 shape_select(struct shape *s, enum shape_kind kind)
 {
 	assert(s);
-	
+
 	memset(s, 0, sizeof (*s));
-	memcpy(s->def, shapes[kind == SHAPE_RANDOM ? NRAND(0, LEN(shapes) - 1) : kind], sizeof (s->def));
+
+	if (kind >= SHAPE_RANDOM)
+		s->k = NRAND(1, SHAPE_LAST - 1);
+	else
+		s->k = kind;
+
+	memcpy(s->def, shapes[s->k - 1], sizeof (s->def));
 }
 
 void

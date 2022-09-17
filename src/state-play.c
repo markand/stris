@@ -37,6 +37,9 @@
 #include "ui.h"
 #include "util.h"
 
+#define FALLRATE_INIT 900
+#define FALLRATE_DECR 85
+
 #define SHAPE_TEX(d) { .data = d, sizeof (d) }
 
 static struct {
@@ -54,9 +57,12 @@ static struct {
 
 static struct {
 	int level;
-	int score;
+	int lines;
+	int fallrate;
+	int delay;
 	struct shape shape;
 	struct shape shape_next;
+	Board board;
 } game;
 
 static struct {
@@ -80,7 +86,6 @@ static struct {
 	int h;
 	int cw;
 	int ch;
-	Board b;
 } board;
 
 static void
@@ -118,7 +123,8 @@ init_blocks(void)
 {
 	// Load all blocks.
 	for (size_t i = 0; i < LEN(shapes); ++i)
-		tex_load(&shapes[i].tex, shapes[i].data, shapes[i].datasz);
+		if (shapes[i].data)
+			tex_load(&shapes[i].tex, shapes[i].data, shapes[i].datasz);
 }
 
 static void
@@ -129,8 +135,8 @@ init_board(void)
 	board.y = (UI_H * 2)  / 16;
 	board.w = (UI_W * 7)  / 9;
 	board.h = (UI_H * 13) / 16;
-	board.cw = shapes[0].tex.w;
-	board.ch = shapes[0].tex.h;
+	board.cw = shapes[1].tex.w;
+	board.ch = shapes[1].tex.h;
 }
 
 static void
@@ -138,8 +144,11 @@ init_game(void)
 {
 	shape_select(&game.shape, SHAPE_RANDOM);
 	shape_select(&game.shape_next, SHAPE_RANDOM);
+
 	game.shape.x = 3;
-	board_set(board.b, &game.shape);
+	game.fallrate = FALLRATE_INIT;
+
+	board_set(game.board, &game.shape);
 }
 
 static void
@@ -157,7 +166,7 @@ resume(void)
 {
 	pause.enable = 0;
 	game.level = 1;
-	game.score = 0;
+	game.lines = 0;
 }
 
 static int
@@ -169,7 +178,7 @@ can_move(int dx, int dy)
 	shape.x += dx;
 	shape.y += dy;
 
-	return board_check(board.b, &shape);
+	return board_check(game.board, &shape);
 }
 
 static void
@@ -179,7 +188,7 @@ move(int dx, int dy)
 	(void)dy;
 
 	// First, remove the current shape to avoid collision with it.
-	board_unset(board.b, &game.shape);
+	board_unset(game.board, &game.shape);
 
 	if (can_move(dx, dy)) {
 		sound_play(SOUND_MOVE);
@@ -187,19 +196,35 @@ move(int dx, int dy)
 		game.shape.y += dy;
 	}
 
-	board_set(board.b, &game.shape);
+	board_set(game.board, &game.shape);
 }
 
 static void
 drop(void)
 {
-	board_unset(board.b, &game.shape);
+	board_unset(game.board, &game.shape);
 
 	while (can_move(0, 1))
 		game.shape.y += 1;
 
-	board_set(board.b, &game.shape);
+	board_set(game.board, &game.shape);
 	sound_play(SOUND_DROP);
+}
+
+static void
+rotate(void)
+{
+	int o = game.shape.o;
+
+	// As usual, unset before trying.
+	board_unset(game.board, &game.shape);
+	shape_rotate(&game.shape, 1);
+
+	// Cancel orientation.
+	if (!board_check(game.board, &game.shape))
+		game.shape.o = o;
+
+	board_set(game.board, &game.shape);
 }
 
 static void
@@ -215,7 +240,7 @@ onkey(enum key key)
 		break;
 	case KEY_SELECT:
 		pause.enable = 0;
-		sound_play(SOUND_ROTATE);
+		rotate();
 		break;
 	case KEY_RIGHT:
 		move(1, 0);
@@ -234,10 +259,94 @@ onkey(enum key key)
 	}
 }
 
+static int
+fall(void)
+{
+	int ret = 0;
+
+	board_unset(game.board, &game.shape);
+
+	if (can_move(0, 1)) {
+		game.shape.y += 1;
+		ret = 1;
+	}
+
+	board_set(game.board, &game.shape);
+
+	return ret;
+}
+
+#if 0
+static inline void
+show(const Board b)
+{
+	printf("      [0] [1] [2] [3] [4] [5] [6] [7] [8] [9]\n");
+
+	for (int r = 0; r < BOARD_H; ++r) {
+		printf("[%2d] = ", r);
+
+		for (int c = 0; c < BOARD_W; ++c)
+			printf("%d,  ", b[r][c]);
+
+		printf("\n");
+	}
+}
+#endif
+
+static void
+spawn(void)
+{
+	// Move next shape to current and create a new one.
+	game.shape = game.shape_next;
+	game.shape.x = 3;
+	game.shape.y = 0;
+
+	board_set(game.board, &game.shape);
+	shape_select(&game.shape_next, SHAPE_RANDOM);
+
+#if 0
+	show(game.board);
+	// TODO: dead here.
+	printf("We have spawn a new shape with k %d\n", game.shape.k);
+	printf("-- %d %d %d %d\n",
+	    game.shape.def[0][0][0],
+	    game.shape.def[0][0][1],
+	    game.shape.def[0][0][2],
+	    game.shape.def[0][0][3]);
+	printf("-- %d %d %d %d\n",
+	    game.shape.def[0][1][0],
+	    game.shape.def[0][1][1],
+	    game.shape.def[0][1][2],
+	    game.shape.def[0][1][3]);
+	printf("-- %d %d %d %d\n",
+	    game.shape.def[0][2][0],
+	    game.shape.def[0][2][1],
+	    game.shape.def[0][2][2],
+	    game.shape.def[0][2][3]);
+	printf("-- %d %d %d %d\n",
+	    game.shape.def[0][3][0],
+	    game.shape.def[0][3][1],
+	    game.shape.def[0][3][2],
+	    game.shape.def[0][3][3]);
+#endif
+}
+
 static void
 update(int ticks)
 {
-	(void)ticks;
+	if (pause.enable)
+		return;
+
+	game.delay += ticks;
+
+	if (game.delay >= game.fallrate) {
+		game.delay = 0;
+
+		// At the bottom? Spawn a new shape otherwise just place the
+		// new position.
+		if (!fall())
+			spawn();
+	}
 }
 
 static void
@@ -264,7 +373,7 @@ static void
 draw_stats(void)
 {
 	draw_stat(0, "level %d", game.level);
-	draw_stat(1, "score %d", game.score);
+	draw_stat(1, "lines %d", game.lines);
 }
 
 static void
@@ -302,7 +411,7 @@ draw_board(void)
 
 	for (int r = 0; r < BOARD_H; ++r) {
 		for (int c = 0; c < BOARD_W; ++c) {
-			if (!(s = board.b[r][c]))
+			if (!(s = game.board[r][c]))
 				continue;
 
 			tex_draw(&shapes[s].tex,
