@@ -18,10 +18,15 @@
 
 #include <SDL_mixer.h>
 
+#include "sound/drop.h"
+#include "sound/move.h"
+#include "sound/rotate.h"
 #include "sound/startup.h"
 
 #include "sound.h"
 #include "util.h"
+
+#define SOUND_DEF(d) { .data = d, .datasz = sizeof (d) }
 
 static struct {
 	Mix_Chunk *snd;
@@ -29,10 +34,13 @@ static struct {
 	size_t datasz;
 } sounds[] = {
 	// https://freesound.org/people/radian/sounds/63000
-	[SOUND_CHIME] = {
-		.data = data_sound_startup,
-		.datasz = sizeof (data_sound_startup),
-	}
+	[SOUND_CHIME] = SOUND_DEF(data_sound_startup),
+	// https://freesound.org/people/el_boss/sounds/560701
+	[SOUND_ROTATE] = SOUND_DEF(data_sound_rotate),
+	// https://freesound.org/people/MissCellany/sounds/240640
+	[SOUND_MOVE] = SOUND_DEF(data_sound_move),
+	// https://freesound.org/people/MattRuthSound/sounds/562083
+	[SOUND_DROP] = SOUND_DEF(data_sound_drop)
 };
 
 static Mix_Chunk *

@@ -52,6 +52,8 @@ static struct state *states[] = {
 static void
 init(void)
 {
+	srand(time(NULL));
+
 	ui_init();
 	sound_init();
 
@@ -103,6 +105,9 @@ handle(void)
 				break;
 			case SDL_SCANCODE_LEFT:
 				state_onkey(stris.state, KEY_LEFT);
+				break;
+			case SDL_SCANCODE_SPACE:
+				state_onkey(stris.state, KEY_DROP);
 				break;
 			default:
 				break;

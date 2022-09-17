@@ -42,10 +42,20 @@ board_check(const Board b, const struct shape *s)
 	assert(b);
 	assert(s);
 
-	for (int r = 0; r < 4 && s->y + r < BOARD_H; ++r)
-		for (int c = 0; c < 4 && s->x + c < BOARD_W; ++c)
-			if (s->def[s->o][r][c] && b[s->y + r][s->x + c])
+	for (int r = 0; r < 4; ++r) {
+		for (int c = 0; c < 4; ++c) {
+			// Empty cell in definition, skip.
+			if (!s->def[s->o][r][c])
+				continue;
+
+			// Shape cell is out of bound.
+			if (s->x < 0 || s->x + c >= BOARD_W || s->y + r >= BOARD_H)
 				return 0;
+			// Shape cell collide with board.
+			if (b[s->y + r][s->x + c])
+				return 0;
+		}
+	}
 
 	return 1;
 }
@@ -56,8 +66,8 @@ board_set(Board b, const struct shape *s)
 	assert(b);
 	assert(s);
 
-	for (int r = 0; r < 4; ++r)
-		for (int c = 0; c < 4; ++c)
+	for (int r = 0; r < 4 && s->y + r < BOARD_H; ++r)
+		for (int c = 0; c < 4 && s->x + c < BOARD_W; ++c)
 			if (!b[s->y + r][s->x + c])
 				b[s->y + r][s->x + c] = s->def[s->o][r][c];
 }
@@ -68,7 +78,7 @@ board_unset(Board b, const struct shape *s)
 	assert(b);
 	assert(s);
 
-	for (int r = 0; r < 4; ++r)
-		for (int c = 0; c < 4; ++c)
+	for (int r = 0; r < 4 && s->y + r < BOARD_H; ++r)
+		for (int c = 0; c < 4 && s->x + c < BOARD_W; ++c)
 			b[s->y + r][s->x + c] = 0;
 }

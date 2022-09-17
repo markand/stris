@@ -65,6 +65,9 @@ DATA=                   data/fonts/actionj.h \
                         data/img/block6.h \
                         data/img/block7.h \
                         data/img/block8.h \
+                        data/sound/drop.h \
+                        data/sound/move.h \
+                        data/sound/rotate.h \
                         data/sound/startup.h
 
 TESTS=                  tests/test-board.c

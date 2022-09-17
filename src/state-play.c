@@ -28,6 +28,7 @@
 #include "board.h"
 #include "key.h"
 #include "shape.h"
+#include "sound.h"
 #include "state-menu.h"
 #include "state-play.h"
 #include "state.h"
@@ -37,9 +38,6 @@
 #include "util.h"
 
 #define SHAPE_TEX(d) { .data = d, sizeof (d) }
-
-// TODO: tmp.
-#include <SDL.h>
 
 static struct {
 	struct tex tex[2];
@@ -57,6 +55,8 @@ static struct {
 static struct {
 	int level;
 	int score;
+	struct shape shape;
+	struct shape shape_next;
 } game;
 
 static struct {
@@ -78,18 +78,25 @@ static struct {
 	int y;
 	int w;
 	int h;
+	int cw;
+	int ch;
+	Board b;
 } board;
 
 static void
-init(void)
+init_title(void)
 {
-	int h, tw, th;
-
 	// Prepare pause label.
 	ui_render(&pause.tex[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, "pause");
 	ui_render(&pause.tex[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "pause");
 	pause.x = (UI_W - pause.tex[0].w) / 2;
 	pause.y = (UI_H - pause.tex[0].h) / 2;
+}
+
+static void
+init_stats(void)
+{
+	int h, tw, th;
 
 	// Compute position for stats labels.
 	statsgeo.x[0] = statsgeo.x[1] = UI_W / 9;
@@ -104,16 +111,45 @@ init(void)
 
 	statsgeo.y[0] = 5 + h;
 	statsgeo.y[1] = statsgeo.y[0] + th + h;
+}
 
+static void
+init_blocks(void)
+{
 	// Load all blocks.
 	for (size_t i = 0; i < LEN(shapes); ++i)
 		tex_load(&shapes[i].tex, shapes[i].data, shapes[i].datasz);
+}
 
+static void
+init_board(void)
+{
 	// Board geometry.
 	board.x = (UI_W / 9);
 	board.y = (UI_H * 2)  / 16;
 	board.w = (UI_W * 7)  / 9;
 	board.h = (UI_H * 13) / 16;
+	board.cw = shapes[0].tex.w;
+	board.ch = shapes[0].tex.h;
+}
+
+static void
+init_game(void)
+{
+	shape_select(&game.shape, SHAPE_RANDOM);
+	shape_select(&game.shape_next, SHAPE_RANDOM);
+	game.shape.x = 3;
+	board_set(board.b, &game.shape);
+}
+
+static void
+init(void)
+{
+	init_title();
+	init_stats();
+	init_blocks();
+	init_board();
+	init_game();
 }
 
 static void
@@ -122,6 +158,48 @@ resume(void)
 	pause.enable = 0;
 	game.level = 1;
 	game.score = 0;
+}
+
+static int
+can_move(int dx, int dy)
+{
+	struct shape shape = game.shape;
+
+	// Try to put in the new place.
+	shape.x += dx;
+	shape.y += dy;
+
+	return board_check(board.b, &shape);
+}
+
+static void
+move(int dx, int dy)
+{
+	(void)dx;
+	(void)dy;
+
+	// First, remove the current shape to avoid collision with it.
+	board_unset(board.b, &game.shape);
+
+	if (can_move(dx, dy)) {
+		sound_play(SOUND_MOVE);
+		game.shape.x += dx;
+		game.shape.y += dy;
+	}
+
+	board_set(board.b, &game.shape);
+}
+
+static void
+drop(void)
+{
+	board_unset(board.b, &game.shape);
+
+	while (can_move(0, 1))
+		game.shape.y += 1;
+
+	board_set(board.b, &game.shape);
+	sound_play(SOUND_DROP);
 }
 
 static void
@@ -137,6 +215,19 @@ onkey(enum key key)
 		break;
 	case KEY_SELECT:
 		pause.enable = 0;
+		sound_play(SOUND_ROTATE);
+		break;
+	case KEY_RIGHT:
+		move(1, 0);
+		break;
+	case KEY_DOWN:
+		move(0, 1);
+		break;
+	case KEY_LEFT:
+		move(-1, 0);
+		break;
+	case KEY_DROP:
+		drop();
 		break;
 	default:
 		break;
@@ -177,7 +268,7 @@ draw_stats(void)
 }
 
 static void
-draw_board(void)
+draw_borders(void)
 {
 	// -
 	ui_draw_line(UI_PALETTE_BORDER,
@@ -205,6 +296,23 @@ draw_board(void)
 }
 
 static void
+draw_board(void)
+{
+	int s;
+
+	for (int r = 0; r < BOARD_H; ++r) {
+		for (int c = 0; c < BOARD_W; ++c) {
+			if (!(s = board.b[r][c]))
+				continue;
+
+			tex_draw(&shapes[s].tex,
+			    board.x + (c * board.cw),
+			    board.y + (r * board.ch));
+		}
+	}
+}
+
+static void
 draw(void)
 {
 	ui_clear(UI_PALETTE_MENU_BG);
@@ -214,6 +322,7 @@ draw(void)
 		tex_draw(&pause.tex[0], pause.x, pause.y);
 	} else {
 		draw_stats();
+		draw_borders();
 		draw_board();
 	}
 

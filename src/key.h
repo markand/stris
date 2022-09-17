@@ -26,6 +26,7 @@ enum key {
 	KEY_LEFT,
 	KEY_CANCEL,
 	KEY_SELECT,
+	KEY_DROP,
 	KEY_ANY,
 	KEY_LAST
 };

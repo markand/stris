@@ -20,7 +20,10 @@
 #define STRIS_SOUND_H
 
 enum sound {
-	SOUND_CHIME
+	SOUND_CHIME,
+	SOUND_ROTATE,
+	SOUND_MOVE,
+	SOUND_DROP
 };
 
 void
