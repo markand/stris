@@ -1,5 +1,5 @@
 #
-# Makefile -- mostly POSIX Makefile for stris
+# Makefile -- mostly POSIX Makefile for STris
 #
 # Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
 #

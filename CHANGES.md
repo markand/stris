@@ -1,17 +1,24 @@
-stris 0.4.0 2012-07-11
+STris 1.0.0 2022-??-??
+----------------------
+
+- Almost complete rewrite in C23.
+- Switched to SDL 2.
+- Project renamed to STris (formerly SD-Tris).
+
+STris 0.4.0 2012-07-11
 ----------------------
 
 - Reduced the fallrate.
 - Added the version number at root menu.
 
-stris 0.3.0 2012-07-02
+STris 0.3.0 2012-07-02
 ----------------------
 
 - Clicks are fixed on pause menu.
 - Prevent empty name score.
 - Fill user name with predefined account name.
 
-stris 0.2.0 2012-06-08
+STris 0.2.0 2012-06-08
 ----------------------
 
 - Mouse is working in pause state.
@@ -23,7 +30,7 @@ stris 0.2.0 2012-06-08
 - Fixed key repeat that goes down when colliding borders.
 - Renamed shortcut to SD-Tris (win32).
 
-stris 0.1.0 2012-06-08
+STris 0.1.0 2012-06-08
 ----------------------
 
 - Initial release.

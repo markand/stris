@@ -1,7 +1,7 @@
-stris ISC LICENSE
+STris ISC LICENSE
 =================
 
-Copyright (c) 2011-2020 David Demelier <markand@malikania.fr>
+Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
