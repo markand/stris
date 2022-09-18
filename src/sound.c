@@ -18,6 +18,7 @@
 
 #include <SDL_mixer.h>
 
+#include "sound/clean.h"
 #include "sound/drop.h"
 #include "sound/move.h"
 #include "sound/rotate.h"
@@ -40,7 +41,9 @@ static struct {
 	// https://freesound.org/people/MissCellany/sounds/240640
 	[SOUND_MOVE] = SOUND_DEF(data_sound_move),
 	// https://freesound.org/people/MattRuthSound/sounds/562083
-	[SOUND_DROP] = SOUND_DEF(data_sound_drop)
+	[SOUND_DROP] = SOUND_DEF(data_sound_drop),
+	// https://freesound.org/people/Jerimee/sounds/527530
+	[SOUND_CLEAN] = SOUND_DEF(data_sound_clean)
 };
 
 static Mix_Chunk *

@@ -23,7 +23,8 @@ enum sound {
 	SOUND_CHIME,
 	SOUND_ROTATE,
 	SOUND_MOVE,
-	SOUND_DROP
+	SOUND_DROP,
+	SOUND_CLEAN
 };
 
 void

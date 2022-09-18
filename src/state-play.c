@@ -38,10 +38,17 @@
 #include "ui.h"
 #include "util.h"
 
+#define ANIM_DELAY 1000
+
 #define FALLRATE_INIT 900
 #define FALLRATE_DECR 85
 
 #define SHAPE_TEX(d) { .data = d, sizeof (d) }
+
+static struct {
+	int lines;
+	int spent;
+} anim;
 
 static struct {
 	struct tex tex[2];
@@ -263,6 +270,11 @@ draw_board(void)
 	int s;
 
 	for (int r = 0; r < BOARD_H; ++r) {
+		// If we're drawing full lines, we make it blink.
+		if (anim.lines >> r & 0x1) {
+			continue;
+		}
+
 		for (int c = 0; c < BOARD_W; ++c) {
 			if (!(s = game.board[r][c]))
 				continue;
@@ -336,6 +348,18 @@ resume(void)
 	pause.enable = 0;
 	game.level = 1;
 	game.lines = 0;
+
+	// TODO: tmp.
+	game.board[19][0] = 1;
+	game.board[19][1] = 1;
+	game.board[19][2] = 1;
+	game.board[19][3] = 1;
+	game.board[19][4] = 1;
+	game.board[19][5] = 1;
+	game.board[19][6] = 1;
+	game.board[19][7] = 1;
+	game.board[19][8] = 0;
+	game.board[19][9] = 1;
 }
 
 static void
@@ -350,8 +374,11 @@ onkey(enum key key)
 			pause.enable = 1;
 		break;
 	case KEY_SELECT:
-		pause.enable = 0;
-		rotate();
+	case KEY_UP:
+		if (pause.enable)
+			pause.enable = 0;
+		else
+			rotate();
 		break;
 	case KEY_RIGHT:
 		move(1, 0);
@@ -371,11 +398,51 @@ onkey(enum key key)
 }
 
 static void
-update(int ticks)
+cleanup(void)
 {
-	if (pause.enable)
-		return;
+	int total;
 
+	anim.lines = 0;
+
+	for (int r = 0; r < BOARD_H; ++r) {
+		total = 0;
+
+		for (int c = 0; c < BOARD_W; ++c)
+			if (game.board[r][c])
+				total++;
+
+		if (total >= 10)
+			anim.lines |= 1 << r;
+	}
+
+	// No lines? Spawn immediately.
+	if (anim.lines == 0)
+		spawn();
+	else
+		sound_play(SOUND_CLEAN);
+}
+
+static void
+update_anim(int ticks)
+{
+	anim.spent += ticks;
+
+	if (anim.spent >= ANIM_DELAY) {
+		anim.spent = 0;
+
+		// Remove all lines.
+		for (int i = 0; i < 20; ++i)
+			if (anim.lines >> i & 0x1)
+				board_pop(game.board, i);
+
+		anim.lines = 0;
+		spawn();
+	}
+}
+
+static void
+update_game(int ticks)
+{
 	game.delay += ticks;
 
 	if (game.delay >= game.fallrate) {
@@ -384,8 +451,20 @@ update(int ticks)
 		// At the bottom? Spawn a new shape otherwise just place the
 		// new position.
 		if (!fall())
-			spawn();
+			cleanup();
 	}
+}
+
+static void
+update(int ticks)
+{
+	if (pause.enable)
+		return;
+
+	if (anim.lines)
+		update_anim(ticks);
+	else
+		update_game(ticks);
 }
 
 static void
