@@ -45,16 +45,8 @@
 
 static struct {
 	struct tex tex[2];
-	int x;
-	int y;
 	int enable;
 } pause;
-
-// Box geometry for stats.
-static struct {
-	int x[2];
-	int y[2];
-} statsgeo;
 
 static struct {
 	int level;
@@ -65,6 +57,27 @@ static struct {
 	struct shape shape_next;
 	Board board;
 } game;
+
+static struct {
+	struct {
+		int x;
+		int y;
+	} pause;
+
+	struct {
+		int x;
+		int y;
+	} stats[2];
+
+	struct {
+		int x;
+		int y;
+		int w;
+		int h;
+		int cw;
+		int ch;
+	} board;
+} geo;
 
 static struct {
 	struct tex tex;
@@ -80,23 +93,14 @@ static struct {
 	[SHAPE_T] = SHAPE_TEX(data_img_block6)
 };
 
-static struct {
-	int x;
-	int y;
-	int w;
-	int h;
-	int cw;
-	int ch;
-} board;
-
 static void
 init_title(void)
 {
 	// Prepare pause label.
 	ui_render(&pause.tex[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, "pause");
 	ui_render(&pause.tex[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "pause");
-	pause.x = (UI_W - pause.tex[0].w) / 2;
-	pause.y = (UI_H - pause.tex[0].h) / 2;
+	geo.pause.x = (UI_W - pause.tex[0].w) / 2;
+	geo.pause.y = (UI_H - pause.tex[0].h) / 2;
 }
 
 static void
@@ -105,7 +109,7 @@ init_stats(void)
 	int h, tw, th;
 
 	// Compute position for stats labels.
-	statsgeo.x[0] = statsgeo.x[1] = UI_W / 9;
+	geo.stats[0].x = geo.stats[1].x = UI_W / 9;
 
 	// Bounding box with some paddings removed.
 	h = (UI_H / 16 * 2) - 10;
@@ -115,8 +119,8 @@ init_stats(void)
 	h -= th * 2;
 	h /= 3;
 
-	statsgeo.y[0] = 5 + h;
-	statsgeo.y[1] = statsgeo.y[0] + th + h;
+	geo.stats[0].y = 5 + h;
+	geo.stats[1].y = geo.stats[0].y + th + h;
 }
 
 static void
@@ -132,42 +136,12 @@ static void
 init_board(void)
 {
 	// Board geometry.
-	board.x = (UI_W / 9);
-	board.y = (UI_H * 2)  / 16;
-	board.w = (UI_W * 7)  / 9;
-	board.h = (UI_H * 13) / 16;
-	board.cw = shapes[1].tex.w;
-	board.ch = shapes[1].tex.h;
-}
-
-static void
-init(void)
-{
-	init_title();
-	init_stats();
-	init_blocks();
-	init_board();
-}
-
-static void
-resume(void)
-{
-	// Select new shapes and positionate the first one.
-	shape_select(&game.shape, SHAPE_RANDOM);
-	shape_select(&game.shape_next, SHAPE_RANDOM);
-
-	game.shape.y = 0;
-	game.shape.x = 3;
-	game.fallrate = FALLRATE_INIT;
-
-	// Apply that shape.
-	board_clear(game.board);
-	board_set(game.board, &game.shape);
-
-	// Disable pause and clear scores.
-	pause.enable = 0;
-	game.level = 1;
-	game.lines = 0;
+	geo.board.x = (UI_W / 9);
+	geo.board.y = (UI_H * 2)  / 16;
+	geo.board.w = (UI_W * 7)  / 9;
+	geo.board.h = (UI_H * 13) / 16;
+	geo.board.cw = shapes[1].tex.w;
+	geo.board.ch = shapes[1].tex.h;
 }
 
 static int
@@ -229,6 +203,142 @@ rotate(void)
 }
 
 static void
+draw_stat(int row, const char *fmt, ...)
+{
+	va_list ap;
+	char buf[128];
+	struct tex tex[2];
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof (buf), fmt, ap);
+	va_end(ap);
+
+	ui_render(&tex[0], UI_FONT_STATS, UI_PALETTE_FG, "%s", buf);
+	ui_render(&tex[1], UI_FONT_STATS, UI_PALETTE_SHADOW, "%s", buf);
+
+	tex_draw(&tex[1], geo.stats[row].x + 1, geo.stats[row].y + 1);
+	tex_draw(&tex[0], geo.stats[row].x, geo.stats[row].y);
+	tex_finish(&tex[0]);
+	tex_finish(&tex[1]);
+}
+
+static void
+draw_stats(void)
+{
+	draw_stat(0, "level %d", game.level);
+	draw_stat(1, "lines %d", game.lines);
+}
+
+static void
+draw_borders(void)
+{
+	// -
+	ui_draw_line(UI_PALETTE_BORDER,
+	    geo.board.x - 1,
+	    geo.board.y - 1,
+	    geo.board.x + geo.board.w + 1,
+	    geo.board.y - 1);
+	ui_draw_line(UI_PALETTE_BORDER,
+	    geo.board.x - 1,
+	    geo.board.y + geo.board.h + 1,
+	    geo.board.x + geo.board.w + 1,
+	    geo.board.y + geo.board.h + 1);
+
+	// |
+	ui_draw_line(UI_PALETTE_BORDER,
+	    geo.board.x - 1,
+	    geo.board.y - 1,
+	    geo.board.x - 1,
+	    geo.board.y + geo.board.h + 1);
+	ui_draw_line(UI_PALETTE_BORDER,
+	    geo.board.x + geo.board.w + 1,
+	    geo.board.y - 1,
+	    geo.board.x + geo.board.w + 1,
+	    geo.board.y + geo.board.h + 1);
+}
+
+static void
+draw_board(void)
+{
+	int s;
+
+	for (int r = 0; r < BOARD_H; ++r) {
+		for (int c = 0; c < BOARD_W; ++c) {
+			if (!(s = game.board[r][c]))
+				continue;
+
+			tex_draw(&shapes[s].tex,
+			    geo.board.x + (c * geo.board.cw),
+			    geo.board.y + (r * geo.board.ch));
+		}
+	}
+}
+
+static int
+fall(void)
+{
+	int ret = 0;
+
+	board_unset(game.board, &game.shape);
+
+	if (can_move(0, 1)) {
+		game.shape.y += 1;
+		ret = 1;
+	}
+
+	board_set(game.board, &game.shape);
+
+	return ret;
+}
+
+static void
+spawn(void)
+{
+	// Move next shape to current and create a new one.
+	game.shape = game.shape_next;
+	game.shape.x = 3;
+	game.shape.y = 0;
+
+	// If we can't spawn, that's dead!
+	if (!board_check(game.board, &game.shape))
+		stris_switch(&state_dead);
+	else {
+		board_set(game.board, &game.shape);
+		shape_select(&game.shape_next, SHAPE_RANDOM);
+	}
+}
+
+static void
+init(void)
+{
+	init_title();
+	init_stats();
+	init_blocks();
+	init_board();
+}
+
+static void
+resume(void)
+{
+	// Select new shapes and positionate the first one.
+	shape_select(&game.shape, SHAPE_RANDOM);
+	shape_select(&game.shape_next, SHAPE_RANDOM);
+
+	game.shape.y = 0;
+	game.shape.x = 3;
+	game.fallrate = FALLRATE_INIT;
+
+	// Apply that shape.
+	board_clear(game.board);
+	board_set(game.board, &game.shape);
+
+	// Disable pause and clear scores.
+	pause.enable = 0;
+	game.level = 1;
+	game.lines = 0;
+}
+
+static void
 onkey(enum key key)
 {
 	switch (key) {
@@ -260,84 +370,6 @@ onkey(enum key key)
 	}
 }
 
-static int
-fall(void)
-{
-	int ret = 0;
-
-	board_unset(game.board, &game.shape);
-
-	if (can_move(0, 1)) {
-		game.shape.y += 1;
-		ret = 1;
-	}
-
-	board_set(game.board, &game.shape);
-
-	return ret;
-}
-
-#if 0
-static inline void
-show(const Board b)
-{
-	printf("      [0] [1] [2] [3] [4] [5] [6] [7] [8] [9]\n");
-
-	for (int r = 0; r < BOARD_H; ++r) {
-		printf("[%2d] = ", r);
-
-		for (int c = 0; c < BOARD_W; ++c)
-			printf("%d,  ", b[r][c]);
-
-		printf("\n");
-	}
-}
-#endif
-
-static void
-spawn(void)
-{
-	// Move next shape to current and create a new one.
-	game.shape = game.shape_next;
-	game.shape.x = 3;
-	game.shape.y = 0;
-
-	// If we can't spawn, that's dead!
-	if (!board_check(game.board, &game.shape))
-		stris_switch(&state_dead);
-	else {
-		board_set(game.board, &game.shape);
-		shape_select(&game.shape_next, SHAPE_RANDOM);
-	}
-	
-
-#if 0
-	show(game.board);
-	// TODO: dead here.
-	printf("We have spawn a new shape with k %d\n", game.shape.k);
-	printf("-- %d %d %d %d\n",
-	    game.shape.def[0][0][0],
-	    game.shape.def[0][0][1],
-	    game.shape.def[0][0][2],
-	    game.shape.def[0][0][3]);
-	printf("-- %d %d %d %d\n",
-	    game.shape.def[0][1][0],
-	    game.shape.def[0][1][1],
-	    game.shape.def[0][1][2],
-	    game.shape.def[0][1][3]);
-	printf("-- %d %d %d %d\n",
-	    game.shape.def[0][2][0],
-	    game.shape.def[0][2][1],
-	    game.shape.def[0][2][2],
-	    game.shape.def[0][2][3]);
-	printf("-- %d %d %d %d\n",
-	    game.shape.def[0][3][0],
-	    game.shape.def[0][3][1],
-	    game.shape.def[0][3][2],
-	    game.shape.def[0][3][3]);
-#endif
-}
-
 static void
 update(int ticks)
 {
@@ -357,85 +389,13 @@ update(int ticks)
 }
 
 static void
-draw_stat(int row, const char *fmt, ...)
-{
-	va_list ap;
-	char buf[128];
-	struct tex tex[2];
-
-	va_start(ap, fmt);
-	vsnprintf(buf, sizeof (buf), fmt, ap);
-	va_end(ap);
-
-	ui_render(&tex[0], UI_FONT_STATS, UI_PALETTE_FG, "%s", buf);
-	ui_render(&tex[1], UI_FONT_STATS, UI_PALETTE_SHADOW, "%s", buf);
-
-	tex_draw(&tex[1], statsgeo.x[row] + 1, statsgeo.y[row] + 1);
-	tex_draw(&tex[0], statsgeo.x[row], statsgeo.y[row]);
-	tex_finish(&tex[0]);
-	tex_finish(&tex[1]);
-}
-
-static void
-draw_stats(void)
-{
-	draw_stat(0, "level %d", game.level);
-	draw_stat(1, "lines %d", game.lines);
-}
-
-static void
-draw_borders(void)
-{
-	// -
-	ui_draw_line(UI_PALETTE_BORDER,
-	    board.x - 1,
-	    board.y - 1,
-	    board.x + board.w + 1,
-	    board.y - 1);
-	ui_draw_line(UI_PALETTE_BORDER,
-	    board.x - 1,
-	    board.y + board.h + 1,
-	    board.x + board.w + 1,
-	    board.y + board.h + 1);
-
-	// |
-	ui_draw_line(UI_PALETTE_BORDER,
-	    board.x - 1,
-	    board.y - 1,
-	    board.x - 1,
-	    board.y + board.h + 1);
-	ui_draw_line(UI_PALETTE_BORDER,
-	    board.x + board.w + 1,
-	    board.y - 1,
-	    board.x + board.w + 1,
-	    board.y + board.h + 1);
-}
-
-static void
-draw_board(void)
-{
-	int s;
-
-	for (int r = 0; r < BOARD_H; ++r) {
-		for (int c = 0; c < BOARD_W; ++c) {
-			if (!(s = game.board[r][c]))
-				continue;
-
-			tex_draw(&shapes[s].tex,
-			    board.x + (c * board.cw),
-			    board.y + (r * board.ch));
-		}
-	}
-}
-
-static void
 draw(void)
 {
 	ui_clear(UI_PALETTE_MENU_BG);
 
 	if (pause.enable) {
-		tex_draw(&pause.tex[1], pause.x + 1, pause.y + 1);
-		tex_draw(&pause.tex[0], pause.x, pause.y);
+		tex_draw(&pause.tex[1], geo.pause.x + 1, geo.pause.y + 1);
+		tex_draw(&pause.tex[0], geo.pause.x, geo.pause.y);
 	} else {
 		draw_stats();
 		draw_borders();
