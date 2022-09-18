@@ -20,6 +20,7 @@
 
 #include "key.h"
 #include "sound.h"
+#include "state-dead.h"
 #include "state-menu.h"
 #include "state-play.h"
 #include "state-splash.h"
@@ -44,6 +45,7 @@ static struct {
 };
 
 static struct state *states[] = {
+	&state_dead,
 	&state_menu,
 	&state_play,
 	&state_splash

@@ -29,6 +29,7 @@
 #include "key.h"
 #include "shape.h"
 #include "sound.h"
+#include "state-dead.h"
 #include "state-menu.h"
 #include "state-play.h"
 #include "state.h"
@@ -140,30 +141,30 @@ init_board(void)
 }
 
 static void
-init_game(void)
-{
-	shape_select(&game.shape, SHAPE_RANDOM);
-	shape_select(&game.shape_next, SHAPE_RANDOM);
-
-	game.shape.x = 3;
-	game.fallrate = FALLRATE_INIT;
-
-	board_set(game.board, &game.shape);
-}
-
-static void
 init(void)
 {
 	init_title();
 	init_stats();
 	init_blocks();
 	init_board();
-	init_game();
 }
 
 static void
 resume(void)
 {
+	// Select new shapes and positionate the first one.
+	shape_select(&game.shape, SHAPE_RANDOM);
+	shape_select(&game.shape_next, SHAPE_RANDOM);
+
+	game.shape.y = 0;
+	game.shape.x = 3;
+	game.fallrate = FALLRATE_INIT;
+
+	// Apply that shape.
+	board_clear(game.board);
+	board_set(game.board, &game.shape);
+
+	// Disable pause and clear scores.
 	pause.enable = 0;
 	game.level = 1;
 	game.lines = 0;
@@ -184,9 +185,6 @@ can_move(int dx, int dy)
 static void
 move(int dx, int dy)
 {
-	(void)dx;
-	(void)dy;
-
 	// First, remove the current shape to avoid collision with it.
 	board_unset(game.board, &game.shape);
 
@@ -209,6 +207,9 @@ drop(void)
 
 	board_set(game.board, &game.shape);
 	sound_play(SOUND_DROP);
+
+	// Make the game spawn immediately.
+	game.delay += game.fallrate;
 }
 
 static void
@@ -301,8 +302,14 @@ spawn(void)
 	game.shape.x = 3;
 	game.shape.y = 0;
 
-	board_set(game.board, &game.shape);
-	shape_select(&game.shape_next, SHAPE_RANDOM);
+	// If we can't spawn, that's dead!
+	if (!board_check(game.board, &game.shape))
+		stris_switch(&state_dead);
+	else {
+		board_set(game.board, &game.shape);
+		shape_select(&game.shape_next, SHAPE_RANDOM);
+	}
+	
 
 #if 0
 	show(game.board);
