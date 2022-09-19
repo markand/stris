@@ -60,7 +60,16 @@ void
 ui_clear(enum ui_palette);
 
 void
+ui_update_background(int);
+
+void
+ui_draw_background(void);
+
+void
 ui_draw_line(enum ui_palette, int, int, int, int);
+
+void
+ui_draw_rect(enum ui_palette, int, int, int, int);
 
 void
 ui_present(void);

@@ -70,6 +70,21 @@ static struct {
 	}
 };
 
+// https://lospec.com/palette-list/aliengarden-32
+// Background colors for game ramp.
+static const unsigned long ramp[] = {
+	0x33984bff,
+	0x1e6f50ff,
+	0x0098dcff,
+	0x0069aaff,
+	0xee8201ff,
+	0xc1460fff,
+	0x801224ff,
+	0x590924ff,
+	0x2a2f4eff,
+	0x1a1932ff
+};
+
 static TTF_Font *
 load_font(const unsigned char *data, size_t datasz, int size)
 {
@@ -183,11 +198,42 @@ ui_clear(enum ui_palette color)
 	SDL_RenderClear(ui_rdr);
 }
 
+static int bx;
+static int by;
+static int bw = UI_W / 10;
+
+void
+ui_update_background(int ticks)
+{
+	// 2 px | 100ms
+	// ? px | ticks
+	int f = (ticks * 2) / 100;
+
+	bx -= f;
+	by -= f;
+}
+
+void
+ui_draw_background(void)
+{
+#if 0
+	for (int r = 0; r < 10; ++i)
+		for (int c = 0; c < 
+#endif
+}
+
 void
 ui_draw_line(enum ui_palette color, int x1, int y1, int x2, int y2)
 {
 	set_color(color);
 	SDL_RenderDrawLine(ui_rdr, x1, y1, x2, y2);
+}
+
+void
+ui_draw_rect(enum ui_palette color, int x, int y, int w, int h)
+{
+	set_color(color);
+	SDL_RenderDrawRect(ui_rdr, &(const SDL_Rect){x, y, w, h});
 }
 
 void
