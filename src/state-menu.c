@@ -24,6 +24,7 @@
 #include "stris.h"
 #include "tex.h"
 #include "ui.h"
+#include "util.h"
 
 /*
  * View is as following:
@@ -48,21 +49,14 @@ static struct {
 } title;
 
 static struct {
-	struct menuitem menu[4];
-	int h;
+	struct menuitem items[4];
 	int sel;
-} main;
-
-static inline void
-move(struct menuitem *m, int y)
-{
-	menuitem_move(m, (UI_W - m->w) / 2, y);
-}
+} menu;
 
 static void
 handle_select(void)
 {
-	switch (main.sel) {
+	switch (menu.sel) {
 	case 0:
 		stris_switch(&state_play);
 		break;
@@ -77,8 +71,6 @@ handle_select(void)
 static void
 init(void)
 {
-	int menuh, menuv, menuy;
-
 	// Title.
 	ui_render(&title.tex[0], UI_FONT_TITLE, UI_PALETTE_FG, "stris");
 	ui_render(&title.tex[1], UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
@@ -86,36 +78,37 @@ init(void)
 	title.h = (UI_H * 4) / 16;
 	title.y = (title.h - title.tex[0].h) / 2;
 
-	// Main content.
-	menuitem_init(&main.menu[0], "Play");
-	menuitem_init(&main.menu[1], "Scores");
-	menuitem_init(&main.menu[2], "Settings");
-	menuitem_init(&main.menu[3], "Quit");
+	// Menu items.
+	menuitem_init(&menu.items[0], "Play");
+	menuitem_init(&menu.items[1], "Scores");
+	menuitem_init(&menu.items[2], "Settings");
+	menuitem_init(&menu.items[3], "Quit");
 
-	// Center items. 
-	main.h = UI_H - title.h;
-	menuh = main.menu[0].h * 4;             // Space required by all elements.
-	menuh = main.h - menuh;                 // Total empty space.
-	menuv = menuh / 5;                      // Vertical space between menu items.
-	menuy = title.h + menuv;                // Start position of first item.
+	// Vertically align items.
+	valign(UI_H - title.h, menu.items[0].h, title.h, (int *[]){
+		&menu.items[0].y,
+		&menu.items[1].y,
+		&menu.items[2].y,
+		&menu.items[3].y,
+		NULL
+	});
 
-	for (size_t i = 0; i < 4; ++i) {
-		move(&main.menu[i], menuy);
-		menuy += main.menu[i].h + menuv;
-	}
+	// Center them horizontally and add vertical padding.
+	for (size_t i = 0; i < LEN(menu.items); ++i)
+		hcenter(UI_W, menu.items[i].w, &menu.items[i].x);
 }
 
 static void
 resume(void)
 {
-	main.sel = 0;
-	menuitem_select(&main.menu[0]);
+	menu.sel = 0;
+	menuitem_select(&menu.items[0]);
 }
 
 static void
 onkey(enum key key)
 {
-	int newsel = main.sel;
+	int newsel = menu.sel;
 
 	switch (key) {
 	case KEY_UP:
@@ -138,17 +131,17 @@ onkey(enum key key)
 	}
 
 	// We also need to reset old one.
-	if (newsel != main.sel) {
-		menuitem_unselect(&main.menu[main.sel]);
-		menuitem_select(&main.menu[main.sel = newsel]);
+	if (newsel != menu.sel) {
+		menuitem_unselect(&menu.items[menu.sel]);
+		menuitem_select(&menu.items[menu.sel = newsel]);
 	}
 }
 
 static void
 update(int ticks)
 {
-	for (size_t i = 0; i < 4; ++i)
-		menuitem_update(&main.menu[i], ticks);
+	for (size_t i = 0; i < LEN(menu.items); ++i)
+		menuitem_update(&menu.items[i], ticks);
 }
 
 static void
@@ -159,8 +152,8 @@ draw(void)
 	tex_draw(&title.tex[1], title.x + 1, title.y + 1);
 	tex_draw(&title.tex[0], title.x, title.y);
 
-	for (size_t i = 0; i < 4; ++i)
-		menuitem_draw(&main.menu[i]);
+	for (size_t i = 0; i < LEN(menu.items); ++i)
+		menuitem_draw(&menu.items[i]);
 
 	ui_present();
 }

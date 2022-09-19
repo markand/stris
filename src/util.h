@@ -30,4 +30,10 @@
 void
 die(const char *, ...);
 
+void
+valign(int, int, int, int *[]);
+
+void
+hcenter(int, int, int *);
+
 #endif /* !STRIS_UTIL_H */

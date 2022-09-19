@@ -18,8 +18,9 @@
 
 .POSIX:
 
-CC=                     cc
-CFLAGS=                 -O3 -DNDEBUG
+# At the moment clang is the only one aware enough of C23 features.
+CC=                     clang
+CFLAGS=                 -std=c2x -O3 -DNDEBUG
 
 SDL2_INCS=              `pkg-config --cflags sdl2`
 SDL2_LIBS=              `pkg-config --libs sdl2`
