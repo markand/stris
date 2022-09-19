@@ -461,6 +461,8 @@ update(int ticks)
 	if (pause.enable)
 		return;
 
+	ui_update_background(UI_PALETTE_LEVEL1 + (game.level - 1), ticks);
+
 	if (anim.lines)
 		update_anim(ticks);
 	else
@@ -471,6 +473,7 @@ static void
 draw(void)
 {
 	ui_clear(UI_PALETTE_MENU_BG);
+	ui_draw_background();
 
 	if (pause.enable) {
 		tex_draw(&pause.tex[1], geo.pause.x + 1, geo.pause.y + 1);

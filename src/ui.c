@@ -70,21 +70,6 @@ static struct {
 	}
 };
 
-// https://lospec.com/palette-list/aliengarden-32
-// Background colors for game ramp.
-static const unsigned long ramp[] = {
-	0x33984bff,
-	0x1e6f50ff,
-	0x0098dcff,
-	0x0069aaff,
-	0xee8201ff,
-	0xc1460fff,
-	0x801224ff,
-	0x590924ff,
-	0x2a2f4eff,
-	0x1a1932ff
-};
-
 static TTF_Font *
 load_font(const unsigned char *data, size_t datasz, int size)
 {
@@ -198,28 +183,74 @@ ui_clear(enum ui_palette color)
 	SDL_RenderClear(ui_rdr);
 }
 
-static int bx;
-static int by;
-static int bw = UI_W / 10;
+static struct {
+	int x;
+	int y;
+	int w;
+	int h;
+	int spent;
+	enum ui_palette color;
+} bg = {
+	.w = UI_W / 10,
+	.h = UI_W / 10,
+	.color = UI_PALETTE_MENU_BG
+};
+
+#define CR(c) ((c >> 24) & 0xff)
+#define CG(c) ((c >> 16) & 0xff)
+#define CB(c) ((c >>  8) & 0xff)
+#define CHEX(r, g, b) ((unsigned long)r << 24 | (unsigned long)g << 16 | (unsigned long)b << 8 | 0xff)
 
 void
-ui_update_background(int ticks)
+ui_update_background(enum ui_palette color, int ticks)
 {
-	// 2 px | 100ms
-	// ? px | ticks
-	int f = (ticks * 2) / 100;
+	int rcur, gcur, bcur;
+	int rnxt, gnxt, bnxt;
 
-	bx -= f;
-	by -= f;
+	bg.spent += ticks;
+
+	if (bg.spent >= 50) {
+		bg.spent = 0;
+		bg.x--;
+		bg.y--;
+
+		// Also update the color if we haven't reached yet.
+		rcur = CR(bg.color); rnxt = CR(color);
+		gcur = CG(bg.color); gnxt = CG(color);
+		bcur = CB(bg.color); bnxt = CB(color);
+
+		if (bg.color != color) {
+			rcur += (rcur < rnxt) ? 1 : -1;
+			gcur += (gcur < gnxt) ? 1 : -1;
+			bcur += (bcur < bnxt) ? 1 : -1;
+
+			bg.color = CHEX(rcur, gcur, bcur);
+		}
+	}
+
+	if (bg.x == -bg.w)
+		bg.x = bg.y = 0;
 }
 
 void
 ui_draw_background(void)
 {
-#if 0
-	for (int r = 0; r < 10; ++i)
-		for (int c = 0; c < 
-#endif
+	int x, y;
+	enum ui_palette color = bg.color;
+
+	ui_draw_rect(color, 0, 0, UI_W, UI_H);
+
+	color = (((color >> 24) & 0xff) - 10) << 24 | 
+	        (((color >> 16) & 0xff) - 10) << 16 |
+	        (((color >>  8) & 0xff) - 10) << 8  | 0xff;
+
+	for (int r = 0; r < 21; ++r) {
+		for (int c = 0; c < 11; c += 2) {
+			x = (bg.x + bg.w * c) + (r % 2 == 0 ? bg.w : 0);
+			y = (bg.y + bg.h * r);
+			ui_draw_rect(color, x, y, bg.w, bg.h);
+		}
+	}
 }
 
 void
@@ -233,7 +264,7 @@ void
 ui_draw_rect(enum ui_palette color, int x, int y, int w, int h)
 {
 	set_color(color);
-	SDL_RenderDrawRect(ui_rdr, &(const SDL_Rect){x, y, w, h});
+	SDL_RenderFillRect(ui_rdr, &(const SDL_Rect){x, y, w, h});
 }
 
 void
