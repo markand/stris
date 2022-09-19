@@ -61,7 +61,7 @@ static struct {
 	[UI_FONT_MENU_SMALL] = {
 		.data = data_fonts_dejavu_sans,
 		.datasz = sizeof (data_fonts_dejavu_sans),
-		.size = 40
+		.size = 30
 	},
 	[UI_FONT_STATS] = {
 		.data = data_fonts_paradroid_mono_light,

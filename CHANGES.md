@@ -1,4 +1,4 @@
-STris 1.0.0 2022-??-??
+STris 0.5.0 2022-??-??
 ----------------------
 
 - Almost complete rewrite in C23.

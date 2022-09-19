@@ -38,13 +38,14 @@ include config.mk
 
 PROG=                   src/stris
 SRCS=                   src/board.c \
-                        src/menuitem.c \
+                        src/menu.c \
                         src/score.c \
                         src/shape.c \
                         src/sound.c \
                         src/state-dead.c \
                         src/state-menu.c \
                         src/state-play.c \
+                        src/state-settings.c \
                         src/state-splash.c \
                         src/state.c \
                         src/tex.c \

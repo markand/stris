@@ -25,6 +25,7 @@
 #include "state-dead.h"
 #include "state-menu.h"
 #include "state-play.h"
+#include "state-settings.h"
 #include "state-splash.h"
 #include "state.h"
 #include "stris.h"
@@ -46,10 +47,16 @@ static struct {
 #endif
 };
 
+struct sconf sconf ={
+	.sound = 1,
+	.music = 1
+};
+
 static struct state *states[] = {
 	&state_dead,
 	&state_menu,
 	&state_play,
+	&state_settings,
 	&state_splash
 };
 

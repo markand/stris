@@ -1,5 +1,5 @@
 /*
- * menuitem.h -- menu item
+ * menu.h -- menu helpers
  *
  * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
  *
@@ -16,37 +16,56 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_MENUITEM_H
-#define STRIS_MENUITEM_H
+#ifndef STRIS_MENU_H
+#define STRIS_MENU_H
 
-struct menuitem {
+#include <stddef.h>
+
+#include "ui.h"
+
+enum key;
+
+struct menu_item {
+	// User editable fields.
+	const char *text;
+	enum ui_font font;
+
+	// Private fields.
 	int x;
 	int y;
 	int w;
 	int h;
-	int selected;
 	int spent;
+	int selected;
 	unsigned long colorcur;
 	unsigned long colordst;
-	const char *text;
+};
+
+struct menu {
+	int halign;
+	int valign;
+	int x;
+	int y;
+	int w;
+	int h;
+	size_t selection;
+	struct menu_item *items;
+	size_t itemsz;
 };
 
 void
-menuitem_init(struct menuitem *, const char *);
+menu_init(struct menu *);
 
 void
-menuitem_select(struct menuitem *);
+menu_reset(struct menu *);
+
+int
+menu_onkey(struct menu *, enum key);
 
 void
-menuitem_unselect(struct menuitem *);
+menu_update(struct menu *, int);
 
 void
-menuitem_move(struct menuitem *, int, int);
+menu_draw(const struct menu *);
 
-void
-menuitem_update(struct menuitem *, int);
-
-void
-menuitem_draw(const struct menuitem *);
-
-#endif /* !STRIS_MENUITEM_H */
+#endif // !STRIS_MENU_H/

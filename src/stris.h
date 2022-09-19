@@ -21,6 +21,11 @@
 
 struct state;
 
+extern struct sconf {
+	int sound;
+	int music;
+} sconf;
+
 void
 stris_switch(struct state *);
 

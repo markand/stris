@@ -1,5 +1,5 @@
 /*
- * util.h -- utilities
+ * state-settings.h -- game settings
  *
  * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
  *
@@ -16,21 +16,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_UTIL_H
-#define STRIS_UTIL_H
+#ifndef STRIS_STATE_SETTINGS_H
+#define STRIS_STATE_SETTINGS_H
 
-#include <stdlib.h>
+extern struct state state_settings;
 
-#define STR(s)          XSTR(s)
-#define XSTR(s)         #s
-
-#define NRAND(min, max) ((rand() % (max - min + 1)) + min)
-#define LEN(x)          (sizeof (x) / sizeof (x[0]))
-
-void
-die(const char *, ...);
-
-void
-alend(int, int, int, int *);
-
-#endif /* !STRIS_UTIL_H */
+#endif // !STRIS_STATE_SETTINGS_H */

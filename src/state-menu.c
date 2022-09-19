@@ -17,9 +17,10 @@
  */
 
 #include "key.h"
-#include "menuitem.h"
+#include "menu.h"
 #include "state-menu.h"
 #include "state-play.h"
+#include "state-settings.h"
 #include "state.h"
 #include "stris.h"
 #include "tex.h"
@@ -41,6 +42,14 @@
  * +----------------+     -v-
  */
 
+enum state_menu {
+	STATE_MENU_PLAY,
+	STATE_MENU_SCORES,
+	STATE_MENU_SETTINGS,
+	STATE_MENU_QUIT,
+	STATE_MENU_LAST
+};
+
 static struct {
 	struct tex tex[2];
 	int x;
@@ -48,25 +57,29 @@ static struct {
 	int h;
 } title;
 
-static struct {
-	struct menuitem items[4];
-	int sel;
-} menu;
-
-static void
-handle_select(void)
-{
-	switch (menu.sel) {
-	case 0:
-		stris_switch(&state_play);
-		break;
-	case 3:
-		stris_quit();
-		break;
-	default:
-		break;
+static struct menu_item items[STATE_MENU_LAST] = {
+	[STATE_MENU_PLAY] = {
+		.text = "Play",
+		.font = UI_FONT_MENU,
+	},
+	[STATE_MENU_SCORES] = {
+		.text = "Scores",
+		.font = UI_FONT_MENU,
+	},
+	[STATE_MENU_SETTINGS] = {
+		.text = "Settings",
+		.font = UI_FONT_MENU
+	},
+	[STATE_MENU_QUIT] = {
+		.text = "Quit",
+		.font = UI_FONT_MENU
 	}
-}
+};
+
+static struct menu menu = {
+	.items = items,
+	.itemsz = STATE_MENU_LAST
+};
 
 static void
 init(void)
@@ -78,70 +91,44 @@ init(void)
 	title.h = (UI_H * 4) / 16;
 	title.y = (title.h - title.tex[0].h) / 2;
 
-	// Menu items.
-	menuitem_init(&menu.items[0], "Play");
-	menuitem_init(&menu.items[1], "Scores");
-	menuitem_init(&menu.items[2], "Settings");
-	menuitem_init(&menu.items[3], "Quit");
-
-	// Vertically align items.
-	valign(UI_H - title.h, menu.items[0].h, title.h, (int *[]){
-		&menu.items[0].y,
-		&menu.items[1].y,
-		&menu.items[2].y,
-		&menu.items[3].y,
-		NULL
-	});
-
-	// Center them horizontally and add vertical padding.
-	for (size_t i = 0; i < LEN(menu.items); ++i)
-		hcenter(UI_W, menu.items[i].w, &menu.items[i].x);
+	// Main menu.
+	menu.y = title.h;
+	menu.w = UI_W;
+	menu.h = UI_H - title.h;
+	menu_init(&menu);
 }
 
 static void
 resume(void)
 {
-	menu.sel = 0;
-	menuitem_select(&menu.items[0]);
+	menu_reset(&menu);
 }
 
 static void
 onkey(enum key key)
 {
-	int newsel = menu.sel;
+	if (!menu_onkey(&menu, key))
+		return;
 
-	switch (key) {
-	case KEY_UP:
-		if (newsel == 0)
-			newsel = 3;
-		else
-			newsel--;
+	switch (menu.selection) {
+	case STATE_MENU_PLAY:
+		stris_switch(&state_play);
 		break;
-	case KEY_DOWN:
-		if (newsel >= 3)
-			newsel = 0;
-		else
-			newsel++;
+	case STATE_MENU_SETTINGS:
+		stris_switch(&state_settings);
 		break;
-	case KEY_SELECT:
-		handle_select();
+	case STATE_MENU_QUIT:
+		stris_quit();
 		break;
 	default:
 		break;
-	}
-
-	// We also need to reset old one.
-	if (newsel != menu.sel) {
-		menuitem_unselect(&menu.items[menu.sel]);
-		menuitem_select(&menu.items[menu.sel = newsel]);
 	}
 }
 
 static void
 update(int ticks)
 {
-	for (size_t i = 0; i < LEN(menu.items); ++i)
-		menuitem_update(&menu.items[i], ticks);
+	menu_update(&menu, ticks);
 }
 
 static void
@@ -152,9 +139,7 @@ draw(void)
 	tex_draw(&title.tex[1], title.x + 1, title.y + 1);
 	tex_draw(&title.tex[0], title.x, title.y);
 
-	for (size_t i = 0; i < LEN(menu.items); ++i)
-		menuitem_draw(&menu.items[i]);
-
+	menu_draw(&menu);
 	ui_present();
 }
 

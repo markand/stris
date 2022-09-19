@@ -36,27 +36,17 @@ die(const char *fmt, ...)
 }
 
 void
-valign(int h, int elemh, int pady, int *ys[])
-{
-	assert(ys);
-
-	size_t total = 0;
-	int hv;
-
-	for (size_t i = 0; ys[i]; ++i)
-		total++;
-
-	// Spacing between all elements.
-	hv = (h - (elemh * total)) / (total + 1);
-
-	for (size_t i = 0; ys[i]; ++i)
-		*ys[i] = pady + (((i + 1) * hv) + (i * elemh));
-}
-
-void
-hcenter(int pw, int w, int *x)
+alcenter(int pw, int w, int *x)
 {
 	assert(x);
 
 	*x = (pw - w) / 2;
+}
+
+void
+alend(int pad, int pw, int w, int *x)
+{
+	assert(x);
+
+	*x = pw - w - pad;
 }
