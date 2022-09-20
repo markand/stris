@@ -61,6 +61,26 @@ tex_draw(struct tex *t, int x, int y)
 }
 
 void
+tex_scale(struct tex *t, int x, int y, int w, int h)
+{
+	assert(t);
+	assert(t->handle);
+
+	const SDL_Rect rsrc = {
+		.w = t->w,
+		.h = t->h
+	};
+	const SDL_Rect rdst = {
+		.x = x,
+		.y = y,
+		.w = w,
+		.h = h
+	};
+
+	SDL_RenderCopy(ui_rdr, t->handle, &rsrc, &rdst);
+}
+
+void
 tex_finish(struct tex *t)
 {
 	assert(t);

@@ -34,6 +34,9 @@ void
 tex_draw(struct tex *, int, int);
 
 void
+tex_scale(struct tex *, int, int, int, int);
+
+void
 tex_finish(struct tex *);
 
 #endif /* !STRIS_TEX_H */

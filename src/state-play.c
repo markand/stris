@@ -66,22 +66,24 @@ static struct {
 
 static struct {
 	struct {
-		int x;
-		int y;
+		int x, y, w, h;
+	} header;
+
+	struct {
+		int x, y;
 	} pause;
 
 	struct {
-		int x;
-		int y;
+		int x, y, s;
+	} shape;
+
+	struct {
+		int x, y;
 	} stats[2];
 
 	struct {
-		int x;
-		int y;
-		int w;
-		int h;
-		int cw;
-		int ch;
+		int x, y, w, h;
+		int cw, ch;
 	} board;
 } geo;
 
@@ -114,13 +116,28 @@ static const unsigned long ramp[] = {
 };
 
 static void
-init_title(void)
+init_pause(void)
 {
 	// Prepare pause label.
 	ui_render(&pause.tex[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, "pause");
 	ui_render(&pause.tex[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "pause");
 	geo.pause.x = (UI_W - pause.tex[0].w) / 2;
 	geo.pause.y = (UI_H - pause.tex[0].h) / 2;
+}
+
+static void
+init_header(void)
+{
+	// Bounding box with some paddings removed.
+	geo.header.x = (UI_W / 9);
+	geo.header.y = 10;
+	geo.header.w = (UI_W * 7)  / 9;
+	geo.header.h = (UI_H / 16 * 2) - 10;
+
+	// Bounding box for next shape.
+	geo.shape.s = geo.header.h;
+	geo.shape.x = geo.header.x + geo.header.w - geo.shape.s;
+	geo.shape.y = geo.header.y;
 }
 
 static void
@@ -131,11 +148,9 @@ init_stats(void)
 	// Compute position for stats labels.
 	geo.stats[0].x = geo.stats[1].x = UI_W / 9;
 
-	// Bounding box with some paddings removed.
-	h = (UI_H / 16 * 2) - 10;
-
 	// We need to compute text height.
 	ui_clip(UI_FONT_STATS, &tw, &th, "lilou");
+	h = geo.header.h;
 	h -= th * 2;
 	h /= 3;
 
@@ -156,10 +171,11 @@ static void
 init_board(void)
 {
 	// Board geometry.
-	geo.board.x = (UI_W / 9);
+	geo.board.x = geo.header.x;
 	geo.board.y = (UI_H * 2)  / 16;
-	geo.board.w = (UI_W * 7)  / 9;
+	geo.board.w = geo.header.w;
 	geo.board.h = (UI_H * 13) / 16;
+	
 	geo.board.cw = shapes[1].tex.w;
 	geo.board.ch = shapes[1].tex.h;
 }
@@ -293,9 +309,8 @@ draw_board(void)
 
 	for (int r = 0; r < BOARD_H; ++r) {
 		// If we're drawing full lines, we make it blink.
-		if (anim.lines >> r & 0x1) {
+		if (anim.lines >> r & 0x1)
 			continue;
-		}
 
 		for (int c = 0; c < BOARD_W; ++c) {
 			if (!(s = game.board[r][c]))
@@ -306,6 +321,28 @@ draw_board(void)
 			    geo.board.y + (r * geo.board.ch));
 		}
 	}
+}
+
+static void
+draw_next(void)
+{
+	int wh;
+
+	// Individual cell size.
+	wh = geo.shape.s / 4;
+
+	for (int r = 0; r < 4; ++r) {
+		for (int c = 0; c < 4; ++c) {
+			if (!game.shape_next.def[0][r][c])
+				continue;
+
+			tex_scale(&shapes[game.shape_next.k].tex,
+			    geo.shape.x + (c * wh),
+			    geo.shape.y + (r * wh),
+			    wh, wh);
+		}
+	}
+
 }
 
 static int
@@ -345,7 +382,8 @@ spawn(void)
 static void
 init(void)
 {
-	init_title();
+	init_pause();
+	init_header();
 	init_stats();
 	init_blocks();
 	init_board();
@@ -495,6 +533,7 @@ draw(void)
 		draw_stats();
 		draw_borders();
 		draw_board();
+		draw_next();
 	}
 
 	ui_present();
