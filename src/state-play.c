@@ -99,6 +99,20 @@ static struct {
 	[SHAPE_T] = SHAPE_TEX(data_img_block6)
 };
 
+// https://lospec.com/palette-list/aliengarden-32
+static const unsigned long ramp[] = {
+	0x33984bff,
+	0x1e6f50ff,
+	0x0098dcff,
+	0x0069aaff,
+	0xee8201ff,
+	0xc1460fff,
+	0x801224ff,
+	0x590924ff,
+	0x2a2f4eff,
+	0x1a1932ff
+};
+
 static void
 init_title(void)
 {
@@ -453,20 +467,6 @@ update_game(int ticks)
 			cleanup();
 	}
 }
-
-// https://lospec.com/palette-list/aliengarden-32
-static const unsigned long ramp[] = {
-	0x33984bff,
-	0x1e6f50ff,
-	0x0098dcff,
-	0x0069aaff,
-	0xee8201ff,
-	0xc1460fff,
-	0x801224ff,
-	0x590924ff,
-	0x2a2f4eff,
-	0x1a1932ff
-};
 
 static void
 update(int ticks)

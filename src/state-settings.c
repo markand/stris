@@ -111,12 +111,14 @@ static void
 update(int ticks)
 {
 	menu_update(&menu, ticks);
+	ui_update_background(UI_PALETTE_MENU_BG, ticks);
 }
 
 static void
 draw(void)
 {
 	ui_clear(UI_PALETTE_MENU_BG);
+	ui_draw_background();
 	menu_draw(&menu);
 
 	draw_val(0, sconf.sound);

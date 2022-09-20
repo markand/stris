@@ -30,7 +30,7 @@
 void
 die(const char *, ...);
 
-void
-alend(int, int, int, int *);
+long long int
+clamp(long long int, long long int, long long int);
 
 #endif /* !STRIS_UTIL_H */

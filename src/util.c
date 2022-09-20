@@ -35,18 +35,8 @@ die(const char *fmt, ...)
 	exit(1);
 }
 
-void
-alcenter(int pw, int w, int *x)
+long long int
+clamp(long long int v, long long int min, long long int max)
 {
-	assert(x);
-
-	*x = (pw - w) / 2;
-}
-
-void
-alend(int pad, int pw, int w, int *x)
-{
-	assert(x);
-
-	*x = pw - w - pad;
+	return v < min ? min : v > max ? max : v;
 }

@@ -230,15 +230,22 @@ ui_update_background(enum ui_palette color, int ticks)
 void
 ui_draw_background(void)
 {
-	int x, y;
+	int x, y, r, g, b;
 	enum ui_palette color = bg.color;
 
 	ui_draw_rect(color, 0, 0, UI_W, UI_H);
 
+#if 0
 	color = (CR(color) - 10) << 24 | 
 	        (CG(color) - 10) << 16 |
 	        (CB(color) - 10) << 8  |
 		(CA(color));
+#endif
+	// Darken color.
+	r = clamp(CR(color) - 10, 0, 255);
+	g = clamp(CG(color) - 10, 0, 255);
+	b = clamp(CB(color) - 10, 0, 255);
+	color = CHEX(r, g, b);
 
 	for (int r = 0; r < 21; ++r) {
 		for (int c = 0; c < 11; c += 2) {
