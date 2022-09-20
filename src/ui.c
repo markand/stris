@@ -26,8 +26,7 @@
 
 #include "fonts/actionj.h"
 #include "fonts/cartoon-relief.h"
-#include "fonts/dejavu-sans.h"
-#include "fonts/paradroid-mono-light.h"
+#include "fonts/instruction.h"
 #include "fonts/typography-ties.h"
 
 #include "ui.h"
@@ -78,13 +77,13 @@ static struct {
 		.size = 60
 	},
 	[UI_FONT_MENU_SMALL] = {
-		.data = data_fonts_dejavu_sans,
-		.datasz = sizeof (data_fonts_dejavu_sans),
+		.data = data_fonts_instruction,
+		.datasz = sizeof (data_fonts_instruction),
 		.size = 30
 	},
 	[UI_FONT_STATS] = {
-		.data = data_fonts_paradroid_mono_light,
-		.datasz = sizeof (data_fonts_paradroid_mono_light),
+		.data = data_fonts_instruction,
+		.datasz = sizeof (data_fonts_instruction),
 		.size = 18
 	}
 };

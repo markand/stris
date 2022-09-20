@@ -57,9 +57,7 @@ DEPS=                   ${SRCS:.c=.d}
 
 DATA=                   data/fonts/actionj.h \
                         data/fonts/cartoon-relief.h \
-                        data/fonts/dejavu-sans.h \
-                        data/fonts/go-boom.h \
-                        data/fonts/paradroid-mono-light.h \
+                        data/fonts/instruction.h \
                         data/fonts/typography-ties.h \
                         data/img/block1.h \
                         data/img/block2.h \
@@ -90,7 +88,7 @@ LIBS=                   ${SDL2_LIBS} \
                         ${SDL2_TTF_LIBS}
 
 .SUFFIXES:
-.SUFFIXES: .h .o .c .png .ttf .wav
+.SUFFIXES: .h .o .c .otf .png .ttf .wav
 
 all: ${PROG}
 
@@ -100,7 +98,7 @@ all: ${PROG}
 .c.o:
 	${CC} ${INCS} ${CFLAGS} -MMD -c $< -o $@
 
-.png.h .ttf.h .wav.h:
+.otf.h .png.h .ttf.h .wav.h:
 	extern/bcc/bcc -sc0 $< $< > $@
 
 -include ${DEPS}
