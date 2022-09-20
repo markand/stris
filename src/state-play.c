@@ -39,6 +39,7 @@
 #include "util.h"
 
 #define ANIM_DELAY 1000
+#define ANIM_BLINK 100
 
 #define FALLRATE_INIT 900
 #define FALLRATE_DECR 74
@@ -48,6 +49,8 @@
 static struct {
 	int lines;
 	int spent;
+	int blink;
+	int blinkdelay;
 } anim;
 
 static struct {
@@ -324,7 +327,7 @@ draw_board(void)
 
 	for (int r = 0; r < BOARD_H; ++r) {
 		// If we're drawing full lines, we make it blink.
-		if (anim.lines >> r & 0x1)
+		if (anim.lines >> r & 0x1 && anim.blink)
 			continue;
 
 		for (int c = 0; c < BOARD_W; ++c) {
@@ -422,6 +425,9 @@ resume(void)
 	// Disable pause and clear scores.
 	pause.enable = 0;
 	game.lines = 0;
+
+	// Cleanup animation.
+	memset(&anim, 0, sizeof (anim));
 }
 
 static void
@@ -493,8 +499,16 @@ update_anim(int ticks)
 {
 	anim.spent += ticks;
 
+	// Make the line blink.
+	anim.blinkdelay += ticks;
+
+	if (anim.blinkdelay >= ANIM_BLINK) {
+		anim.blink = !anim.blink;
+		anim.blinkdelay = 0;
+	}
+
 	if (anim.spent >= ANIM_DELAY) {
-		anim.spent = 0;
+		anim.spent = anim.blink = anim.blinkdelay = 0;
 
 		// Remove all lines.
 		for (int i = 0; i < 20; ++i)
