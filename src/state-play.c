@@ -101,8 +101,8 @@ static struct {
 	[SHAPE_T] = SHAPE_TEX(data_img_block6)
 };
 
-// https://lospec.com/palette-list/aliengarden-32
-static const unsigned long ramp[] = {
+// https://lospec.com/palette-list/give-me-grey-52
+static const unsigned long ramp[10] = {
 	0x33984bff,
 	0x1e6f50ff,
 	0x0098dcff,
