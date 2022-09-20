@@ -56,7 +56,6 @@ static struct {
 } pause;
 
 static struct {
-	int level;
 	int lines;
 	int fallrate;
 	int delay;
@@ -229,10 +228,19 @@ draw_stat(int row, const char *fmt, ...)
 	tex_finish(&tex[1]);
 }
 
+static inline int
+level(void)
+{
+	if (game.lines >= 100)
+		return 10;
+
+	return (game.lines / 10) + 1;
+}
+
 static void
 draw_stats(void)
 {
-	draw_stat(0, "level %d", game.level);
+	draw_stat(0, "level %d", level());
 	draw_stat(1, "lines %d", game.lines);
 }
 
@@ -346,20 +354,7 @@ resume(void)
 
 	// Disable pause and clear scores.
 	pause.enable = 0;
-	game.level = 1;
 	game.lines = 0;
-
-	// TODO: tmp.
-	game.board[19][0] = 1;
-	game.board[19][1] = 1;
-	game.board[19][2] = 1;
-	game.board[19][3] = 1;
-	game.board[19][4] = 1;
-	game.board[19][5] = 1;
-	game.board[19][6] = 1;
-	game.board[19][7] = 1;
-	game.board[19][8] = 0;
-	game.board[19][9] = 1;
 }
 
 static void
@@ -400,7 +395,7 @@ onkey(enum key key)
 static void
 cleanup(void)
 {
-	int total;
+	int total, count = 0;
 
 	anim.lines = 0;
 
@@ -411,15 +406,19 @@ cleanup(void)
 			if (game.board[r][c])
 				total++;
 
-		if (total >= 10)
+		if (total >= 10) {
 			anim.lines |= 1 << r;
+			count++;
+		}
 	}
 
 	// No lines? Spawn immediately.
 	if (anim.lines == 0)
 		spawn();
-	else
+	else {
+		game.lines += count;
 		sound_play(SOUND_CLEAN);
+	}
 }
 
 static void
@@ -445,7 +444,7 @@ update_game(int ticks)
 {
 	game.delay += ticks;
 
-	if (game.delay >= game.fallrate) {
+	if (game.delay >= FALLRATE_INIT - (level() * FALLRATE_DECR)) {
 		game.delay = 0;
 
 		// At the bottom? Spawn a new shape otherwise just place the
@@ -455,13 +454,27 @@ update_game(int ticks)
 	}
 }
 
+// https://lospec.com/palette-list/aliengarden-32
+static const unsigned long ramp[] = {
+	0x33984bff,
+	0x1e6f50ff,
+	0x0098dcff,
+	0x0069aaff,
+	0xee8201ff,
+	0xc1460fff,
+	0x801224ff,
+	0x590924ff,
+	0x2a2f4eff,
+	0x1a1932ff
+};
+
 static void
 update(int ticks)
 {
 	if (pause.enable)
 		return;
 
-	ui_update_background(UI_PALETTE_LEVEL1 + (game.level - 1), ticks);
+	ui_update_background(ramp[level() - 1], ticks);
 
 	if (anim.lines)
 		update_anim(ticks);

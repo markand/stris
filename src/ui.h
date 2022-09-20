@@ -40,17 +40,6 @@ enum ui_palette : unsigned long {
 	UI_PALETTE_SHADOW       = 0x372840ff,
 	UI_PALETTE_BORDER       = 0x242b4aff,
 
-	// https://lospec.com/palette-list/aliengarden-32
-	UI_PALETTE_LEVEL1       = 0x33984bff,
-	UI_PALETTE_LEVEL2       = 0x1e6f50ff,
-	UI_PALETTE_LEVEL3       = 0x0098dcff,
-	UI_PALETTE_LEVEL4       = 0x0069aaff,
-	UI_PALETTE_LEVEL5       = 0xee8201ff,
-	UI_PALETTE_LEVEL6       = 0xc1460fff,
-	UI_PALETTE_LEVEL7       = 0x801224ff,
-	UI_PALETTE_LEVEL8       = 0x590924ff,
-	UI_PALETTE_LEVEL9       = 0x2a2f4eff,
-	UI_PALETTE_LEVEL10      = 0x1a1932ff
 };
 
 struct tex;
