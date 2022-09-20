@@ -41,7 +41,7 @@
 #define ANIM_DELAY 1000
 
 #define FALLRATE_INIT 900
-#define FALLRATE_DECR 85
+#define FALLRATE_DECR 74
 
 #define SHAPE_TEX(d) { .data = d, sizeof (d) }
 
@@ -439,7 +439,7 @@ onkey(enum key key)
 	case KEY_UP:
 		if (pause.enable)
 			pause.enable = 0;
-		else
+		else if (!anim.lines)
 			rotate();
 		break;
 	case KEY_RIGHT:
