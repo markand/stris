@@ -28,6 +28,9 @@ struct tex {
 };
 
 void
+tex_new(struct tex *, int, int);
+
+void
 tex_load(struct tex *, const void *, size_t);
 
 void
@@ -35,6 +38,9 @@ tex_draw(struct tex *, int, int);
 
 void
 tex_scale(struct tex *, int, int, int, int);
+
+void
+tex_alpha(struct tex *, int);
 
 void
 tex_finish(struct tex *);

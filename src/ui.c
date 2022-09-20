@@ -275,6 +275,19 @@ ui_present(void)
 	SDL_RenderPresent(ui_rdr);
 }
 
+static struct tex *target;
+
+struct tex *
+ui_target(struct tex *tex)
+{
+	struct tex *old = target;
+
+	SDL_SetRenderTarget(ui_rdr, tex ? tex->handle : NULL);
+	target = tex;
+
+	return old;
+}
+
 void
 ui_finish(void)
 {

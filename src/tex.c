@@ -27,6 +27,19 @@
 #include "util.h"
 
 void
+tex_new(struct tex *t, int w, int h)
+{
+	assert(t);
+
+	if (!(t->handle = SDL_CreateTexture(ui_rdr, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h)))
+		die("abort: SDL_CreateTexture: %s\n", SDL_GetError());
+
+	SDL_SetTextureBlendMode(t->handle, SDL_BLENDMODE_BLEND);
+	t->w = w;
+	t->h = h;
+}
+
+void
 tex_load(struct tex *t, const void *data, size_t datasz)
 {
 	assert(t);
@@ -78,6 +91,15 @@ tex_scale(struct tex *t, int x, int y, int w, int h)
 	};
 
 	SDL_RenderCopy(ui_rdr, t->handle, &rsrc, &rdst);
+}
+
+void
+tex_alpha(struct tex *t, int alpha)
+{
+	assert(t);
+	assert(t->handle);
+
+	SDL_SetTextureAlphaMod(t->handle, alpha);
 }
 
 void

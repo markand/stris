@@ -75,6 +75,9 @@ ui_draw_rect(enum ui_palette, int, int, int, int);
 void
 ui_present(void);
 
+struct tex *
+ui_target(struct tex *);
+
 void
 ui_finish(void);
 

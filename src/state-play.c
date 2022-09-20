@@ -115,6 +115,8 @@ static const unsigned long ramp[] = {
 	0x1a1932ff
 };
 
+static struct tex boardbg;
+
 static void
 init_pause(void)
 {
@@ -170,6 +172,8 @@ init_blocks(void)
 static void
 init_board(void)
 {
+	struct tex *current;
+
 	// Board geometry.
 	geo.board.x = geo.header.x;
 	geo.board.y = (UI_H * 2)  / 16;
@@ -178,6 +182,15 @@ init_board(void)
 	
 	geo.board.cw = shapes[1].tex.w;
 	geo.board.ch = shapes[1].tex.h;
+
+	// Background board.
+	tex_new(&boardbg, geo.board.w, geo.board.h);
+	tex_alpha(&boardbg, 90);
+	current = ui_target(&boardbg);
+
+	// TODO: change this.
+	ui_clear(UI_PALETTE_SHADOW);
+	ui_target(current);
 }
 
 static int
@@ -281,31 +294,33 @@ draw_borders(void)
 	ui_draw_line(UI_PALETTE_BORDER,
 	    geo.board.x - 1,
 	    geo.board.y - 1,
-	    geo.board.x + geo.board.w + 1,
+	    geo.board.x + geo.board.w,
 	    geo.board.y - 1);
 	ui_draw_line(UI_PALETTE_BORDER,
 	    geo.board.x - 1,
-	    geo.board.y + geo.board.h + 1,
-	    geo.board.x + geo.board.w + 1,
-	    geo.board.y + geo.board.h + 1);
+	    geo.board.y + geo.board.h,
+	    geo.board.x + geo.board.w,
+	    geo.board.y + geo.board.h);
 
 	// |
 	ui_draw_line(UI_PALETTE_BORDER,
 	    geo.board.x - 1,
 	    geo.board.y - 1,
 	    geo.board.x - 1,
-	    geo.board.y + geo.board.h + 1);
+	    geo.board.y + geo.board.h);
 	ui_draw_line(UI_PALETTE_BORDER,
-	    geo.board.x + geo.board.w + 1,
+	    geo.board.x + geo.board.w,
 	    geo.board.y - 1,
-	    geo.board.x + geo.board.w + 1,
-	    geo.board.y + geo.board.h + 1);
+	    geo.board.x + geo.board.w,
+	    geo.board.y + geo.board.h);
 }
 
 static void
 draw_board(void)
 {
 	int s;
+
+	tex_draw(&boardbg, geo.board.x, geo.board.y);
 
 	for (int r = 0; r < BOARD_H; ++r) {
 		// If we're drawing full lines, we make it blink.
