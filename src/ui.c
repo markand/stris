@@ -37,6 +37,25 @@
 SDL_Window *ui_win = NULL;
 SDL_Renderer *ui_rdr = NULL;
 
+#define CR(c) ((c >> 24) & 0xff)
+#define CG(c) ((c >> 16) & 0xff)
+#define CB(c) ((c >>  8) & 0xff)
+#define CA(c) (c         & 0xff)
+#define CHEX(r, g, b) ((unsigned long)r << 24 | (unsigned long)g << 16 | (unsigned long)b << 8 | 0xff)
+
+static struct {
+	int x;
+	int y;
+	int w;
+	int h;
+	int spent;
+	enum ui_palette color;
+} bg = {
+	.w = UI_W / 10,
+	.h = UI_W / 10,
+	.color = UI_PALETTE_MENU_BG
+};
+
 static struct {
 	const unsigned char *data;
 	size_t datasz;
@@ -95,11 +114,7 @@ static void
 render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, va_list ap)
 {
 	char buf[128];
-	SDL_Color c = {
-		.r = (color >> 24) & 0xff,
-		.g = (color >> 16) & 0xff,
-		.b = (color >> 8)  & 0xff
-	};
+	SDL_Color c = { CR(color), CG(color), CB(color), CA(color) };
 	SDL_Surface *sf;
 
 	vsnprintf(buf, sizeof (buf), fmt, ap);
@@ -117,12 +132,7 @@ render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, va
 static inline void
 set_color(unsigned long color)
 {
-	SDL_SetRenderDrawColor(ui_rdr,
-	    (color >> 24) & 0xff,
-	    (color >> 16) & 0xff,
-	    (color >> 8)  & 0xff,
-	    0xff
-	);
+	SDL_SetRenderDrawColor(ui_rdr, CR(color), CG(color), CB(color), CA(color));
 }
 
 void
@@ -183,24 +193,6 @@ ui_clear(enum ui_palette color)
 	SDL_RenderClear(ui_rdr);
 }
 
-static struct {
-	int x;
-	int y;
-	int w;
-	int h;
-	int spent;
-	enum ui_palette color;
-} bg = {
-	.w = UI_W / 10,
-	.h = UI_W / 10,
-	.color = UI_PALETTE_MENU_BG
-};
-
-#define CR(c) ((c >> 24) & 0xff)
-#define CG(c) ((c >> 16) & 0xff)
-#define CB(c) ((c >>  8) & 0xff)
-#define CHEX(r, g, b) ((unsigned long)r << 24 | (unsigned long)g << 16 | (unsigned long)b << 8 | 0xff)
-
 void
 ui_update_background(enum ui_palette color, int ticks)
 {
@@ -220,9 +212,12 @@ ui_update_background(enum ui_palette color, int ticks)
 		bcur = CB(bg.color); bnxt = CB(color);
 
 		if (bg.color != color) {
-			rcur += (rcur < rnxt) ? 1 : -1;
-			gcur += (gcur < gnxt) ? 1 : -1;
-			bcur += (bcur < bnxt) ? 1 : -1;
+			if (rcur != rnxt)
+				rcur += (rcur < rnxt) ? 1 : -1;
+			if (gcur != gnxt)
+				gcur += (gcur < gnxt) ? 1 : -1;
+			if (bcur != bnxt)
+				bcur += (bcur < bnxt) ? 1 : -1;
 
 			bg.color = CHEX(rcur, gcur, bcur);
 		}
@@ -240,9 +235,10 @@ ui_draw_background(void)
 
 	ui_draw_rect(color, 0, 0, UI_W, UI_H);
 
-	color = (((color >> 24) & 0xff) - 10) << 24 | 
-	        (((color >> 16) & 0xff) - 10) << 16 |
-	        (((color >>  8) & 0xff) - 10) << 8  | 0xff;
+	color = (CR(color) - 10) << 24 | 
+	        (CG(color) - 10) << 16 |
+	        (CB(color) - 10) << 8  |
+		(CA(color));
 
 	for (int r = 0; r < 21; ++r) {
 		for (int c = 0; c < 11; c += 2) {
