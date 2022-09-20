@@ -22,6 +22,7 @@
 #include "state-settings.h"
 #include "state.h"
 #include "stris.h"
+#include "sys.h"
 #include "tex.h"
 #include "ui.h"
 #include "util.h"
@@ -99,6 +100,7 @@ onkey(enum key key)
 		default:
 			break;
 		}
+		sys_conf_write();
 		break;
 	default:
 		break;

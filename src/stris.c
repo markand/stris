@@ -29,6 +29,7 @@
 #include "state-splash.h"
 #include "state.h"
 #include "stris.h"
+#include "sys.h"
 #include "ui.h"
 #include "util.h"
 
@@ -66,6 +67,7 @@ init(void)
 	srand(time(NULL));
 
 	ui_init();
+	sys_conf_read();
 	sound_init();
 
 	for (size_t i = 0; i < LEN(states); ++i)

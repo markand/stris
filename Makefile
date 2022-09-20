@@ -48,6 +48,7 @@ SRCS=                   src/board.c \
                         src/state-settings.c \
                         src/state-splash.c \
                         src/state.c \
+                        src/sys.c \
                         src/tex.c \
                         src/ui.c \
                         src/util.c
