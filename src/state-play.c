@@ -96,15 +96,15 @@ static struct {
 	size_t datasz;
 } shapes[SHAPE_LAST] = {
 	[SHAPE_O] = SHAPE_TEX(data_img_block5),
-	[SHAPE_I] = SHAPE_TEX(data_img_block7),
+	[SHAPE_I] = SHAPE_TEX(data_img_block6),
 	[SHAPE_S] = SHAPE_TEX(data_img_block2),
 	[SHAPE_Z] = SHAPE_TEX(data_img_block4),
-	[SHAPE_L] = SHAPE_TEX(data_img_block3),
-	[SHAPE_J] = SHAPE_TEX(data_img_block1),
-	[SHAPE_T] = SHAPE_TEX(data_img_block6)
+	[SHAPE_L] = SHAPE_TEX(data_img_block1),
+	[SHAPE_J] = SHAPE_TEX(data_img_block8),
+	[SHAPE_T] = SHAPE_TEX(data_img_block3)
 };
 
-// https://lospec.com/palette-list/give-me-grey-52
+// https://lospec.com/palette-list/aliengarden-32
 static const unsigned long ramp[10] = {
 	0x33984bff,
 	0x1e6f50ff,
