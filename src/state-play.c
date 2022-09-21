@@ -259,6 +259,8 @@ rotate(void)
 	// Cancel orientation.
 	if (!board_check(game.board, &game.shape))
 		game.shape.o = o;
+	else
+		sound_play(SOUND_MOVE);
 
 	board_set(game.board, &game.shape);
 }

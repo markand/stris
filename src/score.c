@@ -1,7 +1,7 @@
 /*
  * score.c -- score handling
  *
- * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
+ * Copyright (c) 2011, 2012 David Demelier <markand@malikania.fr>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,106 +18,94 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "score.h"
-#include "util.h"
 
-#define SCANF_FMT       ("%" STR(SCORE_NAME_MAX) "[^|]|%llu\n")
-#define PRINTF_FMT      ("%s|%llu\n")
-
-/*
- * Read the file properly formatted up to SCORE_COUNT_MAX.
- */
-
-typedef int (*cmp_fn)(const void *, const void *);
-
-static int
-cmp(const struct score *s1, const struct score *s2)
-{
-	/* Can't use s2->score - s1->score as they are unsigned. */
-	return s1->score < s2->score ? -1 : s2->score > s1->score ? 1 : 0;
-}
-
-static void
-sort(struct score_list *list)
-{
-	assert(list);
-
-	qsort(list->scores, list->scoresz, sizeof (list->scores[0]), (cmp_fn)cmp);
-}
-
-int
-score_list_read(struct score_list *list, const char *path)
+void
+score_read(struct score_list *list, const char *path)
 {
 	assert(list);
 	assert(path);
 
+	struct score *sc;
 	FILE *fp;
-	struct score s = {0};
+	char fmt[32];
 
 	memset(list, 0, sizeof (*list));
+	snprintf(fmt, sizeof (fmt), "%%%d[^\n] %%d", SCORE_NAME_MAX);
 
 	if (!(fp = fopen(path, "r")))
-		return -1;
-
-	for (size_t i = 0; i < SCORE_COUNT_MAX && fscanf(fp, SCANF_FMT, s.who, &s.score) >= 2; ++i) {
-		memcpy(&list->scores[list->scoresz++], &s, sizeof (s));
-		memset(&s, 0, sizeof (s));
-	}
-
-	fclose(fp);
-	sort(list);
-
-	return 0;
-}
-
-/*
- * Check if the score may be added into the high scores file.
- */
-int
-score_list_is_top(const struct score_list *list, const struct score *sc)
-{
-	assert(list);
-	assert(sc);
-
-	if (list->scoresz < SCORE_COUNT_MAX)
-		return 1;
-
-	for (size_t i = 0; i < list->scoresz; ++i)
-		if (sc->score > list->scores[i].score)
-			return 1;
-
-	return 0;
-}
-
-void
-score_list_add(struct score_list *list, const struct score *sc)
-{
-	size_t pos;
-
-	for (pos = 0; pos < SCORE_COUNT_MAX; ++pos)
-		if (sc->score > list->scores[pos].score)
-			break;
-
-	if (pos >= SCORE_COUNT_MAX)
 		return;
 
-	// [10] [9] [7] [5] [.]
-	//          pos
-	// [10] [9] [@] [7] [5]
+	while (list->scoresz < SCORE_LIST_MAX) {
+		sc = &list->scores[list->scoresz];
 
-	memmove(&list->scores[pos + 1], &list->scores[pos],
-	    sizeof (*sc) * (SCORE_COUNT_MAX) - (&list->scores[pos] - list->scores));
-	memcpy(&list->scores[pos], sc, sizeof (*sc));
+		if (fscanf(fp, fmt, &sc->lines, sc->who) != 2)
+			break;
+
+		list->scoresz++;
+	}
 }
 
-/*
- * Write the new score file to the file specified by path.
- */
+#if 0
+int
+score_check_top10(const score_list_t *list, const struct score *sc)
+{
+	struct score *s;
+
+	if (TAILQ_EMPTY(list) || score_count(list) < 10)
+		return true;
+
+	TAILQ_FOREACH(s, list, link) {
+		if (sc->score > s->score)
+			return true;
+	}
+
+	return false;
+}
+#endif
+
 void
-score_list_write(const struct score_list *list, const char *path)
+score_add(struct score_list *list, const struct score *sc)
+{
+	(void)list;
+	(void)sc;
+#if 0
+	struct score *s;
+	struct score *news;
+
+	if (!score_check_top10(list, sc))
+		return;
+
+	/* Alloc a new one, caller can safely pass a local variable */
+	news = xmalloc(sizeof (*news));
+	memcpy(news, sc, sizeof (*news));
+
+	if (TAILQ_EMPTY(list))
+		TAILQ_INSERT_HEAD(list, news, link);
+	else {
+		TAILQ_FOREACH(s, list, link)
+			if (sc->score > s->score)
+				break;
+
+		if (!s)
+			TAILQ_INSERT_TAIL(list, news, link);
+		else
+			TAILQ_INSERT_BEFORE(s, news, link);
+	}
+
+	/* Remove old bits > 10 */
+	while (score_count(list) > 10) {
+		s = TAILQ_LAST(list, score_list_t);
+		TAILQ_REMOVE(list, s, link);
+		free(s);
+	}
+#endif
+}
+
+void
+score_write(const struct score_list *list, const char *path)
 {
 	FILE *fp;
 
@@ -125,7 +113,7 @@ score_list_write(const struct score_list *list, const char *path)
 		return;
 
 	for (size_t i = 0; i < list->scoresz; ++i)
-		fprintf(fp, PRINTF_FMT, list->scores[i].who, list->scores[i].score);
+		fprintf(fp, "%s %d\n", list->scores[i].who, list->scores[i].lines);
 
 	fclose(fp);
 }

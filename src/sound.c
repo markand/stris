@@ -21,7 +21,6 @@
 #include "sound/clean.h"
 #include "sound/drop.h"
 #include "sound/move.h"
-#include "sound/rotate.h"
 #include "sound/startup.h"
 
 #include "sound.h"
@@ -37,8 +36,6 @@ static struct {
 	// https://freesound.org/people/radian/sounds/63000
 	[SOUND_CHIME] = SOUND_DEF(data_sound_startup),
 	// https://freesound.org/people/el_boss/sounds/560701
-	[SOUND_ROTATE] = SOUND_DEF(data_sound_rotate),
-	// https://freesound.org/people/MissCellany/sounds/240640
 	[SOUND_MOVE] = SOUND_DEF(data_sound_move),
 	// https://freesound.org/people/MattRuthSound/sounds/562083
 	[SOUND_DROP] = SOUND_DEF(data_sound_drop),

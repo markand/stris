@@ -19,32 +19,28 @@
 #ifndef STRIS_SCORE_H
 #define STRIS_SCORE_H
 
-#include <stdbool.h>
 #include <stddef.h>
 
-#define SCORE_NAME_MAX  32
-#define SCORE_COUNT_MAX 10
+#define SCORE_NAME_MAX 32
+#define SCORE_LIST_MAX 10
 
 struct score {
 	char who[SCORE_NAME_MAX + 1];
-	unsigned long long score;
+	int lines;
 };
 
 struct score_list {
-	struct score scores[SCORE_COUNT_MAX];
+	struct score scores[SCORE_LIST_MAX];
 	size_t scoresz;
 };
 
-int
-score_list_read(struct score_list *, const char *);
-
-int
-score_list_is_top(const struct score_list *, const struct score *);
+void
+score_read(struct score_list *, const char *);
 
 void
-score_list_add(struct score_list *, const struct score *);
+score_add(struct score_list *, const struct score *);
 
 void
-score_list_write(const struct score_list *, const char *);
+score_write(const struct score_list *, const char *);
 
 #endif /* STRIS_SCORE_H */

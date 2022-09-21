@@ -75,7 +75,6 @@ DATA=                   data/fonts/actionj.h \
                         data/sound/clean.h \
                         data/sound/drop.h \
                         data/sound/move.h \
-                        data/sound/rotate.h \
                         data/sound/startup.h
 
 TESTS=                  tests/test-board.c
