@@ -26,6 +26,8 @@
 #include "img/block8.h"
 #include "img/block9.h"
 #include "img/block10.h"
+#include "img/block11.h"
+#include "img/block12.h"
 
 #include "board.h"
 #include "key.h"
@@ -106,7 +108,9 @@ static struct {
 	[SHAPE_J] = SHAPE_TEX(data_img_block8),
 	[SHAPE_T] = SHAPE_TEX(data_img_block3),
 	[SHAPE_C] = SHAPE_TEX(data_img_block9),
-	[SHAPE_X] = SHAPE_TEX(data_img_block10)
+	[SHAPE_X] = SHAPE_TEX(data_img_block10),
+	[SHAPE_P] = SHAPE_TEX(data_img_block11),
+	[SHAPE_D] = SHAPE_TEX(data_img_block12)
 };
 
 // https://lospec.com/palette-list/aliengarden-32
