@@ -20,7 +20,7 @@
 #include <math.h>
 
 #include "key.h"
-#include "menu.h"
+#include "list.h"
 #include "tex.h"
 
 #define PAD 10
@@ -36,7 +36,7 @@ inc(unsigned int cmpcur, unsigned int cmpdst, int gap)
 }
 
 static inline unsigned int
-add(const struct menu_item *item, unsigned int shift)
+add(const struct list_item *item, unsigned int shift)
 {
 	const unsigned int cmpcur = (item->colorcur >> shift) & 0xff;
 	const unsigned int cmpdst = (item->colordst >> shift) & 0xff;
@@ -45,7 +45,7 @@ add(const struct menu_item *item, unsigned int shift)
 }
 
 static void
-take(struct menu_item *item)
+take(struct list_item *item)
 {
 	item->selected = 1;
 	item->spent = 0;
@@ -54,7 +54,7 @@ take(struct menu_item *item)
 }
 
 static void
-discard(struct menu_item *item)
+discard(struct list_item *item)
 {
 	item->selected = 0;
 	item->spent = 0;
@@ -63,7 +63,7 @@ discard(struct menu_item *item)
 }
 
 static void
-update(struct menu_item *item, int ticks)
+update(struct list_item *item, int ticks)
 {
 	if (!item->selected)
 		return;
@@ -87,7 +87,7 @@ update(struct menu_item *item, int ticks)
 }
 
 static void
-draw(const struct menu_item *item)
+draw(const struct list_item *item)
 {
 	struct tex tex;
 
@@ -101,32 +101,32 @@ draw(const struct menu_item *item)
 }
 
 static void
-halign(struct menu *m)
+halign(struct list *l)
 {
-	for (size_t i = 0; i < m->itemsz; ++i) {
-		ui_clip(m->items[i].font, &m->items[i].w, &m->items[i].h,
-		    "%s", m->items[i].text);
+	for (size_t i = 0; i < l->itemsz; ++i) {
+		ui_clip(l->items[i].font, &l->items[i].w, &l->items[i].h,
+		    "%s", l->items[i].text);
 
-		switch (m->halign) {
+		switch (l->halign) {
 		case -1:
-			m->items[i].x = m->x + PAD;
+			l->items[i].x = l->x + PAD;
 			break;
 		case 1:
-			m->items[i].x = m->x + m->w - m->items[i].w - PAD;
+			l->items[i].x = l->x + l->w - l->items[i].w - PAD;
 			break;
 		default:
-			m->items[i].x = m->x + (m->w - m->items[i].w) / 2;
+			l->items[i].x = l->x + (l->w - l->items[i].w) / 2;
 			break;
 		}
 	}
 }
 
 static void
-valign(struct menu *m)
+valign(struct list *l)
 {
 	int ystart, vspace;
 
-	switch (m->valign) {
+	switch (l->valign) {
 	case -1:
 		ystart = PAD;
 		vspace = PAD;
@@ -134,53 +134,53 @@ valign(struct menu *m)
 	default:
 		// Center.
 		ystart = 0;
-		vspace = (m->h - (m->items[0].h * m->itemsz)) / (m->itemsz + 1);
+		vspace = (l->h - (l->items[0].h * l->itemsz)) / (l->itemsz + 1);
 		break;
 	}
 
-	for (size_t i = 0; i < m->itemsz; ++i)
-		m->items[i].y = m->y + ystart + (((i + 1) * vspace) + (i * m->items[0].h));
+	for (size_t i = 0; i < l->itemsz; ++i)
+		l->items[i].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].h));
 }
 
 void
-menu_init(struct menu *m)
+list_init(struct list *l)
 {
-	assert(m);
+	assert(l);
 
-	halign(m);
-	valign(m);
+	halign(l);
+	valign(l);
 }
 
 void
-menu_reset(struct menu *m)
+list_reset(struct list *l)
 {
-	assert(m);
+	assert(l);
 
-	m->selection = 0;
+	l->selection = 0;
 
-	for (size_t i = 0; i < m->itemsz; ++i)
-		discard(&m->items[i]);
+	for (size_t i = 0; i < l->itemsz; ++i)
+		discard(&l->items[i]);
 
-	take(&m->items[0]);
+	take(&l->items[0]);
 }
 
 int
-menu_onkey(struct menu *m, enum key key)
+list_onkey(struct list *l, enum key key)
 {
-	assert(m);
+	assert(l);
 
-	size_t newsel = m->selection;
+	size_t newsel = l->selection;
 	int ret = 0;
 
 	switch (key) {
 	case KEY_UP:
 		if (newsel == 0)
-			newsel = m->itemsz - 1;
+			newsel = l->itemsz - 1;
 		else
 			newsel--;
 		break;
 	case KEY_DOWN:
-		if (newsel >= m->itemsz - 1)
+		if (newsel >= l->itemsz - 1)
 			newsel = 0;
 		else
 			newsel++;
@@ -193,28 +193,28 @@ menu_onkey(struct menu *m, enum key key)
 	}
 
 	// We also need to reset old one.
-	if (newsel != m->selection) {
-		discard(&m->items[m->selection]);
-		take(&m->items[m->selection = newsel]);
+	if (newsel != l->selection) {
+		discard(&l->items[l->selection]);
+		take(&l->items[l->selection = newsel]);
 	}
 
 	return ret;
 }
 
 void
-menu_update(struct menu *m, int ticks)
+list_update(struct list *l, int ticks)
 {
-	assert(m);
+	assert(l);
 
-	for (size_t i = 0; i < m->itemsz; ++i)
-		update(&m->items[i], ticks);
+	for (size_t i = 0; i < l->itemsz; ++i)
+		update(&l->items[i], ticks);
 }
 
 void
-menu_draw(const struct menu *m)
+list_draw(const struct list *l)
 {
-	assert(m);
+	assert(l);
 
-	for (size_t i = 0; i < m->itemsz; ++i)
-		draw(&m->items[i]);
+	for (size_t i = 0; i < l->itemsz; ++i)
+		draw(&l->items[i]);
 }

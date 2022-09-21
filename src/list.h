@@ -1,5 +1,5 @@
 /*
- * menu.h -- menu helpers
+ * list.h -- list and menu helpers
  *
  * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
  *
@@ -16,8 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_MENU_H
-#define STRIS_MENU_H
+#ifndef STRIS_LIST_H
+#define STRIS_LIST_H
 
 #include <stddef.h>
 
@@ -25,7 +25,7 @@
 
 enum key;
 
-struct menu_item {
+struct list_item {
 	// User editable fields.
 	const char *text;
 	enum ui_font font;
@@ -41,7 +41,7 @@ struct menu_item {
 	unsigned long colordst;
 };
 
-struct menu {
+struct list {
 	int halign;
 	int valign;
 	int x;
@@ -49,23 +49,23 @@ struct menu {
 	int w;
 	int h;
 	size_t selection;
-	struct menu_item *items;
+	struct list_item *items;
 	size_t itemsz;
 };
 
 void
-menu_init(struct menu *);
+list_init(struct list *);
 
 void
-menu_reset(struct menu *);
+list_reset(struct list *);
 
 int
-menu_onkey(struct menu *, enum key);
+list_onkey(struct list *, enum key);
 
 void
-menu_update(struct menu *, int);
+list_update(struct list *, int);
 
 void
-menu_draw(const struct menu *);
+list_draw(const struct list *);
 
-#endif // !STRIS_MENU_H/
+#endif // !STRIS_LIST_H/

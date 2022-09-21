@@ -17,7 +17,7 @@
  */
 
 #include "key.h"
-#include "menu.h"
+#include "list.h"
 #include "state-menu.h"
 #include "state-settings.h"
 #include "state.h"
@@ -33,7 +33,7 @@ enum state_menu {
 	STATE_MENU_LAST
 };
 
-static struct menu_item items[] = {
+static struct list_item items[] = {
 	[STATE_MENU_SOUND] = {
 		.text = "Sounds",
 		.font = UI_FONT_MENU_SMALL
@@ -44,7 +44,7 @@ static struct menu_item items[] = {
 	}
 };
 
-static struct menu menu = {
+static struct list menu = {
 	.items = items,
 	.itemsz = STATE_MENU_LAST,
 	.halign = -1,
@@ -70,19 +70,19 @@ draw_val(size_t index, int val)
 static void
 init(void)
 {
-	menu_init(&menu);
+	list_init(&menu);
 }
 
 static void
 resume(void)
 {
-	menu_reset(&menu);
+	list_reset(&menu);
 }
 
 static void
 onkey(enum key key)
 {
-	menu_onkey(&menu, key);
+	list_onkey(&menu, key);
 
 	// TODO: disable playback here.
 	switch (key) {
@@ -110,7 +110,7 @@ onkey(enum key key)
 static void
 update(int ticks)
 {
-	menu_update(&menu, ticks);
+	list_update(&menu, ticks);
 	ui_update_background(UI_PALETTE_MENU_BG, ticks);
 }
 
@@ -119,7 +119,7 @@ draw(void)
 {
 	ui_clear(UI_PALETTE_MENU_BG);
 	ui_draw_background();
-	menu_draw(&menu);
+	list_draw(&menu);
 
 	draw_val(0, sconf.sound);
 	draw_val(1, sconf.music);

@@ -17,7 +17,7 @@
  */
 
 #include "key.h"
-#include "menu.h"
+#include "list.h"
 #include "state-menu.h"
 #include "state-play.h"
 #include "state-settings.h"
@@ -57,7 +57,7 @@ static struct {
 	int h;
 } title;
 
-static struct menu_item items[STATE_MENU_LAST] = {
+static struct list_item items[STATE_MENU_LAST] = {
 	[STATE_MENU_PLAY] = {
 		.text = "Play",
 		.font = UI_FONT_MENU,
@@ -76,7 +76,7 @@ static struct menu_item items[STATE_MENU_LAST] = {
 	}
 };
 
-static struct menu menu = {
+static struct list menu = {
 	.items = items,
 	.itemsz = STATE_MENU_LAST
 };
@@ -95,19 +95,19 @@ init(void)
 	menu.y = title.h;
 	menu.w = UI_W;
 	menu.h = UI_H - title.h;
-	menu_init(&menu);
+	list_init(&menu);
 }
 
 static void
 resume(void)
 {
-	menu_reset(&menu);
+	list_reset(&menu);
 }
 
 static void
 onkey(enum key key)
 {
-	if (!menu_onkey(&menu, key))
+	if (!list_onkey(&menu, key))
 		return;
 
 	switch (menu.selection) {
@@ -128,7 +128,7 @@ onkey(enum key key)
 static void
 update(int ticks)
 {
-	menu_update(&menu, ticks);
+	list_update(&menu, ticks);
 	ui_update_background(UI_PALETTE_MENU_BG, ticks);
 }
 
@@ -141,7 +141,7 @@ draw(void)
 	tex_draw(&title.tex[1], title.x + 1, title.y + 1);
 	tex_draw(&title.tex[0], title.x, title.y);
 
-	menu_draw(&menu);
+	list_draw(&menu);
 	ui_present();
 }
 

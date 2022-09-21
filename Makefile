@@ -38,7 +38,7 @@ include config.mk
 
 PROG=                   src/stris
 SRCS=                   src/board.c \
-                        src/menu.c \
+                        src/list.c \
                         src/score.c \
                         src/shape.c \
                         src/sound.c \
