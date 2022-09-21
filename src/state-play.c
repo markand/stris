@@ -24,6 +24,8 @@
 #include "img/block6.h"
 #include "img/block7.h"
 #include "img/block8.h"
+#include "img/block9.h"
+#include "img/block10.h"
 
 #include "board.h"
 #include "key.h"
@@ -94,14 +96,16 @@ static struct {
 	struct tex tex;
 	const void *data;
 	size_t datasz;
-} shapes[SHAPE_LAST] = {
+} shapes[] = {
 	[SHAPE_O] = SHAPE_TEX(data_img_block5),
 	[SHAPE_I] = SHAPE_TEX(data_img_block6),
 	[SHAPE_S] = SHAPE_TEX(data_img_block2),
 	[SHAPE_Z] = SHAPE_TEX(data_img_block4),
 	[SHAPE_L] = SHAPE_TEX(data_img_block1),
 	[SHAPE_J] = SHAPE_TEX(data_img_block8),
-	[SHAPE_T] = SHAPE_TEX(data_img_block3)
+	[SHAPE_T] = SHAPE_TEX(data_img_block3),
+	[SHAPE_C] = SHAPE_TEX(data_img_block9),
+	[SHAPE_X] = SHAPE_TEX(data_img_block10)
 };
 
 // https://lospec.com/palette-list/aliengarden-32
@@ -393,7 +397,7 @@ spawn(void)
 		stris_switch(&state_dead);
 	else {
 		board_set(game.board, &game.shape);
-		shape_select(&game.shape_next, SHAPE_RANDOM);
+		shape_select(&game.shape_next, SHAPE_RANDOM_STD);
 	}
 }
 
@@ -411,8 +415,8 @@ static void
 resume(void)
 {
 	// Select new shapes and positionate the first one.
-	shape_select(&game.shape, SHAPE_RANDOM);
-	shape_select(&game.shape_next, SHAPE_RANDOM);
+	shape_select(&game.shape, SHAPE_RANDOM_STD);
+	shape_select(&game.shape_next, SHAPE_RANDOM_STD);
 
 	game.shape.y = 0;
 	game.shape.x = 3;

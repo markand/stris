@@ -28,8 +28,10 @@ enum shape_kind {
 	SHAPE_L,
 	SHAPE_J,
 	SHAPE_T,
-	SHAPE_LAST,
-	SHAPE_RANDOM
+	SHAPE_C,
+	SHAPE_X,
+	SHAPE_RANDOM_STD = 7,
+	SHAPE_RANDOM_EXT = 9
 };
 
 struct shape {

@@ -67,6 +67,10 @@ DATA=                   data/fonts/actionj.h \
                         data/img/block6.h \
                         data/img/block7.h \
                         data/img/block8.h \
+                        data/img/block9.h \
+                        data/img/block10.h \
+                        data/img/block11.h \
+                        data/img/block12.h \
                         data/sound/clean.h \
                         data/sound/drop.h \
                         data/sound/move.h \
