@@ -124,4 +124,13 @@ ${TESTS_OBJS}: ${OBJS}
 tests: ${TESTS_OBJS}
 	for t in ${TESTS_OBJS}; do ./$$t; done
 
+app:
+	mkdir -p STris.app
+	mkdir -p STris.app/Contents/MacOS
+	mkdir -p STris.app/Contents/Resources
+	mkdir -p STris.app/Contents/Frameworks
+	cp ${PROG} STris.app/Contents/MacOS/STris
+	cp apple/Info.plist STris.app/Contents
+	sh ./apple/rpath.sh STris.app/Contents/MacOS/STris
+
 .PHONY: all clean tests
