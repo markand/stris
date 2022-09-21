@@ -44,6 +44,7 @@ SRCS=                   src/board.c \
                         src/sound.c \
                         src/state-dead.c \
                         src/state-menu.c \
+                        src/state-mode.c \
                         src/state-play.c \
                         src/state-settings.c \
                         src/state-splash.c \

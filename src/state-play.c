@@ -64,6 +64,7 @@ static struct {
 	int lines;
 	int fallrate;
 	int delay;
+	enum shape_kind rand;
 	struct shape shape;
 	struct shape shape_next;
 	Board board;
@@ -397,7 +398,7 @@ spawn(void)
 		stris_switch(&state_dead);
 	else {
 		board_set(game.board, &game.shape);
-		shape_select(&game.shape_next, SHAPE_RANDOM_STD);
+		shape_select(&game.shape_next, game.rand);
 	}
 }
 
@@ -412,11 +413,25 @@ init(void)
 }
 
 static void
+nightmarize(void)
+{
+	for (int r = 10; r < BOARD_H; ++r)
+		for (int c = 0; c < BOARD_W; ++c)
+			if (NRAND(0, 1) == 0)
+				game.board[r][c] = NRAND(1, SHAPE_RANDOM_STD);
+}
+
+static void
 resume(void)
 {
+	// Depending on the mode.
+	game.rand = state_play_mode >= STATE_PLAY_MODE_EXTENDED
+		? SHAPE_RANDOM_EXT
+		: SHAPE_RANDOM_STD;
+
 	// Select new shapes and positionate the first one.
-	shape_select(&game.shape, SHAPE_RANDOM_STD);
-	shape_select(&game.shape_next, SHAPE_RANDOM_STD);
+	shape_select(&game.shape, game.rand);
+	shape_select(&game.shape_next, game.rand);
 
 	game.shape.y = 0;
 	game.shape.x = 3;
@@ -425,6 +440,10 @@ resume(void)
 	// Apply that shape.
 	board_clear(game.board);
 	board_set(game.board, &game.shape);
+
+	// In nightmare mode, we start with high level of blocks.
+	if (state_play_mode == STATE_PLAY_MODE_NIGHTMARE)
+		nightmarize();
 
 	// Disable pause and clear scores.
 	pause.enable = 0;
@@ -581,6 +600,8 @@ finish(void)
 	for (size_t i = 0; i < LEN(shapes); ++i)
 		tex_finish(&shapes[i].tex);
 }
+
+enum state_play_mode state_play_mode;
 
 struct state state_play = {
 	.init = init,

@@ -19,7 +19,7 @@
 #include "key.h"
 #include "list.h"
 #include "state-menu.h"
-#include "state-play.h"
+#include "state-mode.h"
 #include "state-settings.h"
 #include "state.h"
 #include "stris.h"
@@ -112,7 +112,7 @@ onkey(enum key key)
 
 	switch (menu.selection) {
 	case STATE_MENU_PLAY:
-		stris_switch(&state_play);
+		stris_switch(&state_mode);
 		break;
 	case STATE_MENU_SETTINGS:
 		stris_switch(&state_settings);
