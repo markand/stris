@@ -116,9 +116,6 @@ ${OBJS}: ${DATA}
 
 ${PROG}: ${OBJS}
 
-clean:
-	rm -f ${PROG} ${OBJS} ${DEPS} ${DATA} ${TESTS_OBJS}
-
 ${TESTS_OBJS}: ${OBJS}
 
 tests: ${TESTS_OBJS}
@@ -131,6 +128,12 @@ app:
 	mkdir -p STris.app/Contents/Frameworks
 	cp ${PROG} STris.app/Contents/MacOS/STris
 	cp apple/Info.plist STris.app/Contents
-	sh ./apple/rpath.sh STris.app/Contents/MacOS/STris
+	dylibbundler -od -of -b -ns \
+		-d STris.app/Contents/Frameworks \
+		-x STris.app/Contents/MacOS/STris \
+		-p @executable_path/../Frameworks
+
+clean:
+	rm -f ${PROG} ${OBJS} ${DEPS} ${DATA} ${TESTS_OBJS}
 
 .PHONY: all clean tests

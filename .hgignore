@@ -15,6 +15,7 @@
 # macOS specific.
 \.DS_Store$
 \.dSYM.*
+^STris\.app$
 
 # executables.
 ^src/stris$
