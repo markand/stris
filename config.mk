@@ -1,1 +1,0 @@
-CFLAGS= -O0 -Wall -Wextra -g -DSTRIS_NO_SPLASH

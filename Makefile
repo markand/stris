@@ -34,7 +34,7 @@ SDL2_MIXER_LIBS=        `pkg-config --libs SDL2_mixer`
 SDL2_TTF_INCS=          `pkg-config --cflags SDL2_ttf`
 SDL2_TTF_LIBS=          `pkg-config --libs SDL2_ttf`
 
-include config.mk
+-include config.mk
 
 PROG=                   src/stris
 SRCS=                   src/board.c \
