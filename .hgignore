@@ -24,5 +24,8 @@
 # tests.
 ^tests/test-board$
 
-# Distribution files.
+# distribution files.
 ^stris-\d\.\d.\d\.tar\.xz(\.asc)?$
+
+# misc.
+^config\.mk$
