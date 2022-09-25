@@ -325,6 +325,8 @@ nightmarize(void)
 static void
 draw_stats(void)
 {
+	snprintf(ui.stat_level, sizeof (ui.stat_level), "level %d", level());
+	snprintf(ui.stat_lines, sizeof (ui.stat_lines), "lines %d", game.lines);
 	list_draw(&ui.stat_list);
 }
 
@@ -380,12 +382,38 @@ draw_board(void)
 }
 
 static void
-draw_next(void)
+draw_next_shape(void)
 {
-	int wh;
+	int x, y, r, s, gap = 0, tmpmaxh, maxh = 0;
 
-	// Individual cell size.
-	wh = shapes[1].tex.w / 4;
+	// To align to the top right, we first need to know how many empty
+	// cells are present at the right of the shape definition.
+	for (int c = 3; c >= 0; --c) {
+		for (r = 0; r < 4; ++r)
+			if (game.shape_next.def[0][r][c])
+				goto out;
+		if (r == 4)
+			gap++;
+	}
+
+out:
+	// Now we compute the max height that this shape requires.
+	for (int c = 0; c < 4; ++c) {
+		tmpmaxh = 0;
+
+		for (r = 0; r < 4; ++r)
+			if (game.shape_next.def[0][r][c])
+				tmpmaxh ++;
+
+		if (tmpmaxh > maxh)
+			maxh = tmpmaxh;
+	}
+
+	// We compute the height available between the top and the game board
+	// and remove some padding to avoid being snapped with the board.
+	s = shapes[1].tex.w / 2;
+	x = (ui.board_geo.x + ui.board_geo.w) - (s * (4 - gap));
+	y = ((ui.board_geo.y - 10) / 2) - ((s * maxh) / 2);
 
 	for (int r = 0; r < 4; ++r) {
 		for (int c = 0; c < 4; ++c) {
@@ -393,9 +421,7 @@ draw_next(void)
 				continue;
 
 			tex_scale(&shapes[game.shape_next.k].tex,
-			    ui.next_shape_geo.x + (c * wh),
-			    ui.next_shape_geo.y + (r * wh),
-			    wh, wh);
+			    x + (c * s), y + (r * s), s, s);
 		}
 	}
 }
@@ -567,7 +593,7 @@ draw(void)
 		draw_stats();
 		draw_borders();
 		draw_board();
-		draw_next();
+		draw_next_shape();
 	}
 
 	ui_present();
