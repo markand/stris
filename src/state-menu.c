@@ -58,25 +58,14 @@ static struct {
 } title;
 
 static struct list_item items[STATE_MENU_LAST] = {
-	[STATE_MENU_PLAY] = {
-		.text = "Play",
-		.font = UI_FONT_MENU,
-	},
-	[STATE_MENU_SCORES] = {
-		.text = "Scores",
-		.font = UI_FONT_MENU,
-	},
-	[STATE_MENU_SETTINGS] = {
-		.text = "Settings",
-		.font = UI_FONT_MENU
-	},
-	[STATE_MENU_QUIT] = {
-		.text = "Quit",
-		.font = UI_FONT_MENU
-	}
+	[STATE_MENU_PLAY]       = { .text = "Play"      },
+	[STATE_MENU_SCORES]     = { .text = "Scores"    },
+	[STATE_MENU_SETTINGS]   = { .text = "Settings"  },
+	[STATE_MENU_QUIT]       = { .text = "Quit"      }
 };
 
 static struct list menu = {
+	.font = UI_FONT_MENU,
 	.items = items,
 	.itemsz = STATE_MENU_LAST
 };
@@ -102,6 +91,7 @@ static void
 resume(void)
 {
 	list_reset(&menu);
+	list_select(&menu, 0);
 }
 
 static void

@@ -31,6 +31,7 @@
 
 #include "board.h"
 #include "key.h"
+#include "list.h"
 #include "shape.h"
 #include "sound.h"
 #include "state-dead.h"
@@ -50,50 +51,64 @@
 
 #define SHAPE_TEX(d) { .data = d, sizeof (d) }
 
-static struct {
-	int lines;
-	int spent;
-	int blink;
-	int blinkdelay;
-} anim;
-
-static struct {
-	struct tex tex[2];
-	int enable;
-} pause;
+struct geo {
+	int x;
+	int y;
+	int w;
+	int h;
+};
 
 static struct {
 	int lines;
-	int fallrate;
-	int delay;
-	enum shape_kind rand;
+	int pause;
+	Board board;
+
+	// Current and next shape.
 	struct shape shape;
 	struct shape shape_next;
-	Board board;
 } game;
 
 static struct {
-	struct {
-		int x, y, w, h;
-	} header;
+	// Board geometry and background texture.
+	struct geo board_geo;
+	struct tex board_bg;
 
-	struct {
-		int x, y;
-	} pause;
+	// Time for moving shapes.
+	int ticks;
 
-	struct {
-		int x, y, s;
-	} shape;
+	// Next shape bounding box.
+	struct geo next_shape_geo;
 
-	struct {
-		int x, y;
-	} stats[2];
+	// Label "Pause" in the middle of the screen.
+	struct tex pause_text[2];
+	struct geo pause_geo;
 
-	struct {
-		int x, y, w, h;
-		int cw, ch;
-	} board;
-} geo;
+	// Animation.
+	int anim_lines;
+	int anim_ticks;
+	int anim_blink;
+	int anim_blinkticks;
+
+	// Top stats (level, lines)
+	char stat_level[16];
+	char stat_lines[16];
+	struct list_item stat_items[2];
+	struct list stat_list;
+} ui = {
+	// Put default value to compute height.
+	.stat_level = "level 1",
+	.stat_lines = "lines 0",
+	.stat_items = {
+		{ .text = ui.stat_level },
+		{ .text = ui.stat_lines }
+	},
+	.stat_list = {
+		.font = UI_FONT_STATS,
+		.halign = -1,
+		.items = ui.stat_items,
+		.itemsz = LEN(ui.stat_items)
+	}
+};
 
 static struct {
 	struct tex tex;
@@ -110,11 +125,11 @@ static struct {
 	[SHAPE_C] = SHAPE_TEX(data_img_block9),
 	[SHAPE_X] = SHAPE_TEX(data_img_block10),
 	[SHAPE_P] = SHAPE_TEX(data_img_block11),
-	[SHAPE_D] = SHAPE_TEX(data_img_block12)
+	[SHAPE_D] = SHAPE_TEX(data_img_block12),
 };
 
 // https://lospec.com/palette-list/aliengarden-32
-static const unsigned long ramp[10] = {
+static const unsigned long ramp[] = {
 	0x33984bff,
 	0x1e6f50ff,
 	0x0098dcff,
@@ -127,53 +142,8 @@ static const unsigned long ramp[10] = {
 	0x1a1932ff
 };
 
-static struct tex boardbg;
-
 static void
-init_pause(void)
-{
-	// Prepare pause label.
-	ui_render(&pause.tex[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, "pause");
-	ui_render(&pause.tex[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "pause");
-	geo.pause.x = (UI_W - pause.tex[0].w) / 2;
-	geo.pause.y = (UI_H - pause.tex[0].h) / 2;
-}
-
-static void
-init_header(void)
-{
-	// Bounding box with some paddings removed.
-	geo.header.x = (UI_W / 9);
-	geo.header.y = 10;
-	geo.header.w = (UI_W * 7)  / 9;
-	geo.header.h = (UI_H / 16 * 2) - 10;
-
-	// Bounding box for next shape.
-	geo.shape.s = geo.header.h;
-	geo.shape.x = geo.header.x + geo.header.w - geo.shape.s;
-	geo.shape.y = geo.header.y;
-}
-
-static void
-init_stats(void)
-{
-	int h, tw, th;
-
-	// Compute position for stats labels.
-	geo.stats[0].x = geo.stats[1].x = UI_W / 9;
-
-	// We need to compute text height.
-	ui_clip(UI_FONT_STATS, &tw, &th, "lilou");
-	h = geo.header.h;
-	h -= th * 2;
-	h /= 3;
-
-	geo.stats[0].y = 5 + h;
-	geo.stats[1].y = geo.stats[0].y + th + h;
-}
-
-static void
-init_blocks(void)
+init_shapes(void)
 {
 	// Load all blocks.
 	for (size_t i = 0; i < LEN(shapes); ++i)
@@ -182,27 +152,54 @@ init_blocks(void)
 }
 
 static void
-init_board(void)
+init_ui_pause(void)
+{
+	// Prepare pause label.
+	ui_render(&ui.pause_text[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, "pause");
+	ui_render(&ui.pause_text[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "pause");
+	ui.pause_geo.x = (UI_W - ui.pause_text[0].w) / 2;
+	ui.pause_geo.y = (UI_H - ui.pause_text[0].h) / 2;
+}
+
+static void
+init_ui_board(void)
 {
 	struct tex *current;
 
-	// Board geometry.
-	geo.board.x = geo.header.x;
-	geo.board.y = (UI_H * 2)  / 16;
-	geo.board.w = geo.header.w;
-	geo.board.h = (UI_H * 13) / 16;
-	
-	geo.board.cw = shapes[1].tex.w;
-	geo.board.ch = shapes[1].tex.h;
+	// Board dimensions depend on the shape texture.
+	ui.board_geo.w = shapes[1].tex.w * BOARD_W;
+	ui.board_geo.h = shapes[1].tex.h * BOARD_H;
 
-	// Background board.
-	tex_new(&boardbg, geo.board.w, geo.board.h);
-	tex_alpha(&boardbg, 90);
-	current = ui_target(&boardbg);
+	// We center that board horizontally and apply the same padding
+	// vertically from the bottom.
+	ui.board_geo.x = (UI_W - ui.board_geo.w) / 2;
+	ui.board_geo.y = UI_H - ui.board_geo.h - ui.board_geo.x;
 
-	// TODO: change this.
+	// Create a texture for the board background.
+	tex_new(&ui.board_bg, ui.board_geo.w, ui.board_geo.h);
+	tex_alpha(&ui.board_bg, 90);
+	current = ui_target(&ui.board_bg);
 	ui_clear(UI_PALETTE_SHADOW);
 	ui_target(current);
+}
+
+static void
+init_ui_next_shape(void)
+{
+	// The next shape box is located at the top right of the board and
+	// takes the available height, width is equal to height.
+	ui.next_shape_geo.w = ui.next_shape_geo.h = ui.board_geo.y;
+	ui.next_shape_geo.x = ui.board_geo.x + ui.board_geo.w - ui.next_shape_geo.w;
+}
+
+static void
+init_ui_stats(void)
+{
+	ui.stat_list.x = ui.board_geo.x;
+	ui.stat_list.w = ui.board_geo.w;
+	ui.stat_list.h = ui.board_geo.y;
+	list_init(&ui.stat_list);
+	list_reset(&ui.stat_list);
 }
 
 static int
@@ -243,8 +240,8 @@ drop(void)
 	board_set(game.board, &game.shape);
 	sound_play(SOUND_DROP);
 
-	// Make the game spawn immediately.
-	game.delay += game.fallrate;
+	// Make sure the game will spawn a piece immediately.
+	ui.ticks = 1000;
 }
 
 static void
@@ -265,26 +262,6 @@ rotate(void)
 	board_set(game.board, &game.shape);
 }
 
-static void
-draw_stat(int row, const char *fmt, ...)
-{
-	va_list ap;
-	char buf[128];
-	struct tex tex[2];
-
-	va_start(ap, fmt);
-	vsnprintf(buf, sizeof (buf), fmt, ap);
-	va_end(ap);
-
-	ui_render(&tex[0], UI_FONT_STATS, UI_PALETTE_FG, "%s", buf);
-	ui_render(&tex[1], UI_FONT_STATS, UI_PALETTE_SHADOW, "%s", buf);
-
-	tex_draw(&tex[1], geo.stats[row].x + 1, geo.stats[row].y + 1);
-	tex_draw(&tex[0], geo.stats[row].x, geo.stats[row].y);
-	tex_finish(&tex[0]);
-	tex_finish(&tex[1]);
-}
-
 static inline int
 level(void)
 {
@@ -294,84 +271,12 @@ level(void)
 	return (game.lines / 10) + 1;
 }
 
-static void
-draw_stats(void)
+static inline enum shape_kind
+game_select(void)
 {
-	draw_stat(0, "level %d", level());
-	draw_stat(1, "lines %d", game.lines);
-}
-
-static void
-draw_borders(void)
-{
-	// -
-	ui_draw_line(UI_PALETTE_BORDER,
-	    geo.board.x - 1,
-	    geo.board.y - 1,
-	    geo.board.x + geo.board.w,
-	    geo.board.y - 1);
-	ui_draw_line(UI_PALETTE_BORDER,
-	    geo.board.x - 1,
-	    geo.board.y + geo.board.h,
-	    geo.board.x + geo.board.w,
-	    geo.board.y + geo.board.h);
-
-	// |
-	ui_draw_line(UI_PALETTE_BORDER,
-	    geo.board.x - 1,
-	    geo.board.y - 1,
-	    geo.board.x - 1,
-	    geo.board.y + geo.board.h);
-	ui_draw_line(UI_PALETTE_BORDER,
-	    geo.board.x + geo.board.w,
-	    geo.board.y - 1,
-	    geo.board.x + geo.board.w,
-	    geo.board.y + geo.board.h);
-}
-
-static void
-draw_board(void)
-{
-	int s;
-
-	tex_draw(&boardbg, geo.board.x, geo.board.y);
-
-	for (int r = 0; r < BOARD_H; ++r) {
-		// If we're drawing full lines, we make it blink.
-		if (anim.lines >> r & 0x1 && anim.blink)
-			continue;
-
-		for (int c = 0; c < BOARD_W; ++c) {
-			if (!(s = game.board[r][c]))
-				continue;
-
-			tex_draw(&shapes[s].tex,
-			    geo.board.x + (c * geo.board.cw),
-			    geo.board.y + (r * geo.board.ch));
-		}
-	}
-}
-
-static void
-draw_next(void)
-{
-	int wh;
-
-	// Individual cell size.
-	wh = geo.shape.s / 4;
-
-	for (int r = 0; r < 4; ++r) {
-		for (int c = 0; c < 4; ++c) {
-			if (!game.shape_next.def[0][r][c])
-				continue;
-
-			tex_scale(&shapes[game.shape_next.k].tex,
-			    geo.shape.x + (c * wh),
-			    geo.shape.y + (r * wh),
-			    wh, wh);
-		}
-	}
-
+	return state_play_mode == STATE_PLAY_MODE_STANDARD
+		? SHAPE_RANDOM_STD
+		: SHAPE_RANDOM_EXT;
 }
 
 static int
@@ -404,18 +309,8 @@ spawn(void)
 		stris_switch(&state_dead);
 	else {
 		board_set(game.board, &game.shape);
-		shape_select(&game.shape_next, game.rand);
+		shape_select(&game.shape_next, game_select());
 	}
-}
-
-static void
-init(void)
-{
-	init_pause();
-	init_header();
-	init_stats();
-	init_blocks();
-	init_board();
 }
 
 static void
@@ -424,24 +319,175 @@ nightmarize(void)
 	for (int r = 10; r < BOARD_H; ++r)
 		for (int c = 0; c < BOARD_W; ++c)
 			if (NRAND(0, 1) == 0)
-				game.board[r][c] = NRAND(1, SHAPE_RANDOM_STD);
+				game.board[r][c] = NRAND(1, SHAPE_RANDOM_EXT);
+}
+
+static void
+draw_stats(void)
+{
+	list_draw(&ui.stat_list);
+}
+
+static void
+draw_borders(void)
+{
+	// -
+	ui_draw_line(UI_PALETTE_BORDER,
+	    ui.board_geo.x - 1,
+	    ui.board_geo.y - 1,
+	    ui.board_geo.x + ui.board_geo.w,
+	    ui.board_geo.y - 1);
+	ui_draw_line(UI_PALETTE_BORDER,
+	    ui.board_geo.x - 1,
+	    ui.board_geo.y + ui.board_geo.h,
+	    ui.board_geo.x + ui.board_geo.w,
+	    ui.board_geo.y + ui.board_geo.h);
+
+	// |
+	ui_draw_line(UI_PALETTE_BORDER,
+	    ui.board_geo.x - 1,
+	    ui.board_geo.y - 1,
+	    ui.board_geo.x - 1,
+	    ui.board_geo.y + ui.board_geo.h);
+	ui_draw_line(UI_PALETTE_BORDER,
+	    ui.board_geo.x + ui.board_geo.w,
+	    ui.board_geo.y - 1,
+	    ui.board_geo.x + ui.board_geo.w,
+	    ui.board_geo.y + ui.board_geo.h);
+}
+
+static void
+draw_board(void)
+{
+	int s;
+
+	tex_draw(&ui.board_bg, ui.board_geo.x, ui.board_geo.y);
+
+	for (int r = 0; r < BOARD_H; ++r) {
+		// If we're drawing full lines, we make it blink.
+		if (ui.anim_lines >> r & 0x1 && ui.anim_blink)
+			continue;
+
+		for (int c = 0; c < BOARD_W; ++c) {
+			if (!(s = game.board[r][c]))
+				continue;
+
+			tex_draw(&shapes[s].tex,
+			    ui.board_geo.x + (c * shapes[1].tex.w),
+			    ui.board_geo.y + (r * shapes[1].tex.h));
+		}
+	}
+}
+
+static void
+draw_next(void)
+{
+	int wh;
+
+	// Individual cell size.
+	wh = shapes[1].tex.w / 4;
+
+	for (int r = 0; r < 4; ++r) {
+		for (int c = 0; c < 4; ++c) {
+			if (!game.shape_next.def[0][r][c])
+				continue;
+
+			tex_scale(&shapes[game.shape_next.k].tex,
+			    ui.next_shape_geo.x + (c * wh),
+			    ui.next_shape_geo.y + (r * wh),
+			    wh, wh);
+		}
+	}
+}
+
+static void
+cleanup(void)
+{
+	int total, count = 0;
+
+	ui.anim_lines = 0;
+
+	for (int r = 0; r < BOARD_H; ++r) {
+		total = 0;
+
+		for (int c = 0; c < BOARD_W; ++c)
+			if (game.board[r][c])
+				total++;
+
+		if (total >= 10) {
+			ui.anim_lines |= 1 << r;
+			count++;
+		}
+	}
+
+	// No lines? Spawn immediately.
+	if (ui.anim_lines == 0)
+		spawn();
+	else {
+		game.lines += count;
+		sound_play(SOUND_CLEAN);
+	}
+}
+
+static void
+update_anim(int ticks)
+{
+	// Make the line blink.
+	ui.anim_ticks += ticks;
+	ui.anim_blinkticks += ticks;
+
+	if (ui.anim_blinkticks >= ANIM_BLINK) {
+		ui.anim_blink = !ui.anim_blink;
+		ui.anim_blinkticks = 0;
+	}
+
+	if (ui.anim_ticks >= ANIM_DELAY) {
+		ui.anim_ticks = ui.anim_blink = ui.anim_blinkticks = 0;
+
+		// Remove all lines.
+		for (int i = 0; i < 20; ++i)
+			if (ui.anim_lines >> i & 0x1)
+				board_pop(game.board, i);
+
+		ui.anim_lines = 0;
+		spawn();
+	}
+}
+
+static void
+update_game(int ticks)
+{
+	ui.ticks += ticks;
+
+	if (ui.ticks >= FALLRATE_INIT - (level() * FALLRATE_DECR)) {
+		ui.ticks = 0;
+
+		// At the bottom? Spawn a new shape otherwise just place the
+		// new position.
+		if (!fall())
+			cleanup();
+	}
+}
+
+static void
+init(void)
+{
+	init_shapes();
+	init_ui_pause();
+	init_ui_board();
+	init_ui_next_shape();
+	init_ui_stats();
 }
 
 static void
 resume(void)
 {
-	// Depending on the mode.
-	game.rand = state_play_mode >= STATE_PLAY_MODE_EXTENDED
-		? SHAPE_RANDOM_EXT
-		: SHAPE_RANDOM_STD;
-
 	// Select new shapes and positionate the first one.
-	shape_select(&game.shape, game.rand);
-	shape_select(&game.shape_next, game.rand);
+	shape_select(&game.shape, game_select());
+	shape_select(&game.shape_next, game_select());
 
 	game.shape.y = 0;
 	game.shape.x = 3;
-	game.fallrate = FALLRATE_INIT;
 
 	// Apply that shape.
 	board_clear(game.board);
@@ -452,11 +498,11 @@ resume(void)
 		nightmarize();
 
 	// Disable pause and clear scores.
-	pause.enable = 0;
+	game.pause = 0;
 	game.lines = 0;
 
 	// Cleanup animation.
-	memset(&anim, 0, sizeof (anim));
+	//memset(&anim, 0, sizeof (anim));
 }
 
 static void
@@ -465,16 +511,16 @@ onkey(enum key key)
 	switch (key) {
 	case KEY_CANCEL:
 		// Already in pause, escape to main menu then.
-		if (pause.enable)
+		if (game.pause)
 			stris_switch(&state_menu);
 		else
-			pause.enable = 1;
+			game.pause = 1;
 		break;
 	case KEY_SELECT:
 	case KEY_UP:
-		if (pause.enable)
-			pause.enable = 0;
-		else if (!anim.lines)
+		if (game.pause)
+			game.pause = 0;
+		else if (!ui.anim_lines)
 			rotate();
 		break;
 	case KEY_RIGHT:
@@ -495,84 +541,14 @@ onkey(enum key key)
 }
 
 static void
-cleanup(void)
-{
-	int total, count = 0;
-
-	anim.lines = 0;
-
-	for (int r = 0; r < BOARD_H; ++r) {
-		total = 0;
-
-		for (int c = 0; c < BOARD_W; ++c)
-			if (game.board[r][c])
-				total++;
-
-		if (total >= 10) {
-			anim.lines |= 1 << r;
-			count++;
-		}
-	}
-
-	// No lines? Spawn immediately.
-	if (anim.lines == 0)
-		spawn();
-	else {
-		game.lines += count;
-		sound_play(SOUND_CLEAN);
-	}
-}
-
-static void
-update_anim(int ticks)
-{
-	anim.spent += ticks;
-
-	// Make the line blink.
-	anim.blinkdelay += ticks;
-
-	if (anim.blinkdelay >= ANIM_BLINK) {
-		anim.blink = !anim.blink;
-		anim.blinkdelay = 0;
-	}
-
-	if (anim.spent >= ANIM_DELAY) {
-		anim.spent = anim.blink = anim.blinkdelay = 0;
-
-		// Remove all lines.
-		for (int i = 0; i < 20; ++i)
-			if (anim.lines >> i & 0x1)
-				board_pop(game.board, i);
-
-		anim.lines = 0;
-		spawn();
-	}
-}
-
-static void
-update_game(int ticks)
-{
-	game.delay += ticks;
-
-	if (game.delay >= FALLRATE_INIT - (level() * FALLRATE_DECR)) {
-		game.delay = 0;
-
-		// At the bottom? Spawn a new shape otherwise just place the
-		// new position.
-		if (!fall())
-			cleanup();
-	}
-}
-
-static void
 update(int ticks)
 {
-	if (pause.enable)
+	if (game.pause)
 		return;
 
 	ui_update_background(ramp[level() - 1], ticks);
 
-	if (anim.lines)
+	if (ui.anim_lines)
 		update_anim(ticks);
 	else
 		update_game(ticks);
@@ -584,9 +560,9 @@ draw(void)
 	ui_clear(UI_PALETTE_MENU_BG);
 	ui_draw_background();
 
-	if (pause.enable) {
-		tex_draw(&pause.tex[1], geo.pause.x + 1, geo.pause.y + 1);
-		tex_draw(&pause.tex[0], geo.pause.x, geo.pause.y);
+	if (game.pause) {
+		tex_draw(&ui.pause_text[1], ui.pause_geo.x + 1, ui.pause_geo.y + 1);
+		tex_draw(&ui.pause_text[0], ui.pause_geo.x,     ui.pause_geo.y);
 	} else {
 		draw_stats();
 		draw_borders();
@@ -600,8 +576,8 @@ draw(void)
 static void
 finish(void)
 {
-	tex_finish(&pause.tex[0]);
-	tex_finish(&pause.tex[1]);
+	tex_finish(&ui.pause_text[0]);
+	tex_finish(&ui.pause_text[1]);
 
 	for (size_t i = 0; i < LEN(shapes); ++i)
 		tex_finish(&shapes[i].tex);

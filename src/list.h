@@ -28,7 +28,6 @@ enum key;
 struct list_item {
 	// User editable fields.
 	const char *text;
-	enum ui_font font;
 
 	// Private fields.
 	int x;
@@ -42,12 +41,14 @@ struct list_item {
 };
 
 struct list {
+	enum ui_font font;
 	int halign;
 	int valign;
 	int x;
 	int y;
 	int w;
 	int h;
+	int p;
 	size_t selection;
 	struct list_item *items;
 	size_t itemsz;
@@ -58,6 +59,9 @@ list_init(struct list *);
 
 void
 list_reset(struct list *);
+
+void
+list_select(struct list *, size_t);
 
 int
 list_onkey(struct list *, enum key);

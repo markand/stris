@@ -23,7 +23,6 @@
 #include "list.h"
 #include "tex.h"
 
-#define PAD 10
 #define GAP 4
 
 static inline unsigned int
@@ -87,15 +86,15 @@ update(struct list_item *item, int ticks)
 }
 
 static void
-draw(const struct list_item *item)
+draw(const struct list *l, const struct list_item *item)
 {
 	struct tex tex;
 
-	ui_render(&tex, item->font, UI_PALETTE_SHADOW, item->text);
+	ui_render(&tex, l->font, UI_PALETTE_SHADOW, item->text);
 	tex_draw(&tex, item->x + 1, item->y + 1);
 	tex_finish(&tex);
 
-	ui_render(&tex, item->font, item->colorcur, item->text);
+	ui_render(&tex, l->font, item->colorcur, item->text);
 	tex_draw(&tex, item->x, item->y);
 	tex_finish(&tex);
 }
@@ -104,15 +103,15 @@ static void
 halign(struct list *l)
 {
 	for (size_t i = 0; i < l->itemsz; ++i) {
-		ui_clip(l->items[i].font, &l->items[i].w, &l->items[i].h,
+		ui_clip(l->font, &l->items[i].w, &l->items[i].h,
 		    "%s", l->items[i].text);
 
 		switch (l->halign) {
 		case -1:
-			l->items[i].x = l->x + PAD;
+			l->items[i].x = l->x + l->p;
 			break;
 		case 1:
-			l->items[i].x = l->x + l->w - l->items[i].w - PAD;
+			l->items[i].x = l->x + l->w - l->items[i].w - l->p;
 			break;
 		default:
 			l->items[i].x = l->x + (l->w - l->items[i].w) / 2;
@@ -128,8 +127,8 @@ valign(struct list *l)
 
 	switch (l->valign) {
 	case -1:
-		ystart = PAD;
-		vspace = PAD;
+		ystart = l->p;
+		vspace = l->p;
 		break;
 	default:
 		// Center.
@@ -160,8 +159,16 @@ list_reset(struct list *l)
 
 	for (size_t i = 0; i < l->itemsz; ++i)
 		discard(&l->items[i]);
+}
 
-	take(&l->items[0]);
+void
+list_select(struct list *l, size_t index)
+{
+	assert(l);
+	assert(index < l->itemsz);
+
+	discard(&l->items[l->selection]);
+	take(&l->items[l->selection = index]);
 }
 
 int
@@ -193,10 +200,8 @@ list_onkey(struct list *l, enum key key)
 	}
 
 	// We also need to reset old one.
-	if (newsel != l->selection) {
-		discard(&l->items[l->selection]);
-		take(&l->items[l->selection = newsel]);
-	}
+	if (newsel != l->selection)
+		list_select(l, newsel);
 
 	return ret;
 }
@@ -216,5 +221,5 @@ list_draw(const struct list *l)
 	assert(l);
 
 	for (size_t i = 0; i < l->itemsz; ++i)
-		draw(&l->items[i]);
+		draw(l, &l->items[i]);
 }

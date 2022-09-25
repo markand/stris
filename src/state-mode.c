@@ -28,21 +28,13 @@
 #include "util.h"
 
 static struct list_item items[] = {
-	[STATE_PLAY_MODE_STANDARD] = {
-		.text = "standard",
-		.font = UI_FONT_MENU_SMALL
-	},
-	[STATE_PLAY_MODE_EXTENDED] = {
-		.text = "extended",
-		.font = UI_FONT_MENU_SMALL
-	},
-	[STATE_PLAY_MODE_NIGHTMARE] = {
-		.text = "nightmare",
-		.font = UI_FONT_MENU_SMALL
-	}
+	[STATE_PLAY_MODE_STANDARD]      = { .text = "standard"  },
+	[STATE_PLAY_MODE_EXTENDED]      = { .text = "extended"  },
+	[STATE_PLAY_MODE_NIGHTMARE]     = { .text = "nightmare" }
 };
 
 static struct list menu = {
+	.font = UI_FONT_MENU_SMALL,
 	.items = items,
 	.itemsz = LEN(items),
 	.w = UI_W,
@@ -59,6 +51,7 @@ static void
 resume(void)
 {
 	list_reset(&menu);
+	list_select(&menu, 0);
 }
 
 static void

@@ -34,21 +34,17 @@ enum state_menu {
 };
 
 static struct list_item items[] = {
-	[STATE_MENU_SOUND] = {
-		.text = "Sounds",
-		.font = UI_FONT_MENU_SMALL
-	},
-	[STATE_MENU_MUSIC] = {
-		.text = "Music",
-		.font = UI_FONT_MENU_SMALL
-	}
+	[STATE_MENU_SOUND] = { .text = "Sounds" },
+	[STATE_MENU_MUSIC] = { .text = "Music"  }
 };
 
 static struct list menu = {
+	.font = UI_FONT_MENU_SMALL,
 	.items = items,
 	.itemsz = STATE_MENU_LAST,
 	.halign = -1,
-	.valign = -1
+	.valign = -1,
+	.p = 10
 };
 
 static void
@@ -77,6 +73,7 @@ static void
 resume(void)
 {
 	list_reset(&menu);
+	list_select(&menu, 0);
 }
 
 static void

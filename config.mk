@@ -1,1 +1,1 @@
-CFLAGS= -O3 -DNDEBUG -Wall -Wextra
+CFLAGS= -O0 -Wall -Wextra -g -DSTRIS_NO_SPLASH
