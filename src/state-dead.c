@@ -40,9 +40,16 @@ init(void)
 static void
 onkey(enum key key)
 {
-	(void)key;
-
-	stris_switch(&state_menu);
+	switch (key) {
+	case KEY_CANCEL:
+	case KEY_SELECT:
+		// Only switch on escape/validation otherwise we skip game over
+		// too quickly.
+		stris_switch(&state_menu);
+		break;
+	default:
+		break;
+	}
 }
 
 static void
