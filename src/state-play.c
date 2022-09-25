@@ -115,17 +115,18 @@ static struct {
 	const void *data;
 	size_t datasz;
 } shapes[] = {
-	[SHAPE_O] = SHAPE_TEX(data_img_block5),
-	[SHAPE_I] = SHAPE_TEX(data_img_block6),
-	[SHAPE_S] = SHAPE_TEX(data_img_block2),
-	[SHAPE_Z] = SHAPE_TEX(data_img_block4),
-	[SHAPE_L] = SHAPE_TEX(data_img_block1),
-	[SHAPE_J] = SHAPE_TEX(data_img_block8),
-	[SHAPE_T] = SHAPE_TEX(data_img_block3),
-	[SHAPE_C] = SHAPE_TEX(data_img_block9),
-	[SHAPE_X] = SHAPE_TEX(data_img_block10),
-	[SHAPE_P] = SHAPE_TEX(data_img_block11),
-	[SHAPE_D] = SHAPE_TEX(data_img_block12),
+	SHAPE_TEX(data_img_block5),
+	SHAPE_TEX(data_img_block6),
+	SHAPE_TEX(data_img_block2),
+	SHAPE_TEX(data_img_block4),
+	SHAPE_TEX(data_img_block1),
+	SHAPE_TEX(data_img_block8),
+	SHAPE_TEX(data_img_block3),
+	SHAPE_TEX(data_img_block9),
+	SHAPE_TEX(data_img_block10),
+	SHAPE_TEX(data_img_block11),
+	SHAPE_TEX(data_img_block12),
+	SHAPE_TEX(data_img_block7),
 };
 
 // https://lospec.com/palette-list/aliengarden-32
@@ -271,12 +272,17 @@ level(void)
 	return (game.lines / 10) + 1;
 }
 
-static inline enum shape_kind
+static inline enum shape_rand
 game_select(void)
 {
-	return state_play_mode == STATE_PLAY_MODE_STANDARD
-		? SHAPE_RANDOM_STD
-		: SHAPE_RANDOM_EXT;
+	switch (state_play_mode) {
+	case STATE_PLAY_MODE_EXTENDED:
+		return SHAPE_RAND_EXTENDED;
+	case STATE_PLAY_MODE_NIGHTMARE:
+		return SHAPE_RAND_NIGHTMARE;
+	default:
+		return SHAPE_RAND_STANDARD;
+	}
 }
 
 static int
@@ -316,10 +322,10 @@ spawn(void)
 static void
 nightmarize(void)
 {
-	for (int r = 10; r < BOARD_H; ++r)
+	for (int r = 16; r < BOARD_H; ++r)
 		for (int c = 0; c < BOARD_W; ++c)
 			if (NRAND(0, 1) == 0)
-				game.board[r][c] = NRAND(1, SHAPE_RANDOM_EXT);
+				game.board[r][c] = NRAND(0, LEN(shapes) - 1);
 }
 
 static void

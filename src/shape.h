@@ -19,25 +19,14 @@
 #ifndef STRIS_SHAPE_H
 #define STRIS_SHAPE_H
 
-enum shape_kind {
-	SHAPE_NONE,
-	SHAPE_O,
-	SHAPE_I,
-	SHAPE_S,
-	SHAPE_Z,
-	SHAPE_L,
-	SHAPE_J,
-	SHAPE_T,
-	SHAPE_C,
-	SHAPE_X,
-	SHAPE_P,
-	SHAPE_D,
-	SHAPE_RANDOM_STD = 7,
-	SHAPE_RANDOM_EXT = 11
+enum shape_rand {
+	SHAPE_RAND_STANDARD = 6,
+	SHAPE_RAND_EXTENDED = 9,
+	SHAPE_RAND_NIGHTMARE = 11 
 };
 
 struct shape {
-	enum shape_kind k;
+	int k;
 	int x;
 	int y;
 	int o;
@@ -45,7 +34,7 @@ struct shape {
 };
 
 void
-shape_select(struct shape *, enum shape_kind);
+shape_select(struct shape *, enum shape_rand);
 
 void
 shape_rotate(struct shape *, int);
