@@ -34,6 +34,7 @@ void
 board_pop(Board b, int y)
 {
 	memmove(b + 1, b, y * sizeof (b[y]));
+	memset(b, 0, sizeof (b[0]));
 }
 
 int
@@ -69,7 +70,7 @@ board_set(Board b, const struct shape *s)
 	for (int r = 0; r < 4 && s->y + r < BOARD_H; ++r)
 		for (int c = 0; c < 4 && s->x + c < BOARD_W; ++c)
 			if (s->def[s->o][r][c] && !b[s->y + r][s->x + c])
-				b[s->y + r][s->x + c] = s->k;
+				b[s->y + r][s->x + c] = s->k + 1;
 }
 
 void

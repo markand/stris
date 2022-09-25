@@ -364,9 +364,9 @@ shape_select(struct shape *s, enum shape_rand r)
 	// Non-standard pieces are a bit harder to play so we don't spawn them
 	// with the same chance as standard pieces.
 	if (NRAND(0, 3) == 0)
-		s->k = NRAND(1, r);
+		s->k = NRAND(0, r);
 	else
-		s->k = NRAND(1, SHAPE_RAND_STANDARD);
+		s->k = NRAND(0, SHAPE_RAND_STANDARD);
 
 	memcpy(s->def, shapes[s->k], sizeof (s->def));
 }

@@ -122,6 +122,7 @@ tests: ${TESTS_OBJS}
 	for t in ${TESTS_OBJS}; do ./$$t; done
 
 app:
+	rm -rf STris.app
 	mkdir -p STris.app
 	mkdir -p STris.app/Contents/MacOS
 	mkdir -p STris.app/Contents/Resources

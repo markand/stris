@@ -380,7 +380,7 @@ draw_board(void)
 			if (!(s = game.board[r][c]))
 				continue;
 
-			tex_draw(&shapes[s].tex,
+			tex_draw(&shapes[s - 1].tex,
 			    ui.board_geo.x + (c * shapes[1].tex.w),
 			    ui.board_geo.y + (r * shapes[1].tex.h));
 		}
@@ -530,11 +530,7 @@ resume(void)
 		nightmarize();
 
 	// Disable pause and clear scores.
-	game.pause = 0;
-	game.lines = 0;
-
-	// Cleanup animation.
-	//memset(&anim, 0, sizeof (anim));
+	game.pause = game.lines = 0;
 }
 
 static void
