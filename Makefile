@@ -19,20 +19,28 @@
 .POSIX:
 
 # At the moment clang is the only one aware enough of C23 features.
+HOST_CC=                clang
+HOST_CFLAGS=            -O3 -DNDEBUG
+HOST_LDFLAGS=
+
 CC=                     clang
 CFLAGS=                 -std=c2x -O3 -DNDEBUG
+PKGCONF=                pkg-config
 
-SDL2_INCS=              `pkg-config --cflags sdl2`
-SDL2_LIBS=              `pkg-config --libs sdl2`
+PREFIX=                 /usr/local
+VARDIR=                 ${PREFIX}/var
 
-SDL2_IMAGE_INCS=        `pkg-config --cflags SDL2_image`
-SDL2_IMAGE_LIBS=        `pkg-config --libs SDL2_image`
+SDL2_INCS=              `${PKGCONF} --cflags sdl2`
+SDL2_LIBS=              `${PKGCONF} --libs sdl2`
 
-SDL2_MIXER_INCS=        `pkg-config --cflags SDL2_mixer`
-SDL2_MIXER_LIBS=        `pkg-config --libs SDL2_mixer`
+SDL2_IMAGE_INCS=        `${PKGCONF} --cflags SDL2_image`
+SDL2_IMAGE_LIBS=        `${PKGCONF} --libs SDL2_image`
 
-SDL2_TTF_INCS=          `pkg-config --cflags SDL2_ttf`
-SDL2_TTF_LIBS=          `pkg-config --libs SDL2_ttf`
+SDL2_MIXER_INCS=        `${PKGCONF} --cflags SDL2_mixer`
+SDL2_MIXER_LIBS=        `${PKGCONF} --libs SDL2_mixer`
+
+SDL2_TTF_INCS=          `${PKGCONF} --cflags SDL2_ttf`
+SDL2_TTF_LIBS=          `${PKGCONF} --libs SDL2_ttf`
 
 -include config.mk
 
@@ -46,6 +54,7 @@ SRCS=                   src/board.c \
                         src/state-menu.c \
                         src/state-mode.c \
                         src/state-play.c \
+                        src/state-scores.c \
                         src/state-settings.c \
                         src/state-splash.c \
                         src/state.c \
@@ -80,13 +89,15 @@ DATA=                   data/fonts/actionj.h \
 TESTS=                  tests/test-board.c
 TESTS_OBJS=             ${TESTS:.c=}
 
+DEFS=                   -DVARDIR=\"${VARDIR}\"
 INCS=                   -Idata \
                         -Iextern/libdt \
                         -Isrc \
                         ${SDL2_INCS} \
                         ${SDL2_IMAGE_INCS} \
                         ${SDL2_TTF_INCS}
-LIBS=                   ${SDL2_LIBS} \
+LIBS=                   -lm \
+                        ${SDL2_LIBS} \
                         ${SDL2_IMAGE_LIBS} \
                         ${SDL2_MIXER_LIBS} \
                         ${SDL2_TTF_LIBS}
@@ -100,7 +111,7 @@ all: ${PROG}
 	${CC} ${INCS} ${CFLAGS} -o $@ $< ${OBJS} ${LIBS} ${LDFLAGS}
 
 .c.o:
-	${CC} ${INCS} ${CFLAGS} -MMD -c $< -o $@
+	${CC} ${DEFS} ${INCS} ${CFLAGS} -MMD -c $< -o $@
 
 .otf.h .png.h .ttf.h .wav.h:
 	extern/bcc/bcc -sc0 $< $< > $@
@@ -108,7 +119,7 @@ all: ${PROG}
 -include ${DEPS}
 
 extern/bcc/bcc: extern/bcc/bcc.c
-	${CC} ${CFLAGS} -o $@ extern/bcc/bcc.c ${LDFLAGS}
+	${HOST_CC} ${HOST_CFLAGS} -o $@ extern/bcc/bcc.c ${HOST_LDFLAGS}
 
 ${DATA}: extern/bcc/bcc
 
@@ -135,6 +146,6 @@ app:
 		-p @executable_path/../Frameworks
 
 clean:
-	rm -f ${PROG} ${OBJS} ${DEPS} ${DATA} ${TESTS_OBJS}
+	rm -f extern/bcc/bcc ${PROG} ${OBJS} ${DEPS} ${DATA} ${TESTS_OBJS}
 
 .PHONY: all clean tests

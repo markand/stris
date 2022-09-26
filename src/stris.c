@@ -26,6 +26,7 @@
 #include "state-menu.h"
 #include "state-mode.h"
 #include "state-play.h"
+#include "state-scores.h"
 #include "state-settings.h"
 #include "state-splash.h"
 #include "state.h"
@@ -57,6 +58,7 @@ static struct state *states[] = {
 	&state_menu,
 	&state_mode,
 	&state_play,
+	&state_scores,
 	&state_settings,
 	&state_splash
 };

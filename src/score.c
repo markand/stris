@@ -17,10 +17,34 @@
  */
 
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "score.h"
+
+//
+// Depending on the system, we don't store the score files in the same
+// directory and in the same permissions.
+//
+// Windows: TBD
+// macOS:   In the Resources folder on top of the executable directory
+// *:       $PREFIX/var/db/stris
+//
+
+#if !defined(_WIN32)
+
+const char *
+score_basedir(void)
+{
+	static char path[PATH_MAX];
+
+	snprintf(path, sizeof (path), VARDIR "/db/stris");
+
+	return path;
+}
+
+#endif
 
 void
 score_read(struct score_list *list, const char *path)
@@ -33,7 +57,7 @@ score_read(struct score_list *list, const char *path)
 	char fmt[32];
 
 	memset(list, 0, sizeof (*list));
-	snprintf(fmt, sizeof (fmt), "%%%d[^\n] %%d", SCORE_NAME_MAX);
+	snprintf(fmt, sizeof (fmt), "%%%d[^:]:%%d\n", SCORE_NAME_MAX);
 
 	if (!(fp = fopen(path, "r")))
 		return;
@@ -41,67 +65,35 @@ score_read(struct score_list *list, const char *path)
 	while (list->scoresz < SCORE_LIST_MAX) {
 		sc = &list->scores[list->scoresz];
 
-		if (fscanf(fp, fmt, &sc->lines, sc->who) != 2)
+		if (fscanf(fp, fmt, sc->who, &sc->lines) != 2)
 			break;
 
 		list->scoresz++;
 	}
 }
 
-#if 0
-int
-score_check_top10(const score_list_t *list, const struct score *sc)
-{
-	struct score *s;
-
-	if (TAILQ_EMPTY(list) || score_count(list) < 10)
-		return true;
-
-	TAILQ_FOREACH(s, list, link) {
-		if (sc->score > s->score)
-			return true;
-	}
-
-	return false;
-}
-#endif
-
 void
 score_add(struct score_list *list, const struct score *sc)
 {
-	(void)list;
-	(void)sc;
-#if 0
-	struct score *s;
-	struct score *news;
+	size_t pos;
 
-	if (!score_check_top10(list, sc))
+	for (pos = 0; pos < list->scoresz; ++pos)
+		if (sc->lines >= list->scores[pos].lines)
+			break;
+
+	// Out of limits.
+	if (pos >= SCORE_LIST_MAX)
 		return;
 
-	/* Alloc a new one, caller can safely pass a local variable */
-	news = xmalloc(sizeof (*news));
-	memcpy(news, sc, sizeof (*news));
+	// Need to move existing scores?
+	if (pos < list->scoresz)
+		memmove(&list->scores[pos + 1], &list->scores[pos],
+		    (list->scoresz - pos - 1) * sizeof (*sc));
 
-	if (TAILQ_EMPTY(list))
-		TAILQ_INSERT_HEAD(list, news, link);
-	else {
-		TAILQ_FOREACH(s, list, link)
-			if (sc->score > s->score)
-				break;
+	memcpy(&list->scores[pos], sc, sizeof (*sc));
 
-		if (!s)
-			TAILQ_INSERT_TAIL(list, news, link);
-		else
-			TAILQ_INSERT_BEFORE(s, news, link);
-	}
-
-	/* Remove old bits > 10 */
-	while (score_count(list) > 10) {
-		s = TAILQ_LAST(list, score_list_t);
-		TAILQ_REMOVE(list, s, link);
-		free(s);
-	}
-#endif
+	if (list->scoresz < SCORE_LIST_MAX)
+		list->scoresz++;
 }
 
 void
@@ -113,7 +105,7 @@ score_write(const struct score_list *list, const char *path)
 		return;
 
 	for (size_t i = 0; i < list->scoresz; ++i)
-		fprintf(fp, "%s %d\n", list->scores[i].who, list->scores[i].lines);
+		fprintf(fp, "%s:%d\n", list->scores[i].who, list->scores[i].lines);
 
 	fclose(fp);
 }

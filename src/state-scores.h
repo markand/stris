@@ -1,5 +1,5 @@
 /*
- * score.h -- score handling
+ * state-scores.h -- show high scores
  *
  * Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
  *
@@ -16,34 +16,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_SCORE_H
-#define STRIS_SCORE_H
+#ifndef STRIS_STATE_SCORES_H
+#define STRIS_STATE_SCORES_H
 
-#include <stddef.h>
+extern struct state state_scores;
 
-#define SCORE_NAME_MAX 32
-#define SCORE_LIST_MAX 10
-
-struct score {
-	char who[SCORE_NAME_MAX + 1];
-	int lines;
-};
-
-struct score_list {
-	struct score scores[SCORE_LIST_MAX];
-	size_t scoresz;
-};
-
-const char *
-score_basedir(void);
-
-void
-score_read(struct score_list *, const char *);
-
-void
-score_add(struct score_list *, const struct score *);
-
-void
-score_write(const struct score_list *, const char *);
-
-#endif /* STRIS_SCORE_H */
+#endif /* !STRIS_STATE_SCORES_H */
