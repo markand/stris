@@ -1,5 +1,5 @@
 #
-# Makefile -- mostly POSIX Makefile for STris
+# GNUmakefile -- Makefile for STris
 #
 # Copyright (c) 2011-2022 David Demelier <markand@malikania.fr>
 #
@@ -16,36 +16,38 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-.POSIX:
+# Host compiler.
+HOST_CC :=              clang
+HOST_CFLAGS :=          -O3 -DNDEBUG
+HOST_LDFLAGS :=
 
-# At the moment clang is the only one aware enough of C23 features.
-HOST_CC=                clang
-HOST_CFLAGS=            -O3 -DNDEBUG
-HOST_LDFLAGS=
+CC :=                   clang
+CFLAGS :=               -O3 -DNDEBUG
+PKGCONF :=              pkg-config
 
-CC=                     clang
-CFLAGS=                 -std=c2x -O3 -DNDEBUG
-PKGCONF=                pkg-config
-
+# Installation paths.
 PREFIX=                 /usr/local
-VARDIR=                 ${PREFIX}/var
+VARDIR=                 $(PREFIX)/var
 
-SDL2_INCS=              `${PKGCONF} --cflags sdl2`
-SDL2_LIBS=              `${PKGCONF} --libs sdl2`
+# Path to libraries.
+SDL2_INCS :=            $(shell $(PKGCONF) --cflags sdl2)
+SDL2_LIBS :=            $(shell $(PKGCONF) --libs sdl2)
 
-SDL2_IMAGE_INCS=        `${PKGCONF} --cflags SDL2_image`
-SDL2_IMAGE_LIBS=        `${PKGCONF} --libs SDL2_image`
+SDL2_IMAGE_INCS :=      $(shell $(PKGCONF) --cflags SDL2_image)
+SDL2_IMAGE_LIBS :=      $(shell $(PKGCONF) --libs SDL2_image)
 
-SDL2_MIXER_INCS=        `${PKGCONF} --cflags SDL2_mixer`
-SDL2_MIXER_LIBS=        `${PKGCONF} --libs SDL2_mixer`
+SDL2_MIXER_INCS :=      $(shell $(PKGCONF) --cflags SDL2_mixer)
+SDL2_MIXER_LIBS :=      $(shell $(PKGCONF) --libs SDL2_mixer)
 
-SDL2_TTF_INCS=          `${PKGCONF} --cflags SDL2_ttf`
-SDL2_TTF_LIBS=          `${PKGCONF} --libs SDL2_ttf`
+SDL2_TTF_INCS :=        $(shell $(PKGCONF) --cflags SDL2_ttf)
+SDL2_TTF_LIBS :=        $(shell $(PKGCONF) --libs SDL2_ttf)
+
+# No user modifications below this line.
 
 -include config.mk
 
-PROG=                   src/stris
-SRCS=                   src/board.c \
+PROG :=                 stris
+SRCS :=                 src/board.c \
                         src/list.c \
                         src/score.c \
                         src/shape.c \
@@ -58,14 +60,15 @@ SRCS=                   src/board.c \
                         src/state-settings.c \
                         src/state-splash.c \
                         src/state.c \
+                        src/stris.c \
                         src/sys.c \
                         src/tex.c \
                         src/ui.c \
                         src/util.c
-OBJS=                   ${SRCS:.c=.o}
-DEPS=                   ${SRCS:.c=.d}
+OBJS :=                 $(SRCS:.c=.o)
+DEPS :=                 $(SRCS:.c=.d)
 
-DATA=                   data/fonts/actionj.h \
+DATA :=                 data/fonts/actionj.h \
                         data/fonts/cartoon-relief.h \
                         data/fonts/instruction.h \
                         data/fonts/typography-ties.h \
@@ -86,59 +89,49 @@ DATA=                   data/fonts/actionj.h \
                         data/sound/move.h \
                         data/sound/startup.h
 
-TESTS=                  tests/test-board.c
-TESTS_OBJS=             ${TESTS:.c=}
-
-DEFS=                   -DVARDIR=\"${VARDIR}\"
-INCS=                   -Idata \
+DEFS :=                 -DVARDIR=\"$(VARDIR)\"
+INCS :=                 -Idata \
                         -Iextern/libdt \
                         -Isrc \
-                        ${SDL2_INCS} \
-                        ${SDL2_IMAGE_INCS} \
-                        ${SDL2_TTF_INCS}
-LIBS=                   -lm \
-                        ${SDL2_LIBS} \
-                        ${SDL2_IMAGE_LIBS} \
-                        ${SDL2_MIXER_LIBS} \
-                        ${SDL2_TTF_LIBS}
+                        $(SDL2_INCS) \
+                        $(SDL2_IMAGE_INCS) \
+                        $(SDL2_TTF_INCS)
+LIBS :=                 -lm \
+                        $(SDL2_LIBS) \
+                        $(SDL2_IMAGE_LIBS) \
+                        $(SDL2_MIXER_LIBS) \
+                        $(SDL2_TTF_LIBS)
 
 .SUFFIXES:
 .SUFFIXES: .h .o .c .otf .png .ttf .wav
 
-all: ${PROG}
-
-.c:
-	${CC} ${INCS} ${CFLAGS} -o $@ $< ${OBJS} ${LIBS} ${LDFLAGS}
+all: $(PROG)
 
 .c.o:
-	${CC} ${DEFS} ${INCS} ${CFLAGS} -MMD -c $< -o $@
+	$(CC) $(DEFS) $(INCS) $(CFLAGS) -MMD -c $< -o $@
 
 .otf.h .png.h .ttf.h .wav.h:
-	extern/bcc/bcc -sc0 $< $< > $@
+	./extern/bcc/bcc -sc0 $< $< > $@
 
--include ${DEPS}
+-include $(DEPS)
 
 extern/bcc/bcc: extern/bcc/bcc.c
-	${HOST_CC} ${HOST_CFLAGS} -o $@ extern/bcc/bcc.c ${HOST_LDFLAGS}
+	$(HOST_CC) $(HOST_CFLAGS) -o $@ extern/bcc/bcc.c $(HOST_LDFLAGS)
 
-${DATA}: extern/bcc/bcc
+$(DATA): extern/bcc/bcc
 
-${OBJS}: ${DATA}
+$(OBJS): $(DATA)
 
-${PROG}: ${OBJS}
+$(PROG): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS)
 
-${TESTS_OBJS}: ${OBJS}
-
-tests: ${TESTS_OBJS}
-	for t in ${TESTS_OBJS}; do ./$$t; done
-
-app:
+macos-app:
 	rm -rf STris.app
 	mkdir -p STris.app
 	mkdir -p STris.app/Contents/MacOS
 	mkdir -p STris.app/Contents/Resources
 	mkdir -p STris.app/Contents/Frameworks
-	cp ${PROG} STris.app/Contents/MacOS/STris
+	cp $(PROG) STris.app/Contents/MacOS/STris
 	cp apple/Info.plist STris.app/Contents
 	dylibbundler -od -of -b -ns \
 		-d STris.app/Contents/Frameworks \
@@ -146,6 +139,6 @@ app:
 		-p @executable_path/../Frameworks
 
 clean:
-	rm -f extern/bcc/bcc ${PROG} ${OBJS} ${DEPS} ${DATA} ${TESTS_OBJS}
+	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA) $(TESTS_OBJS)
 
 .PHONY: all clean tests

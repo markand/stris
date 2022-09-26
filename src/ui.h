@@ -33,7 +33,7 @@ enum ui_font {
 };
 
 // https://lospec.com/palette-list/give-me-grey-52
-enum ui_palette {
+enum ui_palette : unsigned long {
 	UI_PALETTE_SPLASH_BG    = 0x3f4a69ff,
 	UI_PALETTE_FG           = 0xffffffff,
 	UI_PALETTE_MENU_BG      = 0xb3b9d1ff,
