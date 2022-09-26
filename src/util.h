@@ -33,4 +33,7 @@ die(const char *, ...);
 long long int
 clamp(long long int, long long int, long long int);
 
+const char *
+username(void);
+
 #endif /* !STRIS_UTIL_H */

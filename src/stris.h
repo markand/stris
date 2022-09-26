@@ -21,6 +21,12 @@
 
 struct state;
 
+enum stris_mode {
+	STRIS_MODE_STANDARD,
+	STRIS_MODE_EXTENDED,
+	STRIS_MODE_NIGHTMARE
+};
+
 extern struct sconf {
 	int sound;
 	int music;

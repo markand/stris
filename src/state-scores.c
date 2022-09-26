@@ -17,7 +17,6 @@
  */
 
 #include <assert.h>
-#include <limits.h>
 
 #include "key.h"
 #include "list.h"
@@ -29,14 +28,6 @@
 #include "tex.h"
 #include "ui.h"
 #include "util.h"
-
-#if !defined(PATH_MAX)
-#       if defined(_POSIX_PATH_MAX)
-#               define PATH_MAX _POSIX_PATH_MAX
-#       else
-#               define PATH_MAX 1024
-#       endif
-#endif
 
 //
 // View is as following:
@@ -101,13 +92,11 @@ init(void)
 }
 
 static void
-populate(struct view *v, const char *filename)
+populate(struct view *v, const char *path)
 {
-	char path[PATH_MAX];
 	struct score_list list;
 
 	// Open score file before filling up the list.
-	snprintf(path, sizeof (path), "%s/%s", score_basedir(), filename);
 	score_read(&list, path);
 
 	// Populate left (names) and right (lines) lists with that score file.
@@ -128,14 +117,8 @@ populate(struct view *v, const char *filename)
 static void
 resume(void)
 {
-	static const char * const filenames[] = {
-		"scores-s.txt",
-		"scores-e.txt",
-		"scores-n.txt"
-	};
-
 	for (size_t m = 0; m < 3; ++m)
-		populate(&views[m], filenames[m]);
+		populate(&views[m], score_path(m));
 
 	selected = 0;
 }

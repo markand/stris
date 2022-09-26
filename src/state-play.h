@@ -19,12 +19,7 @@
 #ifndef STRIS_STATE_PLAY
 #define STRIS_STATE_PLAY
 
-extern enum state_play_mode {
-	STATE_PLAY_MODE_STANDARD,
-	STATE_PLAY_MODE_EXTENDED,
-	STATE_PLAY_MODE_NIGHTMARE,
-} state_play_mode;
-
+extern enum stris_mode state_play_mode;
 extern struct state state_play;
 
 #endif /* !STRIS_STATE_PLAY */

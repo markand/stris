@@ -21,13 +21,19 @@ HOST_CC :=              clang
 HOST_CFLAGS :=          -O3 -DNDEBUG
 HOST_LDFLAGS :=
 
+# Target compiler.
 CC :=                   clang
 CFLAGS :=               -O3 -DNDEBUG
 PKGCONF :=              pkg-config
 
+# User and groups (mostly for scores).
+UID :=                  root
+GID :=                  games
+
 # Installation paths.
-PREFIX=                 /usr/local
-VARDIR=                 $(PREFIX)/var
+PREFIX :=               /usr/local
+BINDIR :=               $(PREFIX)/bin
+VARDIR :=               $(PREFIX)/var
 
 # Path to libraries.
 SDL2_INCS :=            $(shell $(PKGCONF) --cflags sdl2)
@@ -91,7 +97,6 @@ DATA :=                 data/fonts/actionj.h \
 
 DEFS :=                 -DVARDIR=\"$(VARDIR)\"
 INCS :=                 -Idata \
-                        -Iextern/libdt \
                         -Isrc \
                         $(SDL2_INCS) \
                         $(SDL2_IMAGE_INCS) \
@@ -125,6 +130,15 @@ $(OBJS): $(DATA)
 $(PROG): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS)
 
+install:
+	mkdir -p $(DESTDIR)$(BINDIR)
+	cp $(PROG) $(DESTDIR)$(BINDIR)
+	chown $(UID):$(GID) $(DESTDIR)$(BINDIR)/$(PROG)
+	chmod 2755 $(DESTDIR)$(BINDIR)/$(PROG)
+	mkdir -p $(DESTDIR)$(VARDIR)/db/stris
+	chown $(UID):$(GID) $(DESTDIR)$(VARDIR)/db/stris
+	chmod 775 $(DESTDIR)$(VARDIR)/db/stris
+
 macos-app:
 	rm -rf STris.app
 	mkdir -p STris.app
@@ -139,6 +153,6 @@ macos-app:
 		-p @executable_path/../Frameworks
 
 clean:
-	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA) $(TESTS_OBJS)
+	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA)
 
 .PHONY: all clean tests

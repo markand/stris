@@ -16,6 +16,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "board.h"
+#include "key.h"
+#include "list.h"
+#include "score.h"
+#include "shape.h"
+#include "sound.h"
+#include "state-dead.h"
+#include "state-menu.h"
+#include "state-play.h"
+#include "state.h"
+#include "stris.h"
+#include "tex.h"
+#include "ui.h"
+#include "util.h"
+
 #include "img/block1.h"
 #include "img/block2.h"
 #include "img/block3.h"
@@ -28,20 +43,6 @@
 #include "img/block10.h"
 #include "img/block11.h"
 #include "img/block12.h"
-
-#include "board.h"
-#include "key.h"
-#include "list.h"
-#include "shape.h"
-#include "sound.h"
-#include "state-dead.h"
-#include "state-menu.h"
-#include "state-play.h"
-#include "state.h"
-#include "stris.h"
-#include "tex.h"
-#include "ui.h"
-#include "util.h"
 
 #define ANIM_DELAY 1000
 #define ANIM_BLINK 100
@@ -276,9 +277,9 @@ static inline enum shape_rand
 game_select(void)
 {
 	switch (state_play_mode) {
-	case STATE_PLAY_MODE_EXTENDED:
+	case STRIS_MODE_EXTENDED:
 		return SHAPE_RAND_EXTENDED;
-	case STATE_PLAY_MODE_NIGHTMARE:
+	case STRIS_MODE_NIGHTMARE:
 		return SHAPE_RAND_NIGHTMARE;
 	default:
 		return SHAPE_RAND_STANDARD;
@@ -526,7 +527,7 @@ resume(void)
 	board_set(game.board, &game.shape);
 
 	// In nightmare mode, we start with high level of blocks.
-	if (state_play_mode == STATE_PLAY_MODE_NIGHTMARE)
+	if (state_play_mode == STRIS_MODE_NIGHTMARE)
 		nightmarize();
 
 	// Disable pause and clear scores.
@@ -602,6 +603,22 @@ draw(void)
 }
 
 static void
+suspend(void)
+{
+	struct score_list list;
+	struct score sc;
+	const char *path;
+
+	snprintf(sc.who, sizeof (sc.who), "%s", username());
+	sc.lines = game.lines;
+
+	path = score_path(state_play_mode);
+	score_read(&list, path);
+	score_add(&list, &sc);
+	score_write(&list, path);
+}
+
+static void
 finish(void)
 {
 	tex_finish(&ui.pause_text[0]);
@@ -611,7 +628,7 @@ finish(void)
 		tex_finish(&shapes[i].tex);
 }
 
-enum state_play_mode state_play_mode;
+enum stris_mode state_play_mode;
 
 struct state state_play = {
 	.init = init,
@@ -619,5 +636,6 @@ struct state state_play = {
 	.update = update,
 	.draw = draw,
 	.onkey = onkey,
+	.suspend = suspend,
 	.finish = finish
 };

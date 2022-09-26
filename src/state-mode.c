@@ -28,9 +28,9 @@
 #include "util.h"
 
 static struct list_item items[] = {
-	[STATE_PLAY_MODE_STANDARD]      = { .text = "standard"  },
-	[STATE_PLAY_MODE_EXTENDED]      = { .text = "extended"  },
-	[STATE_PLAY_MODE_NIGHTMARE]     = { .text = "nightmare" }
+	[STRIS_MODE_STANDARD]   = { .text = "standard"  },
+	[STRIS_MODE_EXTENDED]   = { .text = "extended"  },
+	[STRIS_MODE_NIGHTMARE]  = { .text = "nightmare" }
 };
 
 static struct list menu = {

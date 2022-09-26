@@ -24,6 +24,8 @@
 #define SCORE_NAME_MAX 32
 #define SCORE_LIST_MAX 10
 
+enum stris_mode;
+
 struct score {
 	char who[SCORE_NAME_MAX + 1];
 	int lines;
@@ -35,7 +37,7 @@ struct score_list {
 };
 
 const char *
-score_basedir(void);
+score_path(enum stris_mode);
 
 void
 score_read(struct score_list *, const char *);

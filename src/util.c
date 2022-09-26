@@ -20,6 +20,12 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#if !defined(_WIN32)
+#       include <sys/types.h>
+#       include <pwd.h>
+#       include <unistd.h>
+#endif
+
 #include "util.h"
 
 void
@@ -40,3 +46,18 @@ clamp(long long int v, long long int min, long long int max)
 {
 	return v < min ? min : v > max ? max : v;
 }
+
+#if !defined(_WIN32)
+
+const char *
+username(void)
+{
+	const struct passwd *pw;
+
+	if (!(pw = getpwuid(getuid())))
+		return "anon";
+
+	return pw->pw_name;
+}
+
+#endif
