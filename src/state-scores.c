@@ -29,11 +29,13 @@
 #include "ui.h"
 #include "util.h"
 
+#define HEADER_HEIGHT (2 * UI_H / 16)
+
 //
 // View is as following:
 //
 // +----------------+ -^-
-// |      Mode      |  |          2 * (UI_H / 16)
+// | <    Mode    > |  |          2 * (UI_H / 16)
 // +----------------+ -v-
 // | Jean       123 |
 // | Francis    100 |
@@ -59,6 +61,8 @@ struct view {
 //
 static struct view views[3];
 static size_t selected;
+static struct tex arrow_left[2];
+static struct tex arrow_right[2];
 
 static void
 init(void)
@@ -68,7 +72,7 @@ init(void)
 		views[m].list_names.font   = views[m].list_lines.font   = UI_FONT_MENU_SMALL;
 		views[m].list_names.valign = views[m].list_lines.valign = -1;
 		views[m].list_names.p      = views[m].list_lines.p      = 10;
-		views[m].list_names.y      = views[m].list_lines.y      = 2 * UI_H / 16;
+		views[m].list_names.y      = views[m].list_lines.y      = HEADER_HEIGHT;
 		views[m].list_names.w      = views[m].list_lines.w      = UI_W;
 		views[m].list_names.h      = views[m].list_lines.h      = UI_H - views[m].list_names.y;
 
@@ -89,6 +93,13 @@ init(void)
 	// Lines are right aligned.
 	for (size_t m = 0; m < 3; ++m)
 		views[m].list_lines.halign = 1;
+
+	// Create left/right arrows.
+	ui_render(&arrow_left[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, "<");
+	ui_render(&arrow_left[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "<");
+	ui_render(&arrow_right[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, ">");
+	ui_render(&arrow_right[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, ">");
+
 }
 
 static void
@@ -113,6 +124,51 @@ populate(struct view *v, const char *path)
 	list_init(&v->list_lines);
 	list_reset(&v->list_lines);
 }
+
+static void
+draw_header(void)
+{
+	static const char * const names[] = { "standard", "extended", "nightmare" };
+	struct tex tex[2];
+	int x, y;
+
+	ui_render(&tex[0], UI_FONT_MENU, UI_PALETTE_FG, names[selected]);
+	ui_render(&tex[1], UI_FONT_MENU, UI_PALETTE_SHADOW, names[selected]);
+
+	x = (UI_W - tex[0].w) / 2;
+	y = (HEADER_HEIGHT / 2) - (tex[0].h / 2);
+
+	tex_draw(&tex[1], x + 1, y + 1);
+	tex_draw(&tex[0], x, y);
+	tex_finish(&tex[0]);
+	tex_finish(&tex[1]);
+}
+
+static void
+draw_arrows(void)
+{
+	int x, y;
+
+	// <
+	x = 10;
+	y = (HEADER_HEIGHT / 2) - (arrow_left[0].h / 2);
+	tex_draw(&arrow_left[1], x + 1 , y + 1);
+	tex_draw(&arrow_left[0], x, y);
+
+	// >
+	x = UI_W - arrow_right[0].w - 10;
+	tex_draw(&arrow_right[1], x + 1 , y + 1);
+	tex_draw(&arrow_right[0], x, y);
+
+}
+
+static inline void
+draw_lists(void)
+{
+	list_draw(&views[selected].list_names);
+	list_draw(&views[selected].list_lines);
+}
+
 
 static void
 resume(void)
@@ -154,40 +210,24 @@ update(int ticks)
 	ui_update_background(UI_PALETTE_MENU_BG, ticks);
 }
 
-static inline void
-draw_header(void)
-{
-	static const char * const names[] = { "standard", "extended", "nightmare" };
-	struct tex tex[2];
-	int x, y;
-
-	ui_render(&tex[0], UI_FONT_MENU, UI_PALETTE_FG, names[selected]);
-	ui_render(&tex[1], UI_FONT_MENU, UI_PALETTE_SHADOW, names[selected]);
-
-	x = (UI_W - tex[0].w) / 2;
-	y = ((2 * UI_H / 16) / 2) - (tex[0].h / 2);
-
-	tex_draw(&tex[1], x + 1, y + 1);
-	tex_draw(&tex[0], x, y);
-	tex_finish(&tex[0]);
-	tex_finish(&tex[1]);
-}
-
-static inline void
-draw_lists(void)
-{
-	list_draw(&views[selected].list_names);
-	list_draw(&views[selected].list_lines);
-}
-
 static void
 draw(void)
 {
 	ui_clear(UI_PALETTE_MENU_BG);
 	ui_draw_background();
 	draw_header();
+	draw_arrows();
 	draw_lists();
 	ui_present();
+}
+
+static void
+finish(void)
+{
+	tex_finish(&arrow_left[0]);
+	tex_finish(&arrow_left[1]);
+	tex_finish(&arrow_right[0]);
+	tex_finish(&arrow_right[1]);
 }
 
 struct state state_scores = {
@@ -195,5 +235,6 @@ struct state state_scores = {
 	.resume = resume,
 	.onkey = onkey,
 	.update = update,
-	.draw = draw
+	.draw = draw,
+	.finish = finish
 };
