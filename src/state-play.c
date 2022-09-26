@@ -325,8 +325,8 @@ nightmarize(void)
 {
 	for (int r = 16; r < BOARD_H; ++r)
 		for (int c = 0; c < BOARD_W; ++c)
-			if (NRAND(0, 1) == 0)
-				game.board[r][c] = NRAND(0, LEN(shapes) - 1);
+			if (nrand(0, 1) == 0)
+				game.board[r][c] = nrand(0, LEN(shapes) - 1);
 }
 
 static void

@@ -21,10 +21,6 @@
 
 #include <stdlib.h>
 
-#define STR(s)          XSTR(s)
-#define XSTR(s)         #s
-
-#define NRAND(min, max) ((rand() % (max - min + 1)) + min)
 #define LEN(x)          (sizeof (x) / sizeof (x[0]))
 
 void
@@ -35,5 +31,8 @@ clamp(long long int, long long int, long long int);
 
 const char *
 username(void);
+
+int
+nrand(int min, int max);
 
 #endif /* !STRIS_UTIL_H */

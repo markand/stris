@@ -19,11 +19,18 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+// For username()
 #if !defined(_WIN32)
 #       include <sys/types.h>
 #       include <pwd.h>
 #       include <unistd.h>
+#endif
+
+// For nrand()
+#if defined(__linux__)
+#      include <sys/random.h>
 #endif
 
 #include "util.h"
@@ -61,3 +68,19 @@ username(void)
 }
 
 #endif
+
+int
+nrand(int min, int max)
+{
+	unsigned int val;
+
+#if defined(__linux__)
+	getrandom(&val, sizeof (val), GRND_RANDOM);
+#elif defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+	val = arc4random();
+#else
+	val = rand();
+#endif
+
+	return (val % (max - min + 1)) + min;
+}
