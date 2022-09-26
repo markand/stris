@@ -143,7 +143,8 @@ macos-app:
 	rm -rf STris.app
 	mkdir -p STris.app
 	mkdir -p STris.app/Contents/MacOS
-	mkdir -p STris.app/Contents/Resources
+	mkdir -p STris.app/Contents/Resources/db
+	chmod 777 STris.app/Contents/Resources/db
 	mkdir -p STris.app/Contents/Frameworks
 	cp $(PROG) STris.app/Contents/MacOS/STris
 	cp apple/Info.plist STris.app/Contents
@@ -151,6 +152,7 @@ macos-app:
 		-d STris.app/Contents/Frameworks \
 		-x STris.app/Contents/MacOS/STris \
 		-p @executable_path/../Frameworks
+	chgrp -R staff STris.app
 
 clean:
 	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA)

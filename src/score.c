@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <SDL.h>
+
 #include "score.h"
 #include "stris.h"
 
@@ -41,9 +43,25 @@
 #       endif
 #endif
 
-#if !defined(_WIN32)
+#if defined(__APPLE__)
 
-const char *
+static const char *
+basedir(void)
+{
+	static char path[PATH_MAX];
+	char *base;
+
+	if ((base = SDL_GetBasePath())) {
+		snprintf(path, sizeof (path), "%s/db", base);
+		SDL_free(base);
+	}
+
+	return path;
+}
+
+#elif !defined(_WIN32)
+
+static const char *
 basedir(void)
 {
 	static char path[PATH_MAX];
