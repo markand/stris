@@ -24,6 +24,7 @@
 #include "sound/startup.h"
 
 #include "sound.h"
+#include "stris.h"
 #include "util.h"
 
 #define SOUND_DEF(d) { .data = d, .datasz = sizeof (d) }
@@ -75,7 +76,8 @@ sound_init(void)
 void
 sound_play(enum sound snd)
 {
-	Mix_PlayChannel(-1, sounds[snd].snd, 0);
+	if (sconf.sound)
+		Mix_PlayChannel(-1, sounds[snd].snd, 0);
 }
 
 void

@@ -18,6 +18,7 @@
 
 #include "key.h"
 #include "list.h"
+#include "sound.h"
 #include "state-menu.h"
 #include "state-settings.h"
 #include "state.h"
@@ -89,7 +90,10 @@ onkey(enum key key)
 	case KEY_SELECT:
 		switch (menu.selection) {
 		case MENU_SOUND:
-			sconf.sound = !sconf.sound;
+			if ((sconf.sound = !sconf.sound))
+				sound_init();
+			else
+				sound_finish();
 			break;
 		case MENU_MUSIC:
 			sconf.music = !sconf.music;

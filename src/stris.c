@@ -71,7 +71,9 @@ init(void)
 
 	sys_conf_read();
 	ui_init();
-	sound_init();
+
+	if (sconf.sound)
+		sound_init();
 
 	for (size_t i = 0; i < LEN(states); ++i)
 		state_init(states[i]);
@@ -182,7 +184,8 @@ finish(void)
 	for (size_t i = 0; i < LEN(states); ++i)
 		state_init(states[i]);
 
-	sound_finish();
+	if (sconf.sound)
+		sound_finish();
 	ui_finish();
 }
 
