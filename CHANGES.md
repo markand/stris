@@ -4,6 +4,8 @@ STris 0.5.0 2022-??-??
 - Almost complete rewrite in C23.
 - Switched to SDL 2.
 - Project renamed to STris (formerly SD-Tris).
+- Enable scaling support.
+- Simplified the game, the code and many other aspects of the project.
 
 STris 0.4.0 2012-07-11
 ----------------------
