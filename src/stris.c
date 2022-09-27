@@ -50,7 +50,8 @@ static struct {
 
 struct sconf sconf ={
 	.sound = 1,
-	.music = 1
+	.music = 1,
+	.scale = 1
 };
 
 static struct state *states[] = {
@@ -68,8 +69,8 @@ init(void)
 {
 	srand(time(NULL));
 
-	ui_init();
 	sys_conf_read();
+	ui_init();
 	sound_init();
 
 	for (size_t i = 0; i < LEN(states); ++i)

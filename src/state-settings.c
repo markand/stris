@@ -27,38 +27,38 @@
 #include "ui.h"
 #include "util.h"
 
-enum state_menu {
-	STATE_MENU_SOUND,
-	STATE_MENU_MUSIC,
-	STATE_MENU_LAST
+enum menu {
+	MENU_SOUND,
+	MENU_MUSIC,
+	MENU_SCALE,
+	MENU_LAST
 };
 
 static struct list_item items[] = {
-	[STATE_MENU_SOUND] = { .text = "Sounds" },
-	[STATE_MENU_MUSIC] = { .text = "Music"  }
+	[MENU_SOUND] = { .text = "Sounds"       },
+	[MENU_MUSIC] = { .text = "Music"        },
+	[MENU_SCALE] = { .text = "Scaling"      }
 };
 
 static struct list menu = {
 	.font = UI_FONT_MENU_SMALL,
 	.items = items,
-	.itemsz = STATE_MENU_LAST,
+	.itemsz = MENU_LAST,
 	.halign = -1,
 	.valign = -1,
 	.p = 10
 };
 
 static void
-draw_val(size_t index, int val)
+draw_val(size_t index, const char *what)
 {
 	struct tex tex;
-	const char *text = val ? "Yes" : "No";
 
-	// TODO: not huge fan of this.
-	ui_render(&tex, UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, text);
+	ui_render(&tex, UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, what);
 	tex_draw(&tex, UI_W - tex.w - 9, menu.items[index].y + 1);
 	tex_finish(&tex);
 
-	ui_render(&tex, UI_FONT_MENU_SMALL, menu.items[index].colorcur, text);
+	ui_render(&tex, UI_FONT_MENU_SMALL, menu.items[index].colorcur, what);
 	tex_draw(&tex, UI_W - tex.w - 10, menu.items[index].y);
 	tex_finish(&tex);
 }
@@ -88,11 +88,15 @@ onkey(enum key key)
 		break;
 	case KEY_SELECT:
 		switch (menu.selection) {
-		case STATE_MENU_SOUND:
+		case MENU_SOUND:
 			sconf.sound = !sconf.sound;
 			break;
-		case STATE_MENU_MUSIC:
+		case MENU_MUSIC:
 			sconf.music = !sconf.music;
+			break;
+		case MENU_SCALE:
+			sconf.scale = clamp((++sconf.scale % 3), 1, 2);
+			ui_resize();
 			break;
 		default:
 			break;
@@ -114,12 +118,16 @@ update(int ticks)
 static void
 draw(void)
 {
+	char str[16];
+
 	ui_clear(UI_PALETTE_MENU_BG);
 	ui_draw_background();
 	list_draw(&menu);
 
-	draw_val(0, sconf.sound);
-	draw_val(1, sconf.music);
+	draw_val(0, sconf.sound ? "Yes" : "No");
+	draw_val(1, sconf.music ? "Yes" : "No");
+	snprintf(str, sizeof (str), "%d", sconf.scale);
+	draw_val(2, str);
 
 	ui_present();
 }

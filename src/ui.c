@@ -31,6 +31,7 @@
 
 #include "ui.h"
 #include "util.h"
+#include "stris.h"
 #include "tex.h"
 
 SDL_Window *ui_win = NULL;
@@ -41,6 +42,9 @@ SDL_Renderer *ui_rdr = NULL;
 #define CB(c) ((c >>  8) & 0xff)
 #define CA(c) (c         & 0xff)
 #define CHEX(r, g, b) ((unsigned long)r << 24 | (unsigned long)g << 16 | (unsigned long)b << 8 | 0xff)
+
+#define PHY_W (UI_W * sconf.scale)
+#define PHY_H (UI_H * sconf.scale)
 
 static struct {
 	int x;
@@ -145,12 +149,19 @@ ui_init(void)
 		die("abort: %s\n", SDL_GetError());
 	if (IMG_Init(flags) != flags)
 		die("abort: %s\n", SDL_GetError());
-	if (SDL_CreateWindowAndRenderer(UI_W, UI_H, 0, &ui_win, &ui_rdr) < 0)
+	if (SDL_CreateWindowAndRenderer(PHY_W, PHY_H, 0, &ui_win, &ui_rdr) < 0)
 		die("abort: %s\n", SDL_GetError());
 
+	SDL_RenderSetLogicalSize(ui_rdr, UI_W, UI_H);
 	SDL_SetWindowTitle(ui_win, "STris");
 
 	load_fonts();
+}
+
+void
+ui_resize(void)
+{
+	SDL_SetWindowSize(ui_win, PHY_W, PHY_H);
 }
 
 void

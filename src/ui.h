@@ -53,6 +53,9 @@ void
 ui_init(void);
 
 void
+ui_resize(void);
+
+void
 ui_render(struct tex *, enum ui_font, enum ui_palette, const char *, ...);
 
 void

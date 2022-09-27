@@ -28,6 +28,7 @@
 
 #include "stris.h"
 #include "sys.h"
+#include "util.h"
 
 #define ORG "fr.malikania"
 #define APP "STris"
@@ -97,8 +98,11 @@ sys_conf_read(void)
 	if (!(fp = fopen(p, "r")))
 		return;
 
-	fscanf(fp, "%d %d\n", &sconf.sound, &sconf.music);
+	fscanf(fp, "%d %d %d\n", &sconf.sound, &sconf.music, &sconf.scale);
 	fclose(fp);
+
+	// Reset to normal values if invalid.
+	sconf.scale = clamp(sconf.scale, 1, 2);
 }
 
 void
@@ -112,6 +116,6 @@ sys_conf_write(void)
 	if (!(fp = fopen(p, "w")))
 		return;
 
-	fprintf(fp, "%d %d\n", sconf.sound, sconf.music);
+	fprintf(fp, "%d %d %d\n", sconf.sound, sconf.music, sconf.scale);
 	fclose(fp);
 }
