@@ -245,12 +245,6 @@ ui_draw_background(void)
 
 	ui_draw_rect(color, 0, 0, UI_W, UI_H);
 
-#if 0
-	color = (CR(color) - 10) << 24 | 
-	        (CG(color) - 10) << 16 |
-	        (CB(color) - 10) << 8  |
-		(CA(color));
-#endif
 	// Darken color.
 	r = clamp(CR(color) - 10, 0, 255);
 	g = clamp(CG(color) - 10, 0, 255);
