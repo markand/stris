@@ -26,6 +26,9 @@
 #       include <sys/types.h>
 #       include <pwd.h>
 #       include <unistd.h>
+#else
+#       include <lmcons.h>
+#       include <windows.h>
 #endif
 
 // For nrand()
@@ -65,6 +68,20 @@ username(void)
 		return "anon";
 
 	return pw->pw_name;
+}
+
+#else
+
+const char *
+username(void)
+{
+	static char username[UNLEN + 1];
+	DWORD size = sizeof (username);
+
+	if (!GetUserNameA(username, &size))
+		strcpy(username, "anon");
+
+	return username;
 }
 
 #endif

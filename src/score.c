@@ -71,6 +71,15 @@ basedir(void)
 	return path;
 }
 
+#else
+
+static const char *
+basedir(void)
+{
+	// TODO: for the moment, in the directory.
+	return ".";
+}
+
 #endif
 
 const char *

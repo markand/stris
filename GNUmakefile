@@ -154,6 +154,11 @@ macos-app:
 		-p @executable_path/../Frameworks
 	chgrp -R staff STris.app
 
+win-app:
+	mkdir STris
+	cp stris.exe STris/STris.exe
+	./win/mingw-bundledlls --copy STris/STris.exe
+
 clean:
 	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA)
 

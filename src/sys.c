@@ -19,6 +19,9 @@
 #if !defined(_WIN32)
 #       include <sys/stat.h>
 #       include <errno.h>
+#else
+#       include <fileapi.h>
+#       include <windows.h>
 #endif
 
 #include <limits.h>
@@ -41,6 +44,17 @@ mkdirectory(const char *path)
 	static const int mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 
 	if (mkdir(path, mode) < 0 && errno != EEXIST)
+		return -1;
+
+	return 0;
+}
+
+#else
+
+static int
+mkdirectory(const char *path)
+{
+	if (!CreateDirectoryA(path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
 		return -1;
 
 	return 0;
