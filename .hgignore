@@ -17,15 +17,15 @@
 \.dSYM.*
 ^STris\.app$
 
-# executables.
-^stris$
-^extern/bcc/bcc$
+# Windows specific.
+^STris-\d\.\d.\d
 
-# tests.
-^tests/test-board$
+# executables.
+^stris(\.exe)?$
+^extern/bcc/bcc(\.exe)?$
 
 # distribution files.
-^stris-\d\.\d.\d\.tar\.xz(\.asc)?$
+^stris-\d\.\d.\d\.tar\.gz(\.asc)?$
 
 # misc.
 ^config\.mk$

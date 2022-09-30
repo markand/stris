@@ -16,6 +16,8 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
+VERSION :=              0.5.0
+
 # Host compiler.
 HOST_CC :=              clang
 HOST_CFLAGS :=          -O3 -DNDEBUG
@@ -155,11 +157,13 @@ macos-app:
 	chgrp -R staff STris.app
 
 win-app:
-	mkdir STris
-	cp stris.exe STris/STris.exe
-	./win/mingw-bundledlls --copy STris/STris.exe
+	rm -rf STris-$(VERSION)
+	mkdir STris-$(VERSION)
+	cp stris.exe STris-$(VERSION)/STris.exe
+	./win/mingw-bundledlls --copy STris-$(VERSION)/STris.exe
 
 clean:
 	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA)
+	rm -rf STris-$(VERSION) STris.app
 
 .PHONY: all clean tests
