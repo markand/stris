@@ -213,8 +213,12 @@ ui_update_background(enum ui_palette color, int ticks)
 
 	if (bg.spent >= 50) {
 		bg.spent = 0;
-		bg.x--;
-		bg.y--;
+
+		if (sconf.psychedelic) {
+			bg.x--;
+			bg.y--;
+		} else
+			bg.x = bg.y = 0;
 
 		// Also update the color if we haven't reached yet.
 		rcur = CR(bg.color); rnxt = CR(color);

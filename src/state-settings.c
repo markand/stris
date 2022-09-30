@@ -31,14 +31,16 @@
 enum menu {
 	MENU_SOUND,
 	MENU_MUSIC,
+	MENU_PSYCHEDELIC,
 	MENU_SCALE,
 	MENU_LAST
 };
 
 static struct list_item items[] = {
-	[MENU_SOUND] = { .text = "Sounds"       },
-	[MENU_MUSIC] = { .text = "Music"        },
-	[MENU_SCALE] = { .text = "Scaling"      }
+	[MENU_SOUND]            = { .text = "Sounds"            },
+	[MENU_MUSIC]            = { .text = "Music"             },
+	[MENU_PSYCHEDELIC]      = { .text = "Psychedelic"       },
+	[MENU_SCALE]            = { .text = "Scaling"           },
 };
 
 static struct list menu = {
@@ -82,7 +84,6 @@ onkey(enum key key)
 {
 	list_onkey(&menu, key);
 
-	// TODO: disable playback here.
 	switch (key) {
 	case KEY_CANCEL:
 		stris_switch(&state_menu);
@@ -97,6 +98,9 @@ onkey(enum key key)
 			break;
 		case MENU_MUSIC:
 			sconf.music = !sconf.music;
+			break;
+		case MENU_PSYCHEDELIC:
+			sconf.psychedelic = !sconf.psychedelic;
 			break;
 		case MENU_SCALE:
 			sconf.scale = clamp((++sconf.scale % 3), 1, 2);
@@ -130,8 +134,9 @@ draw(void)
 
 	draw_val(0, sconf.sound ? "Yes" : "No");
 	draw_val(1, sconf.music ? "Yes" : "No");
+	draw_val(2, sconf.psychedelic ? "Yes" : "No");
 	snprintf(str, sizeof (str), "%d", sconf.scale);
-	draw_val(2, str);
+	draw_val(3, str);
 
 	ui_present();
 }

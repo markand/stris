@@ -30,6 +30,7 @@ enum stris_mode {
 extern struct sconf {
 	int sound;
 	int music;
+	int psychedelic;
 	int scale;
 } sconf;
 
