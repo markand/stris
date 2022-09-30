@@ -246,9 +246,9 @@ ui_draw_background(void)
 	ui_draw_rect(color, 0, 0, UI_W, UI_H);
 
 	// Darken color.
-	r = clamp(CR(color) - 10, 0, 255);
-	g = clamp(CG(color) - 10, 0, 255);
-	b = clamp(CB(color) - 10, 0, 255);
+	r = clamp((long)CR(color) - 10, 0, 255);
+	g = clamp((long)CG(color) - 10, 0, 255);
+	b = clamp((long)CB(color) - 10, 0, 255);
 	color = CHEX(r, g, b);
 
 	for (int r = 0; r < 21; ++r) {
