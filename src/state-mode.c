@@ -20,6 +20,7 @@
 
 #include "key.h"
 #include "list.h"
+#include "state-menu.h"
 #include "state-mode.h"
 #include "state-play.h"
 #include "state.h"
@@ -60,7 +61,9 @@ onkey(enum key key, int state)
 	if (!state)
 		return;
 
-	if (list_onkey(&menu, key)) {
+	if (key == KEY_CANCEL)
+		stris_switch(&state_menu);
+	else if (list_onkey(&menu, key)) {
 		state_play_mode = menu.selection;
 		stris_switch(&state_play);
 	}
