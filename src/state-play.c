@@ -141,7 +141,6 @@ static struct {
 	SHAPE_TEX(data_img_block7),
 };
 
-// https://lospec.com/palette-list/aliengarden-32
 static const unsigned long ramp[] = {
 	0x33984bff,
 	0x1e6f50ff,

@@ -34,13 +34,9 @@ static struct {
 	const void *data;
 	size_t datasz;
 } sounds[] = {
-	// https://freesound.org/people/radian/sounds/63000
 	[SOUND_CHIME] = SOUND_DEF(data_sound_startup),
-	// https://freesound.org/people/el_boss/sounds/560701
 	[SOUND_MOVE] = SOUND_DEF(data_sound_move),
-	// https://freesound.org/people/MattRuthSound/sounds/562083
 	[SOUND_DROP] = SOUND_DEF(data_sound_drop),
-	// https://freesound.org/people/Jerimee/sounds/527530
 	[SOUND_CLEAN] = SOUND_DEF(data_sound_clean)
 };
 
