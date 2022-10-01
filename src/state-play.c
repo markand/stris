@@ -50,7 +50,7 @@
 #define FALLRATE_INIT   900
 #define FALLRATE_DECR   74
 
-#define MV_DELAY        140
+#define MV_DELAY        230
 
 #define SHAPE_TEX(d) { .data = d, sizeof (d) }
 
@@ -245,15 +245,42 @@ static inline void
 start_move(int dx, int dy)
 {
 	game.mv_ticks = 0;
-	game.mv_stx = dx;
-	game.mv_sty = dy;
+
+	if (dx)
+		game.mv_stx = dx;
+	if (dy)
+		game.mv_sty = dy;
+
 	move(dx, dy);
 }
 
 static inline void
-stop_move(void)
+stop_move(enum key key)
 {
-	game.mv_stx = game.mv_sty = 0;
+	//
+	// This function may be called while we have pressed another direction.
+	// For example in this order:
+	//
+	// 1. hold right arrow key (starts moving to right)
+	// 2. hold left button (should start moving to left)
+	// 3. release right button (cancels movement)
+	//
+	
+	switch (key) {
+	case KEY_RIGHT:
+		if (game.mv_stx != -1)
+			game.mv_stx = 0;
+		break;
+	case KEY_LEFT:
+		if (game.mv_stx != 1)
+			game.mv_stx = 0;
+		break;
+	case KEY_DOWN:
+		game.mv_sty = 0;
+		break;
+	default:
+		break;
+	}
 }
 
 static void
@@ -574,7 +601,7 @@ static void
 onkey(enum key key, int state)
 {
 	if (!state)
-		stop_move();
+		stop_move(key);
 
 	switch (key) {
 	case KEY_CANCEL:
@@ -595,15 +622,15 @@ onkey(enum key key, int state)
 			rotate();
 		break;
 	case KEY_RIGHT:
-		if (state && game.mv_stx == 0)
+		if (state && game.mv_stx != 1)
 			start_move(1, 0);
 		break;
 	case KEY_DOWN:
-		if (state && game.mv_sty == 0)
+		if (state && game.mv_sty != 1)
 			start_move(0, 1);
 		break;
 	case KEY_LEFT:
-		if (state && game.mv_stx == 0)
+		if (state && game.mv_stx != -1)
 			start_move(-1, 0);
 		break;
 	case KEY_DROP:
