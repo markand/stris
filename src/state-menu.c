@@ -96,9 +96,9 @@ resume(void)
 }
 
 static void
-onkey(enum key key)
+onkey(enum key key, int state)
 {
-	if (!list_onkey(&menu, key))
+	if (!state || !list_onkey(&menu, key))
 		return;
 
 	switch (menu.selection) {

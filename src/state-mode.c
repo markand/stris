@@ -55,8 +55,11 @@ resume(void)
 }
 
 static void
-onkey(enum key key)
+onkey(enum key key, int state)
 {
+	if (!state)
+		return;
+
 	if (list_onkey(&menu, key)) {
 		state_play_mode = menu.selection;
 		stris_switch(&state_play);

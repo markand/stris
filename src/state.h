@@ -38,7 +38,7 @@ struct state {
 	void (*onclick)(int, int);
 
 	// On keypress.
-	void (*onkey)(enum key);
+	void (*onkey)(enum key, int);
 
 	// Update the state logic.
 	void (*update)(int);
@@ -66,7 +66,7 @@ void
 state_onclick(struct state *, int, int);
 
 void
-state_onkey(struct state *, enum key);
+state_onkey(struct state *, enum key, int);
 
 void
 state_update(struct state *, int);

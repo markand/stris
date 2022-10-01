@@ -80,8 +80,11 @@ resume(void)
 }
 
 static void
-onkey(enum key key)
+onkey(enum key key, int state)
 {
+	if (!state)
+		return;
+
 	list_onkey(&menu, key);
 
 	switch (key) {

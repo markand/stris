@@ -44,11 +44,13 @@
 #include "img/block11.h"
 #include "img/block12.h"
 
-#define ANIM_DELAY 1000
-#define ANIM_BLINK 100
+#define ANIM_DELAY      1000
+#define ANIM_BLINK      100
 
-#define FALLRATE_INIT 900
-#define FALLRATE_DECR 74
+#define FALLRATE_INIT   900
+#define FALLRATE_DECR   74
+
+#define MV_DELAY        140
 
 #define SHAPE_TEX(d) { .data = d, sizeof (d) }
 
@@ -63,6 +65,11 @@ static struct {
 	int lines;
 	int pause;
 	Board board;
+
+	// Player movement (button on hold).
+	int mv_ticks;
+	int mv_stx;
+	int mv_sty;
 
 	// Current shape position.
 	struct shape shape;
@@ -233,6 +240,21 @@ move(int dx, int dy)
 	}
 
 	board_set(game.board, &game.shape);
+}
+
+static inline void
+start_move(int dx, int dy)
+{
+	game.mv_ticks = 0;
+	game.mv_stx = dx;
+	game.mv_sty = dy;
+	move(dx, dy);
+}
+
+static inline void
+stop_move(void)
+{
+	game.mv_stx = game.mv_sty = 0;
 }
 
 static void
@@ -550,10 +572,16 @@ resume(void)
 }
 
 static void
-onkey(enum key key)
+onkey(enum key key, int state)
 {
+	if (!state)
+		stop_move();
+
 	switch (key) {
 	case KEY_CANCEL:
+		if (!state)
+			break;
+
 		// Already in pause, escape to main menu then.
 		if (game.pause)
 			stris_switch(&state_menu);
@@ -564,20 +592,24 @@ onkey(enum key key)
 	case KEY_UP:
 		if (game.pause)
 			game.pause = 0;
-		else if (!ui.anim_lines)
+		else if (!ui.anim_lines && state)
 			rotate();
 		break;
 	case KEY_RIGHT:
-		move(1, 0);
+		if (state && game.mv_stx == 0)
+			start_move(1, 0);
 		break;
 	case KEY_DOWN:
-		move(0, 1);
+		if (state && game.mv_sty == 0)
+			start_move(0, 1);
 		break;
 	case KEY_LEFT:
-		move(-1, 0);
+		if (state && game.mv_stx == 0)
+			start_move(-1, 0);
 		break;
 	case KEY_DROP:
-		drop();
+		if (state)
+			drop();
 		break;
 	default:
 		break;
@@ -589,6 +621,15 @@ update(int ticks)
 {
 	if (game.pause)
 		return;
+
+	game.mv_ticks += ticks;
+
+	if (game.mv_ticks >= MV_DELAY) {
+		game.mv_ticks = 0;
+
+		if (game.mv_stx || game.mv_sty)
+			move(game.mv_stx, game.mv_sty);
+	}
 
 	ui_update_background(ramp[level() - 1], ticks);
 

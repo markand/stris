@@ -180,8 +180,11 @@ resume(void)
 }
 
 static void
-onkey(enum key key)
+onkey(enum key key, int state)
 {
+	if (!state)
+		return;
+
 	switch (key) {
 	case KEY_LEFT:
 		if (selected == 0)

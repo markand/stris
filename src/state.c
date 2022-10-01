@@ -67,12 +67,12 @@ state_onclick(struct state *s, int x, int y)
 }
 
 void
-state_onkey(struct state *s, enum key key)
+state_onkey(struct state *s, enum key key, int state)
 {
 	assert(s);
 
 	if (s->onkey)
-		s->onkey(key);
+		s->onkey(key, state);
 }
 
 void

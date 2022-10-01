@@ -66,6 +66,10 @@ static struct state *states[] = {
 	&state_splash
 };
 
+// Map gamecontroller axis pressed.
+static enum key joy_x = KEY_LAST;
+static enum key joy_y = KEY_LAST;
+
 static void
 init(void)
 {
@@ -100,70 +104,126 @@ static void
 handle(void)
 {
 	SDL_Event ev;
+	enum key key;
+	int state;
 
 	while (SDL_PollEvent(&ev)) {
+		key = KEY_LAST;
+		state = 0;
+
 		switch (ev.type) {
 		case SDL_QUIT:
 			stris.run = 0;
 			break;
-		case SDL_CONTROLLERBUTTONDOWN:
-			switch (ev.cbutton.button) {
-			case SDL_CONTROLLER_BUTTON_DPAD_UP:
-				state_onkey(stris.state, KEY_UP);
+		case SDL_CONTROLLERAXISMOTION:
+			switch (ev.caxis.axis) {
+			case SDL_CONTROLLER_AXIS_LEFTX:
+				if (ev.caxis.value < -8000) {
+					if (joy_x == KEY_LAST) {
+						state = 1;
+						joy_x = key = KEY_LEFT;
+					}
+				} else if (ev.caxis.value > 8000) {
+					if (joy_x == KEY_LAST) {
+						state = 1;
+						joy_x = key = KEY_RIGHT;
+					}
+				} else {
+					state = 0;
+					key = joy_x;
+					joy_x = KEY_LAST;
+				}
 				break;
-			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-				state_onkey(stris.state, KEY_RIGHT);
-				break;
-			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-				state_onkey(stris.state, KEY_DOWN);
-				break;
-			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-				state_onkey(stris.state, KEY_LEFT);
-				break;
-			case SDL_CONTROLLER_BUTTON_A:
-				state_onkey(stris.state, KEY_SELECT);
-				break;
-			case SDL_CONTROLLER_BUTTON_B:
-				state_onkey(stris.state, KEY_CANCEL);
-				break;
-			case SDL_CONTROLLER_BUTTON_X:
-				state_onkey(stris.state, KEY_DROP);
+			case SDL_CONTROLLER_AXIS_LEFTY:
+				if (ev.caxis.value < -8000) {
+					if (joy_y == KEY_LAST) {
+						state = 1;
+						joy_y = key = KEY_UP;
+					}
+				} else if (ev.caxis.value > 8000) {
+					if (joy_y == KEY_LAST) {
+						state = 1;
+						joy_y = key = KEY_DOWN;
+					}
+				} else {
+					state = 0;
+					key = joy_y;
+					joy_y = KEY_LAST;
+				}
 				break;
 			default:
 				break;
 			}
 			break;
-		case SDL_KEYDOWN:
-			// TODO: Add options mapping here.
-			switch (ev.key.keysym.scancode) {
-			case SDL_SCANCODE_ESCAPE:
-				state_onkey(stris.state, KEY_CANCEL);
+		case SDL_CONTROLLERBUTTONDOWN:
+		case SDL_CONTROLLERBUTTONUP:
+			state = ev.type == SDL_CONTROLLERBUTTONDOWN ? 1 : 0;
+
+			switch (ev.cbutton.button) {
+			case SDL_CONTROLLER_BUTTON_DPAD_UP:
+				key = KEY_UP;
 				break;
-			case SDL_SCANCODE_RETURN:
-				state_onkey(stris.state, KEY_SELECT);
+			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+				key = KEY_RIGHT;
 				break;
-			case SDL_SCANCODE_UP:
-				state_onkey(stris.state, KEY_UP);
+			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+				key = KEY_DOWN;
 				break;
-			case SDL_SCANCODE_RIGHT:
-				state_onkey(stris.state, KEY_RIGHT);
+			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+				key = KEY_LEFT;
 				break;
-			case SDL_SCANCODE_DOWN:
-				state_onkey(stris.state, KEY_DOWN);
+			case SDL_CONTROLLER_BUTTON_A:
+				key = KEY_SELECT;
 				break;
-			case SDL_SCANCODE_LEFT:
-				state_onkey(stris.state, KEY_LEFT);
+			case SDL_CONTROLLER_BUTTON_B:
+				key = KEY_CANCEL;
 				break;
-			case SDL_SCANCODE_SPACE:
-				state_onkey(stris.state, KEY_DROP);
+			case SDL_CONTROLLER_BUTTON_X:
+				key = KEY_DROP;
 				break;
 			default:
+				key = KEY_ANY;
+				break;
+			}
+			break;
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+			state = ev.type == SDL_KEYDOWN ? 1 : 0;
+
+			switch (ev.key.keysym.scancode) {
+			case SDL_SCANCODE_ESCAPE:
+				key = KEY_CANCEL;
+				break;
+			case SDL_SCANCODE_RETURN:
+				key = KEY_SELECT;
+				break;
+			case SDL_SCANCODE_UP:
+				key = KEY_UP;
+				break;
+			case SDL_SCANCODE_RIGHT:
+				key = KEY_RIGHT;
+				break;
+			case SDL_SCANCODE_DOWN:
+				key = KEY_DOWN;
+				break;
+			case SDL_SCANCODE_LEFT:
+				key = KEY_LEFT;
+				break;
+			case SDL_SCANCODE_SPACE:
+				key = KEY_DROP;
+				break;
+			default:
+				key = KEY_ANY;
 				break;
 			}
 			break;
 		default:
 			break;
 		}
+
+		// Game controller axis or button, keyboard has changed.
+		if (state != -1 && key != KEY_LAST)
+			state_onkey(stris.state, key, state);
 	}
 }
 
