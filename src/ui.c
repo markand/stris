@@ -34,6 +34,8 @@
 #include "stris.h"
 #include "tex.h"
 
+static struct tex *target;
+
 SDL_Window *ui_win = NULL;
 SDL_Renderer *ui_rdr = NULL;
 
@@ -143,7 +145,7 @@ ui_init(void)
 {
 	int flags = IMG_INIT_PNG;
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
 		die("abort: %s\n", SDL_GetError());
 	if (TTF_Init() < 0)
 		die("abort: %s\n", SDL_GetError());
@@ -283,8 +285,6 @@ ui_present(void)
 {
 	SDL_RenderPresent(ui_rdr);
 }
-
-static struct tex *target;
 
 struct tex *
 ui_target(struct tex *tex)

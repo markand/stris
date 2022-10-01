@@ -57,6 +57,7 @@ SDL2_TTF_LIBS :=        $(shell $(PKGCONF) --libs SDL2_ttf)
 PROG :=                 stris
 SRCS :=                 src/board.c \
                         src/list.c \
+                        src/joy.c \
                         src/score.c \
                         src/shape.c \
                         src/sound.c \
@@ -80,6 +81,7 @@ DATA :=                 data/fonts/actionj.h \
                         data/fonts/cartoon-relief.h \
                         data/fonts/instruction.h \
                         data/fonts/typography-ties.h \
+                        data/gamecontrollerdb.h \
                         data/img/block1.h \
                         data/img/block2.h \
                         data/img/block3.h \
@@ -110,14 +112,14 @@ LIBS :=                 -lm \
                         $(SDL2_TTF_LIBS)
 
 .SUFFIXES:
-.SUFFIXES: .h .o .c .otf .png .ttf .wav
+.SUFFIXES: .h .o .c .otf .png .ttf .wav .txt
 
 all: $(PROG)
 
 .c.o:
 	$(CC) $(DEFS) $(INCS) $(CFLAGS) -MMD -c $< -o $@
 
-.otf.h .png.h .ttf.h .wav.h:
+.otf.h .png.h .ttf.h .txt.h .wav.h:
 	./extern/bcc/bcc -sc0 $< $< > $@
 
 -include $(DEPS)

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "joy.h"
 #include "key.h"
 #include "sound.h"
 #include "state-dead.h"
@@ -72,6 +73,7 @@ init(void)
 
 	sys_conf_read();
 	ui_init();
+	joy_init();
 
 	if (sconf.sound)
 		sound_init();
@@ -103,6 +105,33 @@ handle(void)
 		switch (ev.type) {
 		case SDL_QUIT:
 			stris.run = 0;
+			break;
+		case SDL_CONTROLLERBUTTONDOWN:
+			switch (ev.cbutton.button) {
+			case SDL_CONTROLLER_BUTTON_DPAD_UP:
+				state_onkey(stris.state, KEY_UP);
+				break;
+			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+				state_onkey(stris.state, KEY_RIGHT);
+				break;
+			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+				state_onkey(stris.state, KEY_DOWN);
+				break;
+			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+				state_onkey(stris.state, KEY_LEFT);
+				break;
+			case SDL_CONTROLLER_BUTTON_A:
+				state_onkey(stris.state, KEY_SELECT);
+				break;
+			case SDL_CONTROLLER_BUTTON_B:
+				state_onkey(stris.state, KEY_CANCEL);
+				break;
+			case SDL_CONTROLLER_BUTTON_X:
+				state_onkey(stris.state, KEY_DROP);
+				break;
+			default:
+				break;
+			}
 			break;
 		case SDL_KEYDOWN:
 			// TODO: Add options mapping here.
@@ -187,6 +216,7 @@ finish(void)
 
 	if (sconf.sound)
 		sound_finish();
+
 	ui_finish();
 }
 
