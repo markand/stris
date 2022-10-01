@@ -20,6 +20,7 @@
 #define STRIS_KEY_H
 
 enum key {
+	KEY_NONE,
 	KEY_UP,
 	KEY_RIGHT,
 	KEY_DOWN,
@@ -27,7 +28,6 @@ enum key {
 	KEY_CANCEL,
 	KEY_SELECT,
 	KEY_DROP,
-	KEY_ANY,
 	KEY_LAST
 };
 
