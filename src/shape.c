@@ -358,20 +358,41 @@ static const int shapes[][4][4][4] = {
 };
 
 void
-shape_select(struct shape *s, enum shape_rand r)
+shape_shuffle(struct shape *bag, size_t bagsz, enum shape_rand r)
 {
-	assert(s);
+	assert(bagsz >= r);
 
-	memset(s, 0, sizeof (*s));
+	size_t i, j;
+	struct shape tmp;
 
-	// Non-standard pieces are a bit harder to play so we don't spawn them
-	// with the same chance as standard pieces.
-	if (nrand(0, 3) == 0)
-		s->k = nrand(0, r);
-	else
-		s->k = nrand(0, SHAPE_RAND_STANDARD);
+	memset(bag, 0, sizeof (*bag) * bagsz);
 
-	memcpy(s->def, shapes[s->k], sizeof (s->def));
+	// First, we create an ordered sequence of every standard pieces in the
+	// bag.
+	for (i = 0; i < SHAPE_RAND_STANDARD; ++i) {
+		memcpy(bag[i].def, shapes[i], sizeof (shapes[i]));
+		bag[i].k = i;
+	}
+
+	// Shuffle the initial sequence.
+	for (size_t p = 0; p < SHAPE_RAND_STANDARD - p; p++) {
+		j = p + rand() / (RAND_MAX / (SHAPE_RAND_STANDARD - p) + 1);
+		tmp = bag[j];
+		bag[j] = bag[p];
+		bag[p] = tmp;
+	}
+
+	// Now if the bag is bigger, add some random shapes as well. If we're
+	// being asked to put some !standard pieces, do it less often because
+	// they are very hard to positionate.
+	for (; i < bagsz; ++i) {
+		if (nrand(0, 3) == 0)
+			bag[i].k = nrand(0, r - 1);
+		else
+			bag[i].k = nrand(0, SHAPE_RAND_STANDARD);
+
+		memcpy(bag[i].def, shapes[bag[i].k], sizeof (bag[i].def));
+	}
 }
 
 void

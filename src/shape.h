@@ -19,10 +19,12 @@
 #ifndef STRIS_SHAPE_H
 #define STRIS_SHAPE_H
 
+#include <stddef.h>
+
 enum shape_rand {
-	SHAPE_RAND_STANDARD = 6,
-	SHAPE_RAND_EXTENDED = 9,
-	SHAPE_RAND_NIGHTMARE = 11 
+	SHAPE_RAND_STANDARD     = 7,
+	SHAPE_RAND_EXTENDED     = 10,
+	SHAPE_RAND_NIGHTMARE    = 12
 };
 
 struct shape {
@@ -34,7 +36,7 @@ struct shape {
 };
 
 void
-shape_select(struct shape *, enum shape_rand);
+shape_shuffle(struct shape *, size_t, enum shape_rand);
 
 void
 shape_rotate(struct shape *, int);

@@ -64,9 +64,13 @@ static struct {
 	int pause;
 	Board board;
 
-	// Current and next shape.
+	// Current shape position.
 	struct shape shape;
-	struct shape shape_next;
+
+	// Based on https://tetris.fandom.com/wiki/Random_Generator
+	struct shape shape_bag[SHAPE_RAND_NIGHTMARE];
+	enum shape_rand shape_bag_rand;
+	size_t shape_bag_iter;
 } game;
 
 static struct {
@@ -273,17 +277,25 @@ level(void)
 	return (game.lines / 10) + 1;
 }
 
-static inline enum shape_rand
-game_select(void)
+static void
+shuffle(void)
 {
+	// The array is large enough to store all pieces, we use the random
+	// enum that contain the limit to use.
 	switch (state_play_mode) {
 	case STRIS_MODE_EXTENDED:
-		return SHAPE_RAND_EXTENDED;
+		game.shape_bag_rand = SHAPE_RAND_EXTENDED;
+		break;
 	case STRIS_MODE_NIGHTMARE:
-		return SHAPE_RAND_NIGHTMARE;
+		game.shape_bag_rand = SHAPE_RAND_NIGHTMARE;
+		break;
 	default:
-		return SHAPE_RAND_STANDARD;
+		game.shape_bag_rand = SHAPE_RAND_STANDARD;
+		break;
 	}
+
+	game.shape_bag_iter = 0;
+	shape_shuffle(game.shape_bag, LEN(game.shape_bag), game.shape_bag_rand);
 }
 
 static int
@@ -307,17 +319,19 @@ static void
 spawn(void)
 {
 	// Move next shape to current and create a new one.
-	game.shape = game.shape_next;
+	game.shape = game.shape_bag[game.shape_bag_iter++];
+
+	if (game.shape_bag_iter >= game.shape_bag_rand)
+		shuffle();
+
 	game.shape.x = 3;
 	game.shape.y = 0;
 
 	// If we can't spawn, that's dead!
 	if (!board_check(game.board, &game.shape))
 		stris_switch(&state_dead);
-	else {
+	else
 		board_set(game.board, &game.shape);
-		shape_select(&game.shape_next, game_select());
-	}
 }
 
 static void
@@ -392,12 +406,13 @@ static void
 draw_next_shape(void)
 {
 	int x, y, r, s, gap = 0, tmpmaxh, maxh = 0;
+	const struct shape *next = &game.shape_bag[game.shape_bag_iter];
 
 	// To align to the top right, we first need to know how many empty
 	// cells are present at the right of the shape definition.
 	for (int c = 3; c >= 0; --c) {
 		for (r = 0; r < 4; ++r)
-			if (game.shape_next.def[0][r][c])
+			if (next->def[0][r][c])
 				goto out;
 		if (r == 4)
 			gap++;
@@ -409,7 +424,7 @@ out:
 		tmpmaxh = 0;
 
 		for (r = 0; r < 4; ++r)
-			if (game.shape_next.def[0][r][c])
+			if (next->def[0][r][c])
 				tmpmaxh ++;
 
 		if (tmpmaxh > maxh)
@@ -424,10 +439,10 @@ out:
 
 	for (int r = 0; r < 4; ++r) {
 		for (int c = 0; c < 4; ++c) {
-			if (!game.shape_next.def[0][r][c])
+			if (!next->def[0][r][c])
 				continue;
 
-			tex_scale(&shapes[game.shape_next.k].tex,
+			tex_scale(&shapes[next->k].tex,
 			    x + (c * s), y + (r * s), s, s);
 		}
 	}
@@ -516,9 +531,9 @@ static void
 resume(void)
 {
 	// Select new shapes and positionate the first one.
-	shape_select(&game.shape, game_select());
-	shape_select(&game.shape_next, game_select());
+	shuffle();
 
+	game.shape = game.shape_bag[game.shape_bag_iter++];
 	game.shape.y = 0;
 	game.shape.x = 3;
 
