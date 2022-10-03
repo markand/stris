@@ -150,8 +150,8 @@ static const unsigned long ramp[] = {
 	0xc1460fff,
 	0x801224ff,
 	0x590924ff,
-	0x2a2f4eff,
-	0x1a1932ff
+	0x424c6eff,
+	0x2a2f4eff
 };
 
 static void
