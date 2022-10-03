@@ -30,7 +30,7 @@
 // Depending on the system, we don't store the score files in the same
 // directory and in the same permissions.
 //
-// Windows: TBD
+// Windows: C:\ProgramData\stris
 // macOS:   In the Resources folder on top of the executable directory
 // *:       $PREFIX/var/db/stris
 //
@@ -59,14 +59,27 @@ basedir(void)
 	return path;
 }
 
-#elif !defined(_WIN32)
+#elif defined(_WIN32)
+
+#include <shlobj.h>
 
 static const char *
 basedir(void)
 {
-	static char path[PATH_MAX];
+	static char path[MAX_PATH];
+	char base[MAX_PATH];
+	int rv;
 
-	snprintf(path, sizeof (path), VARDIR "/db/stris");
+	rv = SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, base);
+
+	if (rv != S_OK)
+		strcpy(path, ".");
+	else {
+		snprintf(path, sizeof (path), "%s\\stris", base);
+
+		if (!CreateDirectoryA(path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
+			strcpy(path, ".");
+	}
 
 	return path;
 }
@@ -76,8 +89,11 @@ basedir(void)
 static const char *
 basedir(void)
 {
-	// TODO: for the moment, in the directory.
-	return ".";
+	static char path[PATH_MAX];
+
+	snprintf(path, sizeof (path), VARDIR "/db/stris");
+
+	return path;
 }
 
 #endif
