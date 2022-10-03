@@ -22,3 +22,10 @@ Fonts:
 - https://www.dafont.com/fr/cartoon-relief.font
 - https://www.dafont.com/fr/instruction.font
 - https://www.dafont.com/fr/typography-ties.font
+
+Individuals
+-----------
+
+Thanks to those people:
+
+- Aline Theou: testing.
