@@ -156,6 +156,7 @@ ui_init(void)
 
 	SDL_RenderSetLogicalSize(ui_rdr, UI_W, UI_H);
 	SDL_SetWindowTitle(ui_win, "STris");
+	SDL_ShowCursor(SDL_DISABLE);
 
 	load_fonts();
 }
