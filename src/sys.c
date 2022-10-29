@@ -112,7 +112,7 @@ sys_conf_read(void)
 	if (!(fp = fopen(p, "r")))
 		return;
 
-	fscanf(fp, "%d %d %d\n", &sconf.sound, &sconf.music, &sconf.scale);
+	fscanf(fp, "%d %d\n", &sconf.sound, &sconf.scale);
 	fclose(fp);
 
 	// Reset to normal values if invalid.
@@ -130,6 +130,6 @@ sys_conf_write(void)
 	if (!(fp = fopen(p, "w")))
 		return;
 
-	fprintf(fp, "%d %d %d\n", sconf.sound, sconf.music, sconf.scale);
+	fprintf(fp, "%d %d\n", sconf.sound, sconf.scale);
 	fclose(fp);
 }

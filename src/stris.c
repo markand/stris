@@ -51,7 +51,6 @@ static struct {
 
 struct sconf sconf ={
 	.sound = 1,
-	.music = 1,
 	.psychedelic = 1,
 	.scale = 1
 };
