@@ -36,6 +36,7 @@ GID :=                  games
 PREFIX :=               /usr/local
 BINDIR :=               $(PREFIX)/bin
 VARDIR :=               $(PREFIX)/var
+MANDIR :=               $(PREFIX)/share/man
 
 # Path to libraries.
 SDL2_INCS :=            $(shell $(PKGCONF) --cflags sdl2)
@@ -142,6 +143,8 @@ install:
 	mkdir -p $(DESTDIR)$(VARDIR)/db/stris
 	chown $(UID):$(GID) $(DESTDIR)$(VARDIR)/db/stris
 	chmod 775 $(DESTDIR)$(VARDIR)/db/stris
+	mkdir -p $(DESTDIR)$(MANDIR)/man6
+	sed -e "s,@VARDIR@,$(VARDIR),g" < src/stris.6 > $(DESTDIR)$(MANDIR)/man6/stris.6
 
 macos-app:
 	rm -rf STris.app
