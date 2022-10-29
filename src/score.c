@@ -52,7 +52,7 @@ basedir(void)
 	char *base;
 
 	if ((base = SDL_GetBasePath())) {
-		snprintf(path, sizeof (path), "%s/db", base);
+		snprintf(path, sizeof (path), "%sdb", base);
 		SDL_free(base);
 	}
 
