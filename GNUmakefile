@@ -112,6 +112,9 @@ LIBS :=                 -lm \
                         $(SDL2_MIXER_LIBS) \
                         $(SDL2_TTF_LIBS)
 
+GCDB :=                 https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
+
+
 .SUFFIXES:
 .SUFFIXES: .h .o .c .otf .png .ttf .wav .txt
 
@@ -171,4 +174,8 @@ clean:
 	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA)
 	rm -rf STris-$(VERSION) STris.app
 
-.PHONY: all clean tests
+update-gcdb:
+	@echo "Updating gamecontrollerdb.txt..."
+	@wget -nv -O data/gamecontrollerdb.txt $(GCDB)
+
+.PHONY: all clean tests update-gcdb
