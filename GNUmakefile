@@ -18,14 +18,15 @@
 
 VERSION :=              0.5.0
 
+# Target compiler.
+CFLAGS :=               -O3 -DNDEBUG
+
 # Host compiler.
-HOST_CC :=              clang
+HOST_CC :=              $(CC)
 HOST_CFLAGS :=          -O3 -DNDEBUG
 HOST_LDFLAGS :=
 
-# Target compiler.
-CC :=                   clang
-CFLAGS :=               -O3 -DNDEBUG
+# The pkg-config(1) utility.
 PKGCONF :=              pkg-config
 
 # User and groups (mostly for scores).
