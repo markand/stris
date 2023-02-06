@@ -33,7 +33,7 @@ enum ui_font {
 };
 
 // https://lospec.com/palette-list/give-me-grey-52
-enum ui_palette : unsigned long long {
+enum ui_palette {
 	UI_PALETTE_SPLASH_BG    = 0x3f4a69ff,
 	UI_PALETTE_FG           = 0xffffffff,
 	UI_PALETTE_MENU_BG      = 0xb3b9d1ff,
@@ -55,25 +55,25 @@ void
 ui_resize(void);
 
 void
-ui_render(struct tex *, enum ui_font, enum ui_palette, const char *, ...);
+ui_render(struct tex *, enum ui_font, unsigned long long, const char *, ...);
 
 void
 ui_clip(enum ui_font, int *, int *, const char *, ...);
 
 void
-ui_clear(enum ui_palette);
+ui_clear(unsigned long long);
 
 void
-ui_update_background(enum ui_palette, int);
+ui_update_background(unsigned long long, int);
 
 void
 ui_draw_background(void);
 
 void
-ui_draw_line(enum ui_palette, int, int, int, int);
+ui_draw_line(unsigned long long, int, int, int, int);
 
 void
-ui_draw_rect(enum ui_palette, int, int, int, int);
+ui_draw_rect(unsigned long long, int, int, int, int);
 
 void
 ui_present(void);

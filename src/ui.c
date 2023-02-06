@@ -54,7 +54,7 @@ static struct {
 	int w;
 	int h;
 	int spent;
-	enum ui_palette color;
+	unsigned long long color;
 } bg = {
 	.w = UI_W / 10,
 	.h = UI_W / 10,
@@ -116,7 +116,7 @@ load_fonts(void)
 }
 
 static void
-render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, va_list ap)
+render(struct tex *t, enum ui_font f, unsigned long long color, const char *fmt, va_list ap)
 {
 	char buf[128];
 	SDL_Color c = { CR(color), CG(color), CB(color), CA(color) };
@@ -168,7 +168,7 @@ ui_resize(void)
 }
 
 void
-ui_render(struct tex *t, enum ui_font f, enum ui_palette color, const char *fmt, ...)
+ui_render(struct tex *t, enum ui_font f, unsigned long long color, const char *fmt, ...)
 {
 	assert(fmt);
 
@@ -200,14 +200,14 @@ ui_clip(enum ui_font f, int *w, int *h, const char *fmt, ...)
 }
 
 void
-ui_clear(enum ui_palette color)
+ui_clear(unsigned long long color)
 {
 	set_color(color);
 	SDL_RenderClear(ui_rdr);
 }
 
 void
-ui_update_background(enum ui_palette color, int ticks)
+ui_update_background(unsigned long long color, int ticks)
 {
 	int rcur, gcur, bcur;
 	int rnxt, gnxt, bnxt;
@@ -248,7 +248,7 @@ void
 ui_draw_background(void)
 {
 	int x, y, r, g, b;
-	enum ui_palette color = bg.color;
+	unsigned long long color = bg.color;
 
 	ui_draw_rect(color, 0, 0, UI_W, UI_H);
 
@@ -268,14 +268,14 @@ ui_draw_background(void)
 }
 
 void
-ui_draw_line(enum ui_palette color, int x1, int y1, int x2, int y2)
+ui_draw_line(unsigned long long color, int x1, int y1, int x2, int y2)
 {
 	set_color(color);
 	SDL_RenderDrawLine(ui_rdr, x1, y1, x2, y2);
 }
 
 void
-ui_draw_rect(enum ui_palette color, int x, int y, int w, int h)
+ui_draw_rect(unsigned long long color, int x, int y, int w, int h)
 {
 	set_color(color);
 	SDL_RenderFillRect(ui_rdr, &(const SDL_Rect){x, y, w, h});
