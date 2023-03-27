@@ -177,7 +177,8 @@ mingw-app:
 	./win/mingw-bundledlls --copy STris-$(VERSION)/STris.exe
 
 clean:
-	rm -f extern/bcc/bcc $(PROG) $(OBJS) $(DEPS) $(DATA)
+	rm -f extern/bcc/bcc extern/bcc/bcc.d
+	rm -f $(PROG) $(OBJS) $(DEPS) $(DATA)
 	rm -rf STris-$(VERSION) STris.app
 
 update-gcdb:
