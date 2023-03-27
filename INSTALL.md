@@ -25,7 +25,7 @@ Basic installation
 
 Quick install.
 
-    $ bsdtar -xvf stris-x.y.z-tar.xz
+    $ tar -xvf stris-x.y.z-tar.xz
     $ cd stris-x.y.z
     $ make
     # sudo make install

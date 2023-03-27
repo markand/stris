@@ -16,47 +16,44 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-VERSION :=              0.5.0
-
-# Target compiler.
-CFLAGS :=               -O3 -DNDEBUG
-
-# Host compiler.
-HOST_CC :=              $(CC)
-HOST_CFLAGS :=          -O3 -DNDEBUG
-HOST_LDFLAGS :=
+-include config.mk
 
 # The pkg-config(1) utility.
-PKGCONF :=              pkg-config
+PKGCONF ?=              pkg-config
+
+# Compiler option to generate .d files.
+MD ?=                   -MMD
 
 # User and groups (mostly for scores).
-UID :=                  root
-GID :=                  games
+UID ?=                  root
+GID ?=                  games
 
 # Installation paths.
-PREFIX :=               /usr/local
-BINDIR :=               $(PREFIX)/bin
-VARDIR :=               $(PREFIX)/var
-MANDIR :=               $(PREFIX)/share/man
+PREFIX ?=               /usr/local
+BINDIR ?=               $(PREFIX)/bin
+VARDIR ?=               $(PREFIX)/var
+MANDIR ?=               $(PREFIX)/share/man
 
 # Path to libraries.
-SDL2_INCS :=            $(shell $(PKGCONF) --cflags sdl2)
-SDL2_LIBS :=            $(shell $(PKGCONF) --libs sdl2)
+MATH_LIBS ?=            -lm
 
-SDL2_IMAGE_INCS :=      $(shell $(PKGCONF) --cflags SDL2_image)
-SDL2_IMAGE_LIBS :=      $(shell $(PKGCONF) --libs SDL2_image)
+SDL2_INCS ?=            $(shell $(PKGCONF) --cflags sdl2)
+SDL2_LIBS ?=            $(shell $(PKGCONF) --libs sdl2)
 
-SDL2_MIXER_INCS :=      $(shell $(PKGCONF) --cflags SDL2_mixer)
-SDL2_MIXER_LIBS :=      $(shell $(PKGCONF) --libs SDL2_mixer)
+SDL2_IMAGE_INCS ?=      $(shell $(PKGCONF) --cflags SDL2_image)
+SDL2_IMAGE_LIBS ?=      $(shell $(PKGCONF) --libs SDL2_image)
 
-SDL2_TTF_INCS :=        $(shell $(PKGCONF) --cflags SDL2_ttf)
-SDL2_TTF_LIBS :=        $(shell $(PKGCONF) --libs SDL2_ttf)
+SDL2_MIXER_INCS ?=      $(shell $(PKGCONF) --cflags SDL2_mixer)
+SDL2_MIXER_LIBS ?=      $(shell $(PKGCONF) --libs SDL2_mixer)
+
+SDL2_TTF_INCS ?=        $(shell $(PKGCONF) --cflags SDL2_ttf)
+SDL2_TTF_LIBS ?=        $(shell $(PKGCONF) --libs SDL2_ttf)
 
 # No user modifications below this line.
 
--include config.mk
+VERSION :=              0.5.0
 
-PROG :=                 stris
+PROG :=                 src/stris
 SRCS :=                 src/board.c \
                         src/list.c \
                         src/joy.c \
@@ -76,8 +73,6 @@ SRCS :=                 src/board.c \
                         src/tex.c \
                         src/ui.c \
                         src/util.c
-OBJS :=                 $(SRCS:.c=.o)
-DEPS :=                 $(SRCS:.c=.d)
 
 DATA :=                 data/fonts/actionj.h \
                         data/fonts/cartoon-relief.h \
@@ -101,49 +96,59 @@ DATA :=                 data/fonts/actionj.h \
                         data/sound/move.h \
                         data/sound/startup.h
 
-DEFS :=                 -DVARDIR=\"$(VARDIR)\"
-INCS :=                 -Idata \
-                        -Isrc \
-                        $(SDL2_INCS) \
-                        $(SDL2_IMAGE_INCS) \
-                        $(SDL2_TTF_INCS)
-LIBS :=                 -lm \
-                        $(SDL2_LIBS) \
-                        $(SDL2_IMAGE_LIBS) \
-                        $(SDL2_MIXER_LIBS) \
-                        $(SDL2_TTF_LIBS)
+OBJS :=                 $(SRCS:.c=.o)
+DEPS :=                 $(SRCS:.c=.d)
 
 GCDB :=                 https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
 
+override CFLAGS +=      -DVARDIR=\"$(VARDIR)\" \
+                        -Idata \
+                        -Isrc \
+                        $(SDL2_IMAGE_INCS) \
+                        $(SDL2_INCS) \
+                        $(SDL2_MIXER_INCS) \
+                        $(SDL2_TTF_INCS)
+override CPPFLAGS +=    $(MD)
 
-.SUFFIXES:
-.SUFFIXES: .h .o .c .otf .png .ttf .wav .txt
+# Commands.
+CMD.cc ?=               $(CC) $(CPPFLAGS) $(CFLAGS) $(MD) -c $< -o $@
+CMD.link ?=             $(CC) -o $@ $^ $(LDLIBS) $(LDFLAGS)
+CMD.bcc ?=              extern/bcc/bcc -sc0 $< $< > $@
 
 all: $(PROG)
 
-.c.o:
-	$(CC) $(DEFS) $(INCS) $(CFLAGS) -MMD -c $< -o $@
+%.o: %.c
+	$(CMD.cc)
 
-.otf.h .png.h .ttf.h .txt.h .wav.h:
-	./extern/bcc/bcc -sc0 $< $< > $@
+%.h: %.otf
+	$(CMD.bcc)
+%.h: %.png
+	$(CMD.bcc)
+%.h: %.ttf
+	$(CMD.bcc)
+%.h: %.txt
+	$(CMD.bcc)
+%.h: %.wav
+	$(CMD.bcc)
 
 -include $(DEPS)
 
-extern/bcc/bcc: extern/bcc/bcc.c
-	$(HOST_CC) $(HOST_CFLAGS) -o $@ extern/bcc/bcc.c $(HOST_LDFLAGS)
-
 $(DATA): extern/bcc/bcc
 
-$(OBJS): $(DATA)
+$(SRCS): $(DATA)
 
+$(PROG): private LDLIBS += $(MATH_LIBS) \
+                           $(SDL2_IMAGE_LIBS) \
+                           $(SDL2_LIBS) \
+                           $(SDL2_MIXER_LIBS) \
+                           $(SDL2_TTF_LIBS)
 $(PROG): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS)
 
 install:
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp $(PROG) $(DESTDIR)$(BINDIR)
-	chown $(UID):$(GID) $(DESTDIR)$(BINDIR)/$(PROG)
-	chmod 2755 $(DESTDIR)$(BINDIR)/$(PROG)
+	chown $(UID):$(GID) $(DESTDIR)$(BINDIR)/stris
+	chmod 2755 $(DESTDIR)$(BINDIR)/stris
 	mkdir -p $(DESTDIR)$(VARDIR)/db/stris
 	chown $(UID):$(GID) $(DESTDIR)$(VARDIR)/db/stris
 	chmod 775 $(DESTDIR)$(VARDIR)/db/stris
@@ -165,7 +170,7 @@ macos-app:
 		-p @executable_path/../Frameworks
 	chgrp -R staff STris.app
 
-win-app:
+mingw-app:
 	rm -rf STris-$(VERSION)
 	mkdir STris-$(VERSION)
 	cp stris.exe STris-$(VERSION)/STris.exe

@@ -21,7 +21,7 @@
 ^STris-\d\.\d.\d
 
 # executables.
-^stris(\.exe)?$
+^src/stris(\.exe)?$
 ^extern/bcc/bcc(\.exe)?$
 
 # distribution files.
