@@ -27,5 +27,9 @@
 # distribution files.
 ^stris-\d\.\d.\d\.tar\.gz(\.asc)?$
 
+# Environments.
+^\.vscode
+
 # misc.
 ^config\.mk$
+^\.clangd$

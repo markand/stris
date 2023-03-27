@@ -115,6 +115,7 @@ CMD.cc ?=               $(CC) $(CPPFLAGS) $(CFLAGS) $(MD) -c $< -o $@
 CMD.link ?=             $(CC) -o $@ $^ $(LDLIBS) $(LDFLAGS)
 CMD.bcc ?=              extern/bcc/bcc -sc0 $< $< > $@
 
+.PHONY: all
 all: $(PROG)
 
 %.o: %.c
@@ -144,6 +145,7 @@ $(PROG): private LDLIBS += $(MATH_LIBS) \
                            $(SDL2_TTF_LIBS)
 $(PROG): $(OBJS)
 
+.PHONY: install
 install:
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp $(PROG) $(DESTDIR)$(BINDIR)
@@ -155,6 +157,7 @@ install:
 	mkdir -p $(DESTDIR)$(MANDIR)/man6
 	sed -e "s,@VARDIR@,$(VARDIR),g" < src/stris.6 > $(DESTDIR)$(MANDIR)/man6/stris.6
 
+.PHONY: macos-app
 macos-app:
 	rm -rf STris.app
 	mkdir -p STris.app
@@ -170,19 +173,30 @@ macos-app:
 		-p @executable_path/../Frameworks
 	chgrp -R staff STris.app
 
+.PHONY: mingw-app
 mingw-app:
 	rm -rf STris-$(VERSION)
 	mkdir STris-$(VERSION)
 	cp stris.exe STris-$(VERSION)/STris.exe
 	./win/mingw-bundledlls --copy STris-$(VERSION)/STris.exe
 
+.PHONY: clean
 clean:
 	rm -f extern/bcc/bcc extern/bcc/bcc.d
 	rm -f $(PROG) $(OBJS) $(DEPS) $(DATA)
 	rm -rf STris-$(VERSION) STris.app
 
+.PHONY: update-gcdb
 update-gcdb:
 	@echo "Updating gamecontrollerdb.txt..."
 	@wget -nv -O data/gamecontrollerdb.txt $(GCDB)
 
-.PHONY: all clean tests update-gcdb
+.PHONY: .clangd
+.clangd:
+	echo "CompileFlags:" > $@
+	echo "  Add:" >> $@
+	echo "    - -DVERSION=\"$(VERSION)\"" >> $@
+	echo "    - -I$(CURDIR)/data" >> $@
+	echo "    - -I$(CURDIR)/src" >> $@
+	echo $(SDL2_INCS) $(SDL2_IMAGE_INCS) $(SDL2_MIXER_INCS) $(SDL2_TTF_INCS) \
+	    | sed 's, ,\n,g' | grep -Ev '^$$' | sed 's,^,    - ,g' >> $@
