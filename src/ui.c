@@ -154,10 +154,8 @@ ui_init(void)
 	if (SDL_CreateWindowAndRenderer(PHY_W, PHY_H, 0, &ui_win, &ui_rdr) < 0)
 		die("abort: %s\n", SDL_GetError());
 
-	// TODO: handle this?
-#if 0
-	SDL_SetRenderLogicalPresentation(ui_rdr, UI_W, UI_H);
-#endif
+	SDL_SetRenderLogicalPresentation(ui_rdr, UI_W, UI_H,
+	    SDL_LOGICAL_PRESENTATION_MATCH, SDL_SCALEMODE_BEST);
 	SDL_SetWindowTitle(ui_win, "STris");
 	SDL_HideCursor();
 
