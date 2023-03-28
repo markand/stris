@@ -16,6 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include "board.h"
 #include "key.h"
 #include "list.h"
@@ -265,7 +267,7 @@ stop_move(enum key key)
 	// 2. hold left button (should start moving to left)
 	// 3. release right button (cancels movement)
 	//
-	
+
 	switch (key) {
 	case KEY_RIGHT:
 		if (game.mv_stx != -1)

@@ -18,6 +18,8 @@
 
 -include config.mk
 
+CC ?=                   clang
+
 # The pkg-config(1) utility.
 PKGCONF ?=              pkg-config
 
@@ -53,7 +55,7 @@ SDL2_TTF_LIBS ?=        $(shell $(PKGCONF) --libs SDL2_ttf)
 
 VERSION :=              0.5.0
 
-PROG :=                 src/stris
+PROG ?=                 src/stris
 SRCS :=                 src/board.c \
                         src/list.c \
                         src/joy.c \
@@ -101,23 +103,20 @@ DEPS :=                 $(SRCS:.c=.d)
 
 GCDB :=                 https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
 
-override CFLAGS +=      -DVARDIR=\"$(VARDIR)\" \
-                        -Idata \
-                        -Isrc \
-                        $(SDL2_IMAGE_INCS) \
-                        $(SDL2_INCS) \
-                        $(SDL2_MIXER_INCS) \
-                        $(SDL2_TTF_INCS)
 override CPPFLAGS +=    $(MD)
 
 # Commands.
-CMD.cc ?=               $(CC) $(CPPFLAGS) $(CFLAGS) $(MD) -c $< -o $@
+CMD.cc ?=               $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 CMD.link ?=             $(CC) -o $@ $^ $(LDLIBS) $(LDFLAGS)
 CMD.bcc ?=              extern/bcc/bcc -sc0 $< $< > $@
 
 .PHONY: all
 all: $(PROG)
 
+%: %.o
+	$(CMD.link)
+%.exe: %.o
+	$(CMD.link)
 %.o: %.c
 	$(CMD.cc)
 
@@ -138,6 +137,13 @@ $(DATA): extern/bcc/bcc
 
 $(SRCS): $(DATA)
 
+$(OBJS): private CFLAGS += -DVARDIR=\"$(VARDIR)\" \
+                           -Idata \
+                           -Isrc \
+                           $(SDL2_IMAGE_INCS) \
+                           $(SDL2_INCS) \
+                           $(SDL2_MIXER_INCS) \
+                           $(SDL2_TTF_INCS)
 $(PROG): private LDLIBS += $(MATH_LIBS) \
                            $(SDL2_IMAGE_LIBS) \
                            $(SDL2_LIBS) \

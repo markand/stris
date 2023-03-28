@@ -20,8 +20,12 @@
 #       include <sys/stat.h>
 #       include <errno.h>
 #else
-#       include <fileapi.h>
 #       include <windows.h>
+#       include <fileapi.h>
+
+#       if !defined(PATH_MAX)
+#               define PATH_MAX MAX_PATH
+#       endif
 #endif
 
 #include <limits.h>

@@ -16,6 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include <SDL.h>
 
 #include "gamecontrollerdb.h"
@@ -31,7 +33,7 @@ joy_init(void)
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
 		if (!SDL_IsGameController(i))
 			continue;
-	
+
 		if ((ctl = SDL_GameControllerOpen(i)))
 			break;
 		else

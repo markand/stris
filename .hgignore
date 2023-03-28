@@ -31,5 +31,5 @@
 ^\.vscode
 
 # misc.
-^config\.mk$
+^config.*\.mk$
 ^\.clangd$

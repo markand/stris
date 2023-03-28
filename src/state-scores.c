@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 
 #include "key.h"
 #include "list.h"
