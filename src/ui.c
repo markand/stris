@@ -155,7 +155,7 @@ ui_init(void)
 		die("abort: %s\n", SDL_GetError());
 
 	SDL_SetRenderLogicalPresentation(ui_rdr, UI_W, UI_H,
-	    SDL_LOGICAL_PRESENTATION_MATCH, SDL_SCALEMODE_BEST);
+	    SDL_LOGICAL_PRESENTATION_STRETCH, SDL_SCALEMODE_BEST);
 	SDL_SetWindowTitle(ui_win, "STris");
 	SDL_HideCursor();
 
