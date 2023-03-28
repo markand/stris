@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -96,7 +97,7 @@ change(void)
 }
 
 static void
-handle_controller_axis_motion(const SDL_ControllerAxisEvent *ev)
+handle_controller_axis_motion(const SDL_GamepadAxisEvent *ev)
 {
 	// Axis generates lots of event so we need to stop taking care of them
 	// unless we go back to the original state.
@@ -107,7 +108,7 @@ handle_controller_axis_motion(const SDL_ControllerAxisEvent *ev)
 	enum key key = KEY_NONE;
 
 	switch (ev->axis) {
-	case SDL_CONTROLLER_AXIS_LEFTX:
+	case SDL_GAMEPAD_AXIS_LEFTX:
 		if (ev->value < -8000) {
 			if (!joy_x) {
 				state = 1;
@@ -123,7 +124,7 @@ handle_controller_axis_motion(const SDL_ControllerAxisEvent *ev)
 			joy_x = state = 0;
 		}
 		break;
-	case SDL_CONTROLLER_AXIS_LEFTY:
+	case SDL_GAMEPAD_AXIS_LEFTY:
 		if (ev->value < -8000) {
 			if (!joy_y) {
 				state = 1;
@@ -148,31 +149,31 @@ handle_controller_axis_motion(const SDL_ControllerAxisEvent *ev)
 }
 
 static void
-handle_controller_button(const SDL_ControllerButtonEvent *ev)
+handle_controller_button(const SDL_GamepadButtonEvent *ev)
 {
-	int state = ev->type == SDL_CONTROLLERBUTTONDOWN;
+	int state = ev->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN;
 	enum key key = KEY_NONE;
 
 	switch (ev->button) {
-	case SDL_CONTROLLER_BUTTON_DPAD_UP:
+	case SDL_GAMEPAD_BUTTON_DPAD_UP:
 		key = KEY_UP;
 		break;
-	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+	case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
 		key = KEY_RIGHT;
 		break;
-	case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+	case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
 		key = KEY_DOWN;
 		break;
-	case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+	case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
 		key = KEY_LEFT;
 		break;
-	case SDL_CONTROLLER_BUTTON_A:
+	case SDL_GAMEPAD_BUTTON_A:
 		key = KEY_SELECT;
 		break;
-	case SDL_CONTROLLER_BUTTON_B:
+	case SDL_GAMEPAD_BUTTON_B:
 		key = KEY_CANCEL;
 		break;
-	case SDL_CONTROLLER_BUTTON_X:
+	case SDL_GAMEPAD_BUTTON_X:
 		key = KEY_DROP;
 		break;
 	default:
@@ -186,7 +187,7 @@ handle_controller_button(const SDL_ControllerButtonEvent *ev)
 static void
 handle_keyboard(const SDL_KeyboardEvent *ev)
 {
-	int state = ev->type == SDL_KEYDOWN;
+	int state = ev->type == SDL_EVENT_KEY_DOWN;
 	enum key key = KEY_NONE;
 
 	switch (ev->keysym.scancode) {
@@ -226,18 +227,18 @@ handle(void)
 
 	while (SDL_PollEvent(&ev)) {
 		switch (ev.type) {
-		case SDL_QUIT:
+		case SDL_EVENT_QUIT:
 			stris.run = 0;
 			break;
-		case SDL_CONTROLLERAXISMOTION:
-			handle_controller_axis_motion(&ev.caxis);
+		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+			handle_controller_axis_motion(&ev.gaxis);
 			break;
-		case SDL_CONTROLLERBUTTONDOWN:
-		case SDL_CONTROLLERBUTTONUP:
-			handle_controller_button(&ev.cbutton);
+		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+		case SDL_EVENT_GAMEPAD_BUTTON_UP:
+			handle_controller_button(&ev.gbutton);
 			break;
-		case SDL_KEYDOWN:
-		case SDL_KEYUP:
+		case SDL_EVENT_KEY_DOWN:
+		case SDL_EVENT_KEY_UP:
 			handle_keyboard(&ev.key);
 			break;
 		default:

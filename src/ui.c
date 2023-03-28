@@ -68,28 +68,28 @@ static struct {
 	TTF_Font *font;
 } fonts[] = {
 	[UI_FONT_SPLASH] = {
-		.data = data_fonts_typography_ties,
-		.datasz = sizeof (data_fonts_typography_ties),
+		.data = assets_fonts_typography_ties,
+		.datasz = sizeof (assets_fonts_typography_ties),
 		.size = 58
 	},
 	[UI_FONT_TITLE] = {
-		.data = data_fonts_actionj,
-		.datasz = sizeof (data_fonts_actionj),
+		.data = assets_fonts_actionj,
+		.datasz = sizeof (assets_fonts_actionj),
 		.size = 80
 	},
 	[UI_FONT_MENU] = {
-		.data = data_fonts_cartoon_relief,
-		.datasz = sizeof (data_fonts_cartoon_relief),
+		.data = assets_fonts_cartoon_relief,
+		.datasz = sizeof (assets_fonts_cartoon_relief),
 		.size = 60
 	},
 	[UI_FONT_MENU_SMALL] = {
-		.data = data_fonts_instruction,
-		.datasz = sizeof (data_fonts_instruction),
+		.data = assets_fonts_instruction,
+		.datasz = sizeof (assets_fonts_instruction),
 		.size = 30
 	},
 	[UI_FONT_STATS] = {
-		.data = data_fonts_instruction,
-		.datasz = sizeof (data_fonts_instruction),
+		.data = assets_fonts_instruction,
+		.datasz = sizeof (assets_fonts_instruction),
 		.size = 18
 	}
 };
@@ -131,7 +131,7 @@ render(struct tex *t, enum ui_font f, unsigned long long color, const char *fmt,
 	if (SDL_QueryTexture(t->handle, NULL, NULL, &t->w, &t->h) < 0)
 		die("abort: %s\n", SDL_GetError());
 
-	SDL_FreeSurface(sf);
+	SDL_DestroySurface(sf);
 }
 
 static inline void
@@ -145,7 +145,7 @@ ui_init(void)
 {
 	int flags = IMG_INIT_PNG;
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD) < 0)
 		die("abort: %s\n", SDL_GetError());
 	if (TTF_Init() < 0)
 		die("abort: %s\n", SDL_GetError());
@@ -154,9 +154,12 @@ ui_init(void)
 	if (SDL_CreateWindowAndRenderer(PHY_W, PHY_H, 0, &ui_win, &ui_rdr) < 0)
 		die("abort: %s\n", SDL_GetError());
 
-	SDL_RenderSetLogicalSize(ui_rdr, UI_W, UI_H);
+	// TODO: handle this?
+#if 0
+	SDL_SetRenderLogicalPresentation(ui_rdr, UI_W, UI_H);
+#endif
 	SDL_SetWindowTitle(ui_win, "STris");
-	SDL_ShowCursor(SDL_DISABLE);
+	SDL_HideCursor();
 
 	load_fonts();
 }
@@ -271,14 +274,14 @@ void
 ui_draw_line(unsigned long long color, int x1, int y1, int x2, int y2)
 {
 	set_color(color);
-	SDL_RenderDrawLine(ui_rdr, x1, y1, x2, y2);
+	SDL_RenderLine(ui_rdr, x1, y1, x2, y2);
 }
 
 void
 ui_draw_rect(unsigned long long color, int x, int y, int w, int h)
 {
 	set_color(color);
-	SDL_RenderFillRect(ui_rdr, &(const SDL_Rect){x, y, w, h});
+	SDL_RenderFillRect(ui_rdr, &(const SDL_FRect){x, y, w, h});
 }
 
 void

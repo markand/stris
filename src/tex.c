@@ -56,7 +56,7 @@ tex_load(struct tex *t, const void *data, size_t datasz)
 	if (SDL_QueryTexture(t->handle, NULL, NULL, &t->w, &t->h) < 0)
 		die("abort: %s\n", SDL_GetError());
 
-	SDL_FreeSurface(sf);
+	SDL_DestroySurface(sf);
 }
 
 void
@@ -65,7 +65,7 @@ tex_draw(struct tex *t, int x, int y)
 	assert(t);
 	assert(t->handle);
 
-	SDL_RenderCopy(ui_rdr, t->handle, NULL, &(const SDL_Rect) {
+	SDL_RenderTexture(ui_rdr, t->handle, NULL, &(const SDL_FRect) {
 		.x = x,
 		.y = y,
 		.w = t->w,
@@ -79,18 +79,18 @@ tex_scale(struct tex *t, int x, int y, int w, int h)
 	assert(t);
 	assert(t->handle);
 
-	const SDL_Rect rsrc = {
+	const SDL_FRect rsrc = {
 		.w = t->w,
 		.h = t->h
 	};
-	const SDL_Rect rdst = {
+	const SDL_FRect rdst = {
 		.x = x,
 		.y = y,
 		.w = w,
 		.h = h
 	};
 
-	SDL_RenderCopy(ui_rdr, t->handle, &rsrc, &rdst);
+	SDL_RenderTexture(ui_rdr, t->handle, &rsrc, &rdst);
 }
 
 void

@@ -20,14 +20,8 @@
 # Windows specific.
 ^STris-\d\.\d.\d
 
-# executables.
-^src/stris(\.exe)?$
-^extern/bcc/bcc(\.exe)?$
-
-# distribution files.
-^stris-\d\.\d.\d\.tar\.gz(\.asc)?$
-
 # Environments.
+^build
 ^\.vscode
 
 # misc.

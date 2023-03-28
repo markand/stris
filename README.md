@@ -1,7 +1,7 @@
 STris
 =====
 
-STris is yet another tetris game, developed completely in C23 with SDL2.
+STris is yet another tetris game, developed completely in C23 with SDL3.
 
 The game supports the following features:
 

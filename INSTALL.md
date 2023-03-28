@@ -7,16 +7,16 @@ Requirements
 ------------
 
 - C23 compliant compiler.
-- GNU make,
-- [SDL2][], Multimedia library.
-- [SDL2_image][], Image loading addon for SDL2.
-- [SDL2_mixer][], Audio addon for SDL2.
-- [SDL2_ttf][], Fonts addon for SDL2,
+- [cmake][], CMake.
+- [SDL3][], Multimedia library.
+- [SDL3_image][], Image loading addon for SDL3.
+- [SDL3_mixer][], Audio addon for SDL3.
+- [SDL3_ttf][], Fonts addon for SDL3,
 
 STris has been tested successfully on the following systems:
 
-- OpenBSD 7.1,
-- Alpine Linux 3.16,
+- OpenBSD 7.2,
+- Alpine Linux 3.17,
 - Arch Linux,
 - macOS Ventura,
 - Windows 11 (MSYS2, Visual Studio 2022).
@@ -58,11 +58,11 @@ On Windows, [MSYS2][] and Visual Studio are supported.
 Once you have MSYS2 installed, simply install the following packages from the
 appropriate MinGW shell prior to the chapter above.
 
-- *make*
-- *mingw-w64-clang-x86_64-SDL2*
-- *mingw-w64-clang-x86_64-SDL2_image*
-- *mingw-w64-clang-x86_64-SDL2_mixer*
-- *mingw-w64-clang-x86_64-SDL2_ttf*
+- *mingw-w64-clang-x86_64-cmake*
+- *mingw-w64-clang-x86_64-SDL3*
+- *mingw-w64-clang-x86_64-SDL3_image*
+- *mingw-w64-clang-x86_64-SDL3_mixer*
+- *mingw-w64-clang-x86_64-SDL3_ttf*
 
 Note: replace `x86_64` with `i686` if you have a deprecated system or if you
       have issues while debugging (MinGW-w64 and/or gdb have known issues in
@@ -83,31 +83,13 @@ choice:
 - <dir>/lib
 - <dir>/include
 
-Building with Visual Studio is only supported through `clang-cl` which should be
-installed as individual component from the Visual Studio installer. You also
-need a POSIX compliant toolset such as [MSYS2][] and add it to your path.
-
-Open a X64 native command prompt from the Visual Studio 2022 start up menu, then
-invoke `C:\msys64\msys2_shell -use-full-path` (adjust where you have installed
-MSYS2).
-
-Then, with this mintty window you should have `make` command and `clang-cl`
-available as well. We need to create a *config-clang-cl.mk* to indicate the path
-to the libraries.
-
-Create a *config-clang-cl.mk* file with the following at the top of the stris directory:
-
-    # Adjust this variable where you have your libraries, change debug/release
-    # depending on the build you wish.
-    PREFIX := C:/pkg/vs/debug
-
-Now build using the *Makefile.clang-cl* file rather than the plain *Makefile*:
-
-    make -f Makefile.clang-cl
+Use CMake to generate IDE files of your choice. Use `CMAKE_PREFIX_PATH` pointing
+to *dir* and add *dir/bin* to your `PATH` to help CMake finding libraries.
 
 [MSYS2]: https://www.msys2.org
-[SDL2]: http://libsdl.org
-[SDL2_image]: https://www.libsdl.org/projects/SDL_image
-[SDL2_mixer]: https://www.libsdl.org/projects/SDL_mixer
-[SDL2_ttf]: https://www.libsdl.org/projects/SDL_ttf
+[SDL3]: http://libsdl.org
+[SDL3_image]: https://www.libsdl.org/projects/SDL_image
+[SDL3_mixer]: https://www.libsdl.org/projects/SDL_mixer
+[SDL3_ttf]: https://www.libsdl.org/projects/SDL_ttf
+[cmake]: https://cmake.org
 [devkit]: https://releases.malikania.fr/devkit

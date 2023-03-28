@@ -129,18 +129,18 @@ static struct {
 	const void *data;
 	size_t datasz;
 } shapes[] = {
-	SHAPE_TEX(data_img_block5),
-	SHAPE_TEX(data_img_block6),
-	SHAPE_TEX(data_img_block2),
-	SHAPE_TEX(data_img_block4),
-	SHAPE_TEX(data_img_block1),
-	SHAPE_TEX(data_img_block8),
-	SHAPE_TEX(data_img_block3),
-	SHAPE_TEX(data_img_block9),
-	SHAPE_TEX(data_img_block10),
-	SHAPE_TEX(data_img_block11),
-	SHAPE_TEX(data_img_block12),
-	SHAPE_TEX(data_img_block7),
+	SHAPE_TEX(assets_img_block5),
+	SHAPE_TEX(assets_img_block6),
+	SHAPE_TEX(assets_img_block2),
+	SHAPE_TEX(assets_img_block4),
+	SHAPE_TEX(assets_img_block1),
+	SHAPE_TEX(assets_img_block8),
+	SHAPE_TEX(assets_img_block3),
+	SHAPE_TEX(assets_img_block9),
+	SHAPE_TEX(assets_img_block10),
+	SHAPE_TEX(assets_img_block11),
+	SHAPE_TEX(assets_img_block12),
+	SHAPE_TEX(assets_img_block7),
 };
 
 static const unsigned long ramp[] = {

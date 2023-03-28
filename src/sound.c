@@ -34,10 +34,10 @@ static struct {
 	const void *data;
 	size_t datasz;
 } sounds[] = {
-	[SOUND_CHIME] = SOUND_DEF(data_sound_startup),
-	[SOUND_MOVE] = SOUND_DEF(data_sound_move),
-	[SOUND_DROP] = SOUND_DEF(data_sound_drop),
-	[SOUND_CLEAN] = SOUND_DEF(data_sound_clean)
+	[SOUND_CHIME] = SOUND_DEF(assets_sound_startup),
+	[SOUND_MOVE] = SOUND_DEF(assets_sound_move),
+	[SOUND_DROP] = SOUND_DEF(assets_sound_drop),
+	[SOUND_CLEAN] = SOUND_DEF(assets_sound_clean)
 };
 
 static Mix_Chunk *
