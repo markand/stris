@@ -66,6 +66,8 @@ draw(void)
 static void
 finish(void)
 {
+	tex_finish(&tex[0]);
+	tex_finish(&tex[1]);
 }
 
 struct state state_dead = {

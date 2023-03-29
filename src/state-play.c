@@ -706,6 +706,7 @@ suspend(void)
 static void
 finish(void)
 {
+	tex_finish(&ui.board_bg);
 	tex_finish(&ui.pause_text[0]);
 	tex_finish(&ui.pause_text[1]);
 

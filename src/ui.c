@@ -109,10 +109,17 @@ load_font(const unsigned char *data, size_t datasz, int size)
 }
 
 static inline void
-load_fonts(void)
+init_fonts(void)
 {
 	for (size_t i = 0; i < LEN(fonts); ++i)
 		fonts[i].font = load_font(fonts[i].data, fonts[i].datasz, fonts[i].size);
+}
+
+static inline void
+finish_fonts(void)
+{
+	for (size_t i = 0; i < LEN(fonts); ++i)
+		TTF_CloseFont(fonts[i].font);
 }
 
 static void
@@ -159,7 +166,7 @@ ui_init(void)
 	SDL_SetWindowTitle(ui_win, "STris");
 	SDL_HideCursor();
 
-	load_fonts();
+	init_fonts();
 }
 
 void
@@ -302,6 +309,8 @@ ui_target(struct tex *tex)
 void
 ui_finish(void)
 {
+	finish_fonts();
+
 	SDL_DestroyRenderer(ui_rdr);
 	SDL_DestroyWindow(ui_win);
 	SDL_Quit();

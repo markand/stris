@@ -292,7 +292,7 @@ static void
 finish(void)
 {
 	for (size_t i = 0; i < LEN(states); ++i)
-		state_init(states[i]);
+		state_finish(states[i]);
 
 	if (sconf.sound)
 		sound_finish();
