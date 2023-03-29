@@ -18,7 +18,6 @@
 
 #include "key.h"
 #include "list.h"
-#include "state-menu.h"
 #include "state-mode.h"
 #include "state-scores.h"
 #include "state-settings.h"
@@ -26,7 +25,6 @@
 #include "stris.h"
 #include "tex.h"
 #include "ui.h"
-#include "util.h"
 
 /*
  * View is as following:

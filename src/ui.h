@@ -19,10 +19,20 @@
 #ifndef STRIS_UI_H
 #define STRIS_UI_H
 
+#include <stdint.h>
+
 #include <SDL.h>
 
 #define UI_W 360
 #define UI_H 640
+
+// https://lospec.com/palette-list/give-me-grey-52
+#define UI_PALETTE_SPLASH_BG    0x3f4a69ff
+#define UI_PALETTE_FG           0xffffffff
+#define UI_PALETTE_MENU_BG      0xb3b9d1ff
+#define UI_PALETTE_MENU_SEL     0xd87823ff
+#define UI_PALETTE_SHADOW       0x0c0101ff
+#define UI_PALETTE_BORDER       0x666655ff
 
 enum ui_font {
 	UI_FONT_SPLASH,
@@ -30,16 +40,6 @@ enum ui_font {
 	UI_FONT_MENU,
 	UI_FONT_MENU_SMALL,
 	UI_FONT_STATS
-};
-
-// https://lospec.com/palette-list/give-me-grey-52
-enum ui_palette {
-	UI_PALETTE_SPLASH_BG    = 0x3f4a69ff,
-	UI_PALETTE_FG           = 0xffffffff,
-	UI_PALETTE_MENU_BG      = 0xb3b9d1ff,
-	UI_PALETTE_MENU_SEL     = 0xd87823ff,
-	UI_PALETTE_SHADOW       = 0x0c0101ff,
-	UI_PALETTE_BORDER       = 0x666655ff,
 };
 
 struct tex;
@@ -55,25 +55,25 @@ void
 ui_resize(void);
 
 void
-ui_render(struct tex *, enum ui_font, unsigned long long, const char *, ...);
+ui_render(struct tex *, enum ui_font, uint32_t, const char *, ...);
 
 void
 ui_clip(enum ui_font, int *, int *, const char *, ...);
 
 void
-ui_clear(unsigned long long);
+ui_clear(uint32_t);
 
 void
-ui_update_background(unsigned long long, int);
+ui_update_background(uint32_t, int);
 
 void
 ui_draw_background(void);
 
 void
-ui_draw_line(unsigned long long, int, int, int, int);
+ui_draw_line(uint32_t, int, int, int, int);
 
 void
-ui_draw_rect(unsigned long long, int, int, int, int);
+ui_draw_rect(uint32_t, int, int, int, int);
 
 void
 ui_present(void);

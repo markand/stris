@@ -21,6 +21,7 @@
 #include <SDL.h>
 
 #include "gamecontrollerdb.h"
+#include "joy.h"
 
 static SDL_Gamepad *ctl;
 static SDL_JoystickID *ids;

@@ -22,7 +22,6 @@
 #include "list.h"
 #include "sound.h"
 #include "state-menu.h"
-#include "state-settings.h"
 #include "state.h"
 #include "stris.h"
 #include "sys.h"

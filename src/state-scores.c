@@ -23,12 +23,10 @@
 #include "list.h"
 #include "score.h"
 #include "state-menu.h"
-#include "state-scores.h"
 #include "state.h"
 #include "stris.h"
 #include "tex.h"
 #include "ui.h"
-#include "util.h"
 
 #define HEADER_HEIGHT (2 * UI_H / 16)
 

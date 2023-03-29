@@ -16,8 +16,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef STRIS_JOY_H
+#define STRIS_JOY_H
+
 void
 joy_init(void);
 
 void
 joy_finish(void);
+
+#endif // !STRIS_JOY_H

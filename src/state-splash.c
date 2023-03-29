@@ -18,7 +18,6 @@
 
 #include "sound.h"
 #include "state-menu.h"
-#include "state-splash.h"
 #include "state.h"
 #include "stris.h"
 #include "tex.h"

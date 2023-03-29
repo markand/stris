@@ -17,7 +17,6 @@
  */
 
 #include "key.h"
-#include "state-dead.h"
 #include "state-menu.h"
 #include "state.h"
 #include "stris.h"

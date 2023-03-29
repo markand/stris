@@ -25,8 +25,8 @@
 
 #define GAP 4
 
-static inline unsigned int
-inc(unsigned int cmpcur, unsigned int cmpdst, int gap)
+static inline uint8_t
+inc(uint8_t cmpcur, uint8_t cmpdst, int gap)
 {
 	if (gap >= fmax(cmpcur, cmpdst) - fmin(cmpcur, cmpdst))
 		return cmpdst;
@@ -34,11 +34,11 @@ inc(unsigned int cmpcur, unsigned int cmpdst, int gap)
 	return cmpcur + gap;
 }
 
-static inline unsigned int
+static inline uint8_t
 add(const struct list_item *item, unsigned int shift)
 {
-	const unsigned int cmpcur = (item->colorcur >> shift) & 0xff;
-	const unsigned int cmpdst = (item->colordst >> shift) & 0xff;
+	const uint8_t cmpcur = (item->colorcur >> shift) & 0xff;
+	const uint8_t cmpdst = (item->colordst >> shift) & 0xff;
 
 	return inc(cmpcur, cmpdst, cmpdst >= cmpcur ? +GAP : -GAP);
 }

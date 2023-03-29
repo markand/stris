@@ -20,6 +20,7 @@
 #define STRIS_LIST_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "ui.h"
 
@@ -36,8 +37,8 @@ struct list_item {
 	int h;
 	int spent;
 	int selected;
-	unsigned long colorcur;
-	unsigned long colordst;
+	uint32_t colorcur;
+	uint32_t colordst;
 };
 
 struct list {

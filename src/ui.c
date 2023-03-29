@@ -43,7 +43,7 @@ SDL_Renderer *ui_rdr = NULL;
 #define CG(c) ((c >> 16) & 0xff)
 #define CB(c) ((c >>  8) & 0xff)
 #define CA(c) (c         & 0xff)
-#define CHEX(r, g, b) ((unsigned long)r << 24 | (unsigned long)g << 16 | (unsigned long)b << 8 | 0xff)
+#define CHEX(r, g, b) ((uint32_t)r << 24 | (uint32_t)g << 16 | (uint32_t)b << 8 | 0xff)
 
 #define PHY_W (UI_W * sconf.scale)
 #define PHY_H (UI_H * sconf.scale)
@@ -54,7 +54,7 @@ static struct {
 	int w;
 	int h;
 	int spent;
-	unsigned long long color;
+	uint32_t color;
 } bg = {
 	.w = UI_W / 10,
 	.h = UI_W / 10,
@@ -116,7 +116,7 @@ load_fonts(void)
 }
 
 static void
-render(struct tex *t, enum ui_font f, unsigned long long color, const char *fmt, va_list ap)
+render(struct tex *t, enum ui_font f, uint32_t color, const char *fmt, va_list ap)
 {
 	char buf[128];
 	SDL_Color c = { CR(color), CG(color), CB(color), CA(color) };
@@ -135,7 +135,7 @@ render(struct tex *t, enum ui_font f, unsigned long long color, const char *fmt,
 }
 
 static inline void
-set_color(unsigned long color)
+set_color(uint32_t color)
 {
 	SDL_SetRenderDrawColor(ui_rdr, CR(color), CG(color), CB(color), CA(color));
 }
@@ -169,7 +169,7 @@ ui_resize(void)
 }
 
 void
-ui_render(struct tex *t, enum ui_font f, unsigned long long color, const char *fmt, ...)
+ui_render(struct tex *t, enum ui_font f, uint32_t color, const char *fmt, ...)
 {
 	assert(fmt);
 
@@ -201,14 +201,14 @@ ui_clip(enum ui_font f, int *w, int *h, const char *fmt, ...)
 }
 
 void
-ui_clear(unsigned long long color)
+ui_clear(uint32_t color)
 {
 	set_color(color);
 	SDL_RenderClear(ui_rdr);
 }
 
 void
-ui_update_background(unsigned long long color, int ticks)
+ui_update_background(uint32_t color, int ticks)
 {
 	int rcur, gcur, bcur;
 	int rnxt, gnxt, bnxt;
@@ -249,7 +249,7 @@ void
 ui_draw_background(void)
 {
 	int x, y, r, g, b;
-	unsigned long long color = bg.color;
+	uint32_t color = bg.color;
 
 	ui_draw_rect(color, 0, 0, UI_W, UI_H);
 
@@ -269,14 +269,14 @@ ui_draw_background(void)
 }
 
 void
-ui_draw_line(unsigned long long color, int x1, int y1, int x2, int y2)
+ui_draw_line(uint32_t color, int x1, int y1, int x2, int y2)
 {
 	set_color(color);
 	SDL_RenderLine(ui_rdr, x1, y1, x2, y2);
 }
 
 void
-ui_draw_rect(unsigned long long color, int x, int y, int w, int h)
+ui_draw_rect(uint32_t color, int x, int y, int w, int h)
 {
 	set_color(color);
 	SDL_RenderFillRect(ui_rdr, &(const SDL_FRect){x, y, w, h});

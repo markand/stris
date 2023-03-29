@@ -16,6 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "board.h"
@@ -143,7 +144,7 @@ static struct {
 	SHAPE_TEX(assets_img_block7),
 };
 
-static const unsigned long ramp[] = {
+static const uint32_t ramp[] = {
 	0x33984bff,
 	0x1e6f50ff,
 	0x0098dcff,

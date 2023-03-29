@@ -21,7 +21,6 @@
 #include "key.h"
 #include "list.h"
 #include "state-menu.h"
-#include "state-mode.h"
 #include "state-play.h"
 #include "state.h"
 #include "stris.h"

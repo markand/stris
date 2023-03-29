@@ -262,8 +262,8 @@ draw(void)
 static void
 loop(void)
 {
-	Uint32 start, end, diff;
-	Uint64 fstart, fend;
+	uint32_t start, end, diff;
+	uint64_t fstart, fend;
 	float fspent;
 
 	start = end = SDL_GetTicks();
