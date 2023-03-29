@@ -34,7 +34,7 @@ inc(uint8_t cmpcur, uint8_t cmpdst, int gap)
 	return cmpcur + gap;
 }
 
-static inline uint8_t
+static inline uint32_t
 add(const struct list_item *item, unsigned int shift)
 {
 	const uint8_t cmpcur = (item->colorcur >> shift) & 0xff;

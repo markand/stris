@@ -46,6 +46,7 @@ set(
 foreach (a ${ASSETS})
 	cmake_path(GET a FILENAME filename)
 	cmake_path(GET a PARENT_PATH parent)
+	cmake_path(GET a EXTENSION extension)
 	cmake_path(REPLACE_EXTENSION filename "h" OUTPUT_VARIABLE header)
 
 	if (NOT parent)
@@ -55,12 +56,18 @@ foreach (a ${ASSETS})
 	set(output ${assets_BINARY_DIR}/${parent}/${header})
 	set(input ${assets_SOURCE_DIR}/${a})
 
+	if (${extension} MATCHES "\\.txt")
+		set(args "-sc0")
+	else ()
+		set(args "-sc")
+	endif ()
+
 	add_custom_command(
 		OUTPUT ${output}
 		COMMAND
 			${CMAKE_COMMAND} -E make_directory ${assets_BINARY_DIR}/${parent}
 		COMMAND
-			$<TARGET_FILE:bcc> ${input} assets_${a} > ${output}
+			$<TARGET_FILE:bcc> ${args} ${input} assets_${a} > ${output}
 		COMMENT
 			"Generating ${header}"
 		DEPENDS $<TARGET_FILE:bcc> ${input}
