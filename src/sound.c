@@ -60,7 +60,7 @@ sound_init(void)
 	// No special file types yet.
 	Mix_Init(0);
 
-	if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 512) < 0)
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) < 0)
 		die("abort: %s\n", SDL_GetError());
 
 	Mix_AllocateChannels(4);

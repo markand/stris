@@ -67,9 +67,9 @@ target_link_libraries(
 	stris
 	libassets
 	SDL3::SDL3
-	SDL3_image::SDL3_image
-	SDL3_mixer::SDL3_mixer
-	SDL3_ttf::SDL3_ttf
+	SDL3_image::SDL3_image-shared
+	SDL3_mixer::SDL3_mixer-shared
+	SDL3_ttf::SDL3_ttf-shared
 )
 target_compile_definitions(
 	stris
