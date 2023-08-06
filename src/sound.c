@@ -57,10 +57,16 @@ load_sound(const void *data, size_t datasz)
 void
 sound_init(void)
 {
+	const SDL_AudioSpec spec = {
+		.format = MIX_DEFAULT_FORMAT,
+		.channels = 2,
+		.freq = 44100
+	};
+
 	// No special file types yet.
 	Mix_Init(0);
 
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) < 0)
+	if (Mix_OpenAudio(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec) < 0)
 		die("abort: %s\n", SDL_GetError());
 
 	Mix_AllocateChannels(4);
