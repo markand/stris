@@ -167,13 +167,13 @@ handle_controller_button(const SDL_GamepadButtonEvent *ev)
 	case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
 		key = KEY_LEFT;
 		break;
-	case SDL_GAMEPAD_BUTTON_A:
+	case SDL_GAMEPAD_BUTTON_SOUTH:
 		key = KEY_SELECT;
 		break;
-	case SDL_GAMEPAD_BUTTON_B:
+	case SDL_GAMEPAD_BUTTON_EAST:
 		key = KEY_CANCEL;
 		break;
-	case SDL_GAMEPAD_BUTTON_X:
+	case SDL_GAMEPAD_BUTTON_WEST:
 		key = KEY_DROP;
 		break;
 	default:
@@ -190,7 +190,7 @@ handle_keyboard(const SDL_KeyboardEvent *ev)
 	int state = ev->type == SDL_EVENT_KEY_DOWN;
 	enum key key = KEY_NONE;
 
-	switch (ev->keysym.scancode) {
+	switch (ev->scancode) {
 	case SDL_SCANCODE_ESCAPE:
 		key = KEY_CANCEL;
 		break;

@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <SDL_mixer.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "sound/clean.h"
 #include "sound/drop.h"
@@ -30,7 +30,8 @@
 #define SOUND_DEF(d) { .data = d, .datasz = sizeof (d) }
 
 static struct {
-	Mix_Chunk *snd;
+	MIX_Audio *snd;
+	MIX_Track *track;
 	const void *data;
 	size_t datasz;
 } sounds[] = {
@@ -40,54 +41,47 @@ static struct {
 	[SOUND_CLEAN]   = SOUND_DEF(assets_sound_clean)
 };
 
-static Mix_Chunk *
-load_sound(const void *data, size_t datasz)
+static MIX_Mixer *mixer;
+
+static void
+load_sound(enum sound snd)
 {
-	SDL_RWops *src;
-	Mix_Chunk *snd;
+	SDL_IOStream *src;
 
-	if (!(src = SDL_RWFromConstMem(data, datasz)))
-		die("abort: %s\n", SDL_GetError());
-	if (!(snd = Mix_LoadWAV_RW(src, 1)))
-		die("abort: %s\n", SDL_GetError());
-
-	return snd;
+	if (!(src = SDL_IOFromConstMem(sounds[snd].data, sounds[snd].datasz)))
+		die("SDL_IOFromConstMem: %s\n", SDL_GetError());
+	if (!(sounds[snd].snd = MIX_LoadAudio_IO(mixer, src, true, true)))
+		die("MIX_LoadAudio_IO: %s\n", SDL_GetError());
+	if (!(sounds[snd].track = MIX_CreateTrack(mixer)))
+		die("MIX_CreateTrack: %s\n", SDL_GetError());
+	if (!MIX_SetTrackAudio(sounds[snd].track, sounds[snd].snd))
+		die("MIX_SetTrackAudio: %s\n", SDL_GetError());
 }
 
 void
 sound_init(void)
 {
-	const SDL_AudioSpec spec = {
-		.format = MIX_DEFAULT_FORMAT,
-		.channels = 2,
-		.freq = 44100
-	};
-
-	// No special file types yet.
-	Mix_Init(0);
-
-	if (Mix_OpenAudio(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec) < 0)
+	if (!(mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL)))
 		die("abort: %s\n", SDL_GetError());
 
-	Mix_AllocateChannels(4);
-
 	for (size_t i = 0; i < LEN(sounds); ++i)
-		sounds[i].snd = load_sound(sounds[i].data, sounds[i].datasz);
+		load_sound(i);
 }
 
 void
 sound_play(enum sound snd)
 {
 	if (sconf.sound)
-		Mix_PlayChannel(-1, sounds[snd].snd, 0);
+		MIX_PlayTrack(sounds[snd].track, 0);
 }
 
 void
 sound_finish(void)
 {
-	for (size_t i = 0; i < LEN(sounds); ++i)
-		Mix_FreeChunk(sounds[i].snd);
+	for (size_t i = 0; i < LEN(sounds); ++i) {
+		MIX_DestroyTrack(sounds[i].track);
+		MIX_DestroyAudio(sounds[i].snd);
+	}
 
-	Mix_CloseAudio();
-	Mix_Quit();
+	MIX_DestroyMixer(mixer);
 }

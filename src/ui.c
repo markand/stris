@@ -20,9 +20,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_mixer/SDL_mixer.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "fonts/actionj.h"
 #include "fonts/cartoon-relief.h"
@@ -97,12 +98,12 @@ static struct {
 static TTF_Font *
 load_font(const unsigned char *data, size_t datasz, int size)
 {
-	SDL_RWops *ops;
+	SDL_IOStream *stream;
 	TTF_Font *font;
 
-	if (!(ops = SDL_RWFromConstMem(data, datasz)))
+	if (!(stream = SDL_IOFromConstMem(data, datasz)))
 		die("abort: %s\n", SDL_GetError());
-	if (!(font = TTF_OpenFontRW(ops, 1, size)))
+	if (!(font = TTF_OpenFontIO(stream, 1, size)))
 		die("abort: %s\n", SDL_GetError());
 
 	return font;
@@ -128,15 +129,19 @@ render(struct tex *t, enum ui_font f, uint32_t color, const char *fmt, va_list a
 	char buf[128];
 	SDL_Color c = { CR(color), CG(color), CB(color), CA(color) };
 	SDL_Surface *sf;
+	float w, h;
 
 	vsnprintf(buf, sizeof (buf), fmt, ap);
 
-	if (!(sf = TTF_RenderUTF8_Blended(fonts[f].font, buf, c)))
+	if (!(sf = TTF_RenderText_Blended(fonts[f].font, buf, strlen(buf), c)))
 		die("abort: %s\n", SDL_GetError());
 	if (!(t->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
 		die("abort: %s\n", SDL_GetError());
-	if (SDL_QueryTexture(t->handle, NULL, NULL, &t->w, &t->h) < 0)
+	if (!SDL_GetTextureSize(t->handle, &w, &h))
 		die("abort: %s\n", SDL_GetError());
+
+	t->w = w;
+	t->h = h;
 
 	SDL_DestroySurface(sf);
 }
@@ -150,19 +155,14 @@ set_color(uint32_t color)
 void
 ui_init(void)
 {
-	int flags = IMG_INIT_PNG;
-
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD) < 0)
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD))
 		die("abort: %s\n", SDL_GetError());
-	if (TTF_Init() < 0)
+	if (!TTF_Init() || !MIX_Init())
 		die("abort: %s\n", SDL_GetError());
-	if (IMG_Init(flags) != flags)
-		die("abort: %s\n", SDL_GetError());
-	if (SDL_CreateWindowAndRenderer(PHY_W, PHY_H, 0, &ui_win, &ui_rdr) < 0)
+	if (!SDL_CreateWindowAndRenderer("STris", PHY_W, PHY_H, 0, &ui_win, &ui_rdr))
 		die("abort: %s\n", SDL_GetError());
 
-	SDL_SetRenderLogicalPresentation(ui_rdr, UI_W, UI_H,
-	    SDL_LOGICAL_PRESENTATION_STRETCH, SDL_SCALEMODE_BEST);
+	SDL_SetRenderLogicalPresentation(ui_rdr, UI_W, UI_H, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	SDL_SetWindowTitle(ui_win, "STris");
 	SDL_HideCursor();
 

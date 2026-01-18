@@ -16,8 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <assert.h>
 #include <string.h>
@@ -45,16 +45,20 @@ tex_load(struct tex *t, const void *data, size_t datasz)
 	assert(t);
 
 	SDL_Surface *sf;
-	SDL_RWops *src;
+	SDL_IOStream *src;
+	float w, h;
 
-	if (!(src = SDL_RWFromConstMem(data, datasz)))
+	if (!(src = SDL_IOFromConstMem(data, datasz)))
 		die("abort: %s\n", SDL_GetError());
-	if (!(sf = IMG_Load_RW(src, 1)))
+	if (!(sf = IMG_Load_IO(src, 1)))
 		die("abort: %s\n", SDL_GetError());
 	if (!(t->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
 		die("abort: %s\n", SDL_GetError());
-	if (SDL_QueryTexture(t->handle, NULL, NULL, &t->w, &t->h) < 0)
+	if (!SDL_GetTextureSize(t->handle, &w, &h))
 		die("abort: %s\n", SDL_GetError());
+
+	t->w = w;
+	t->h = h;
 
 	SDL_DestroySurface(sf);
 }

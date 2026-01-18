@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define UI_W 360
 #define UI_H 640
