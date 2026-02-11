@@ -19,6 +19,7 @@
 #ifndef STRIS_STATE_SPLASH_H
 #define STRIS_STATE_SPLASH_H
 
-extern struct state state_splash;
+void
+splash_run(void);
 
 #endif /* !STRIS_STATE_SPLASH_H */

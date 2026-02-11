@@ -17,9 +17,11 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // For username()
 #if !defined(_WIN32)
@@ -100,4 +102,15 @@ nrand(int min, int max)
 #endif
 
 	return (val % (max - min + 1)) + min;
+}
+
+void *
+alloc(size_t n, size_t w)
+{
+	void *ptr;
+
+	if (!(ptr = calloc(n, w)))
+		die("calloc: %s\n", strerror(ENOMEM));
+
+	return ptr;
 }

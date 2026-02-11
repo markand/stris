@@ -22,34 +22,14 @@ set(
 	SOURCES
 	${stris_SOURCE_DIR}/board.c
 	${stris_SOURCE_DIR}/board.h
-	${stris_SOURCE_DIR}/joy.c
-	${stris_SOURCE_DIR}/joy.h
-	${stris_SOURCE_DIR}/key.h
-	${stris_SOURCE_DIR}/list.c
-	${stris_SOURCE_DIR}/list.h
-	${stris_SOURCE_DIR}/score.c
-	${stris_SOURCE_DIR}/score.h
-	${stris_SOURCE_DIR}/shape.c
-	${stris_SOURCE_DIR}/shape.h
+	${stris_SOURCE_DIR}/coroutine.c
+	${stris_SOURCE_DIR}/coroutine.h
+	${stris_SOURCE_DIR}/node.c
+	${stris_SOURCE_DIR}/node.h
 	${stris_SOURCE_DIR}/sound.c
 	${stris_SOURCE_DIR}/sound.h
-	${stris_SOURCE_DIR}/state-dead.c
-	${stris_SOURCE_DIR}/state-dead.h
-	${stris_SOURCE_DIR}/state-menu.c
-	${stris_SOURCE_DIR}/state-menu.h
-	${stris_SOURCE_DIR}/state-mode.c
-	${stris_SOURCE_DIR}/state-mode.h
-	${stris_SOURCE_DIR}/state-play.c
-	${stris_SOURCE_DIR}/state-play.h
-	${stris_SOURCE_DIR}/state-scores.c
-	${stris_SOURCE_DIR}/state-scores.h
-	${stris_SOURCE_DIR}/state-settings.c
-	${stris_SOURCE_DIR}/state-settings.h
 	${stris_SOURCE_DIR}/state-splash.c
 	${stris_SOURCE_DIR}/state-splash.h
-	${stris_SOURCE_DIR}/state.c
-	${stris_SOURCE_DIR}/state.h
-	${stris_SOURCE_DIR}/stris.6
 	${stris_SOURCE_DIR}/stris.c
 	${stris_SOURCE_DIR}/stris.h
 	${stris_SOURCE_DIR}/sys.c
@@ -63,6 +43,12 @@ set(
 )
 
 add_executable(stris ${SOURCES})
+
+target_include_directories(
+	stris
+	PRIVATE
+		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/minicoro>
+)
 target_link_libraries(
 	stris
 	libassets

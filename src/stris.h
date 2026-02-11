@@ -19,22 +19,45 @@
 #ifndef STRIS_H
 #define STRIS_H
 
-struct state;
+struct node;
+struct coroutine;
 
-enum stris_mode {
-	STRIS_MODE_STANDARD,
-	STRIS_MODE_EXTENDED,
-	STRIS_MODE_NIGHTMARE
+enum mode : int {
+	MODE_STANDARD,
+	MODE_EXTENDED,
+	MODE_NIGHTMARE
 };
+
+enum key : unsigned int {
+	KEY_NONE,
+	KEY_UP     = 1 << 0,
+	KEY_RIGHT  = 1 << 1,
+	KEY_DOWN   = 1 << 2,
+	KEY_LEFT   = 1 << 3,
+	KEY_CANCEL = 1 << 4,
+	KEY_SELECT = 1 << 5,
+	KEY_DROP   = 1 << 6,
+};
+
+extern struct stris {
+	/*
+	 * Object to draw on scene.
+	 */
+	struct node *nodes[32];
+
+	struct coroutine *coroutines[16];
+
+	/*
+	 * Keys being pressed.
+	 */
+	enum key keys;
+} stris;
 
 extern struct sconf {
 	int sound;
 	int psychedelic;
 	int scale;
 } sconf;
-
-void
-stris_switch(struct state *);
 
 void
 stris_quit(void);

@@ -16,57 +16,78 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+
+#include "coroutine.h"
+#include "node.h"
 #include "sound.h"
 #include "state-menu.h"
-#include "state.h"
+#include "state-splash.h"
 #include "stris.h"
 #include "tex.h"
 #include "ui.h"
+#include "util.h"
 
-static int played;
-static int spent;
-static struct tex title;
+#define SPLASH(Ptr, Field) \
+        (CONTAINER_OF(Ptr, struct splash, Field))
 
-static void
-init(void)
-{
-	ui_render(&title, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
-}
+struct splash {
+	struct tex background;
+	struct node background_node;
 
-static void
-update(int ticks)
-{
-	spent += ticks;
+	struct tex title;
+	struct node title_node;
 
-	//
-	// We wait a little before playing sound because the window may take
-	// time to open.
-	//
-	if (spent >= 100 && !played) {
-		played = 1;
-		sound_play(SOUND_CHIME);
-	}
-	if (spent >= 2000)
-		stris_switch(&state_menu);
-}
-
-static void
-draw(void)
-{
-	ui_clear(UI_PALETTE_SPLASH_BG);
-	tex_draw(&title, (UI_W - title.w) / 2, (UI_H - title.h) / 2);
-	ui_present();
-}
-
-static void
-finish(void)
-{
-	tex_finish(&title);
-}
-
-struct state state_splash = {
-	.init = init,
-	.update = update,
-	.draw = draw,
-	.finish = finish
+	struct coroutine coroutine;
 };
+
+static void
+splash_entry(struct coroutine *self)
+{
+	struct splash *splash;
+	struct tex *current;
+
+	splash = SPLASH(self, coroutine);
+
+	/* Init graphical nodes. */
+	ui_render(&splash->title, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
+
+	/* TODO: add begin/end helpers */
+	tex_new(&splash->background, UI_W, UI_H);
+	current = ui_target(&splash->background);
+	ui_clear(UI_PALETTE_SPLASH_BG);
+	ui_target(current);
+
+	node_enable(&splash->background_node, &splash->background);
+	node_enable(&splash->title_node, &splash->title);
+	node_move(&splash->title_node, (UI_W - splash->title.w) / 2, (UI_H - splash->title.h) / 2);
+
+	/* Wait for splash to show up. */
+	sound_play(SOUND_CHIME);
+	coroutine_sleep(3000);
+}
+
+static void
+splash_terminate(struct coroutine *self)
+{
+	struct splash *splash = SPLASH(self, coroutine);
+
+	node_disable(&splash->title_node);
+	tex_finish(&splash->title);
+
+	node_disable(&splash->background_node);
+	tex_finish(&splash->background);
+
+	free(splash);
+}
+
+void
+splash_run(void)
+{
+	struct splash *splash;
+
+	splash = alloc(1, sizeof (*splash));
+	splash->coroutine.entry = splash_entry;
+	splash->coroutine.terminate = splash_terminate;
+	coroutine_init(&splash->coroutine);
+}

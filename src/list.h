@@ -24,8 +24,6 @@
 
 #include "ui.h"
 
-enum key;
-
 struct list_item {
 	// User editable fields.
 	const char *text;
@@ -61,16 +59,10 @@ list_init(struct list *);
 void
 list_reset(struct list *);
 
-void
-list_select(struct list *, size_t);
-
-int
-list_onkey(struct list *, enum key);
+size_t
+list_wait(struct list *, size_t);
 
 void
-list_update(struct list *, int);
-
-void
-list_draw(const struct list *);
+list_finish(struct list *);
 
 #endif // !STRIS_LIST_H/

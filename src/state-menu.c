@@ -16,15 +16,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "key.h"
+#include "coroutine.h"
 #include "list.h"
 #include "state-mode.h"
 #include "state-scores.h"
 #include "state-settings.h"
-#include "state.h"
 #include "stris.h"
 #include "tex.h"
 #include "ui.h"
+#include "util.h"
+
+#define MENU(Ptr, Field) \
+        (CONTAINER_OF(Ptr, struct menu, Field))
 
 /*
  * View is as following:
@@ -69,21 +72,13 @@ static struct list menu = {
 	.itemsz = STATE_MENU_LAST
 };
 
+struct menu {
+	struct coroutine coroutine;
+};
+
 static void
 init(void)
 {
-	// Title.
-	ui_render(&title.tex[0], UI_FONT_TITLE, UI_PALETTE_FG, "stris");
-	ui_render(&title.tex[1], UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
-	title.x = (UI_W - title.tex[0].w) / 2;
-	title.h = (UI_H * 4) / 16;
-	title.y = (title.h - title.tex[0].h) / 2;
-
-	// Main menu.
-	menu.y = title.h;
-	menu.w = UI_W;
-	menu.h = UI_H - title.h;
-	list_init(&menu);
 }
 
 static void
@@ -138,17 +133,25 @@ draw(void)
 }
 
 static void
-finish(void)
+menu_entry(struct coroutine *self)
 {
-	tex_finish(&title.tex[0]);
-	tex_finish(&title.tex[1]);
+	// Title.
+	ui_render(&title.tex[0], UI_FONT_TITLE, UI_PALETTE_FG, "stris");
+	ui_render(&title.tex[1], UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
+	title.x = (UI_W - title.tex[0].w) / 2;
+	title.h = (UI_H * 4) / 16;
+	title.y = (title.h - title.tex[0].h) / 2;
+
+	// Main menu.
+	menu.y = title.h;
+	menu.w = UI_W;
+	menu.h = UI_H - title.h;
+	list_init(&menu);
 }
 
-struct state state_menu = {
-	.init = init,
-	.resume = resume,
-	.onkey = onkey,
-	.update = update,
-	.draw = draw,
-	.finish = finish
-};
+void
+menu_run(void)
+{
+	menu.coroutine.entry = menu_entry;
+	coroutine_init(&menu.coroutine);
+}

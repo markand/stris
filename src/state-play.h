@@ -19,7 +19,4 @@
 #ifndef STRIS_STATE_PLAY
 #define STRIS_STATE_PLAY
 
-extern enum stris_mode state_play_mode;
-extern struct state state_play;
-
 #endif /* !STRIS_STATE_PLAY */

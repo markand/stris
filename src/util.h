@@ -19,9 +19,12 @@
 #ifndef STRIS_UTIL_H
 #define STRIS_UTIL_H
 
-#include <stdlib.h>
+#include <stddef.h>
 
-#define LEN(x)          (sizeof (x) / sizeof (x[0]))
+#define LEN(x) (sizeof (x) / sizeof (x[0]))
+
+#define CONTAINER_OF(Ptr, Type, Field) \
+	(Type *)((char *)(1 ? (Ptr) : &((Type *)0)->Field) - offsetof(Type, Field))
 
 void
 die(const char *, ...);
@@ -34,5 +37,8 @@ username(void);
 
 int
 nrand(int min, int max);
+
+void *
+alloc(size_t n, size_t w);
 
 #endif /* !STRIS_UTIL_H */

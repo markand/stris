@@ -1,5 +1,5 @@
 /*
- * key.h -- key handling
+ * coroutine.h -- coroutine support
  *
  * Copyright (c) 2011-2026 David Demelier <markand@malikania.fr>
  *
@@ -16,19 +16,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRIS_KEY_H
-#define STRIS_KEY_H
+#ifndef STRIS_CORO_H
+#define STRIS_CORO_H
 
-enum key {
-	KEY_NONE,
-	KEY_UP,
-	KEY_RIGHT,
-	KEY_DOWN,
-	KEY_LEFT,
-	KEY_CANCEL,
-	KEY_SELECT,
-	KEY_DROP,
-	KEY_LAST
+struct mco_coro;
+
+struct coroutine {
+	void (*entry)(struct coroutine *self);
+	void (*terminate)(struct coroutine *self);
+	struct mco_coro *handle;
+	unsigned int delay_acc;
+	unsigned int delay_for;
 };
 
-#endif /* !STRIS_KEY_H */
+void
+coroutine_init(struct coroutine *co);
+
+void
+coroutine_sleep(unsigned int ms);
+
+int
+coroutine_resume(struct coroutine *co, unsigned int dt);
+
+void
+coroutine_yield(void);
+
+void
+coroutine_finish(struct coroutine *co);
+
+#endif /* !STRIS_CORO_H */

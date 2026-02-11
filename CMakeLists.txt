@@ -27,7 +27,7 @@ project(
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED On)
 set(CMAKE_C_EXTENSIONS On)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -38,7 +38,7 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 	if (CMAKE_C_COMPILER_ID MATCHES "GNU")
 		set(CMAKE_C_FLAGS "-Wno-format-truncation ${CMAKE_C_FLAGS}")
 	else ()
-		set(CMAKE_C_FLAGS "-Wno-fixed-enum-extension ${CMAKE_C_FLAGS}")
+		set(CMAKE_C_FLAGS "-Wno-bit-int-extension -Wno-c23-extensions ${CMAKE_C_FLAGS}")
 	endif ()
 elseif (CMAKE_C_COMPILER_ID MATCHES "MSVC")
 	set(CMAKE_C_FLAGS "/W3 /wd4090 /wd4244 /wd4267 /wd4996 /wd5105 /wd6031 /wd6001 /wd26451 ${CMAKE_C_FLAGS}")

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#if 0
 #include "joy.h"
 #include "key.h"
 #include "sound.h"
@@ -36,34 +37,32 @@
 #include "sys.h"
 #include "ui.h"
 #include "util.h"
+#endif
 
-static struct {
+#include "coroutine.h"
+#include "node.h"
+#include "sound.h"
+#include "state-splash.h"
+#include "stris.h"
+#include "sys.h"
+#include "ui.h"
+#include "util.h"
+
+#if 0
+struct {
 	int run;
-	struct state *state;
-	struct state *state_next;
 } stris = {
 	.run = 1,
-#if defined(STRIS_NO_SPLASH)
-	.state_next = &state_menu
-#else
-	.state_next = &state_splash
-#endif
 };
+#endif
 
-struct sconf sconf ={
+struct sconf sconf = {
 	.sound = 1,
 	.psychedelic = 1,
 	.scale = 1
 };
 
-static struct state *states[] = {
-	&state_dead,
-	&state_menu,
-	&state_mode,
-	&state_play,
-	&state_scores,
-	&state_settings,
-	&state_splash
+struct stris stris = {
 };
 
 static void
@@ -73,27 +72,13 @@ init(void)
 
 	sys_conf_read();
 	ui_init();
-	joy_init();
+	//joy_init();
 
+#if 0
 	if (sconf.sound)
 		sound_init();
-
-	for (size_t i = 0; i < LEN(states); ++i)
-		state_init(states[i]);
-}
-
-static void
-change(void)
-{
-	if (stris.state_next) {
-		if (stris.state)
-			state_suspend(stris.state);
-
-		state_resume(stris.state_next);
-
-		stris.state = stris.state_next;
-		stris.state_next = NULL;
-	}
+#endif
+	splash_run();
 }
 
 static void
@@ -144,8 +129,10 @@ handle_controller_axis_motion(const SDL_GamepadAxisEvent *ev)
 		break;
 	}
 
-	if (key)
-		state_onkey(stris.state, key, state);
+	if (state)
+		stris.keys |= key;
+	else
+		stris.keys &= ~key;
 }
 
 static void
@@ -180,8 +167,10 @@ handle_controller_button(const SDL_GamepadButtonEvent *ev)
 		break;
 	}
 
-	if (key)
-		state_onkey(stris.state, key, state);
+	if (state)
+		stris.keys |= key;
+	else
+		stris.keys &= ~key;
 }
 
 static void
@@ -216,8 +205,10 @@ handle_keyboard(const SDL_KeyboardEvent *ev)
 		break;
 	}
 
-	if (key)
-		state_onkey(stris.state, key, state);
+	if (state)
+		stris.keys |= key;
+	else
+		stris.keys &= ~key;
 }
 
 static void
@@ -228,7 +219,6 @@ handle(void)
 	while (SDL_PollEvent(&ev)) {
 		switch (ev.type) {
 		case SDL_EVENT_QUIT:
-			stris.run = 0;
 			break;
 		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
 			handle_controller_axis_motion(&ev.gaxis);
@@ -250,13 +240,29 @@ handle(void)
 static inline void
 update(int diff)
 {
-	state_update(stris.state, diff);
+	for (size_t i = 0; i < LEN(stris.coroutines); ++i) {
+		if (!stris.coroutines[i])
+			continue;
+
+		if (coroutine_resume(stris.coroutines[i], diff)) {
+			coroutine_finish(stris.coroutines[i]);
+			stris.coroutines[i] = NULL;
+		}
+	}
 }
+
+#include <stdio.h>
 
 static inline void
 draw(void)
 {
-	state_draw(stris.state);
+	ui_clear(0xffffffff);
+
+	for (size_t i = 0; i < LEN(stris.nodes); ++i)
+		if (stris.nodes[i])
+			node_render(stris.nodes[i]);
+
+	ui_present();
 }
 
 static void
@@ -268,12 +274,11 @@ loop(void)
 
 	start = end = SDL_GetTicks();
 
-	while (stris.run) {
+	for (;;) {
 		diff = end - start;
 		start = SDL_GetTicks();
 		fstart = SDL_GetPerformanceCounter();
 
-		change();
 		handle();
 		update(diff);
 		draw();
@@ -291,9 +296,6 @@ loop(void)
 static void
 finish(void)
 {
-	for (size_t i = 0; i < LEN(states); ++i)
-		state_finish(states[i]);
-
 	if (sconf.sound)
 		sound_finish();
 
@@ -301,25 +303,13 @@ finish(void)
 }
 
 void
-stris_switch(struct state *s)
-{
-	assert(s);
-
-	stris.state_next = s;
-}
-
-void
 stris_quit(void)
 {
-	stris.run = 0;
 }
 
 int
-main(int argc, char **argv)
+main(int, char **)
 {
-	(void)argc;
-	(void)argv;
-
 	init();
 	loop();
 	finish();
