@@ -25,17 +25,16 @@
 #include "state-scores.h"
 #include "state-settings.h"
 #include "stris.h"
-#include "tex.h"
+#include "texture.h"
 #include "ui.h"
 #include "util.h"
 
 #define MENU(Ptr, Field) \
         (CONTAINER_OF(Ptr, struct menu, Field))
 
-#define MENU_TITLE_X(Menu) \
-        ((UI_W - (Menu)->title[0].w) / 2)
-#define MENU_TITLE_Y(Menu) \
-        ((Menu)->title[0].h / 2)
+#define MENU_TITLE_X(Menu) ((UI_W - (Menu)->title[0].texture->w) / 2)
+
+#define MENU_TITLE_Y(Menu) ((Menu)->title[0].texture->h / 2)
 
 /*
  * View is as following:
@@ -62,8 +61,7 @@ enum item {
 
 struct menu {
 	/* Title and its shadow */
-	struct tex title[2];
-	struct node title_node[2];
+	struct node title[2];
 
 	/* Menu list and its items. */
 	struct list_item items[ITEM_LAST];
@@ -74,15 +72,23 @@ struct menu {
 static void
 menu_entry(struct coroutine *self)
 {
-	struct menu *menu = MENU(self, coroutine);
+	struct texture texture;
+	struct menu *menu;
 
-	/* Title and its shadow */
-	ui_render(&menu->title[0], UI_FONT_TITLE, UI_PALETTE_FG, "stris");
-	ui_render(&menu->title[1], UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
-	node_enable(&menu->title_node[1], &menu->title[1]);
-	node_enable(&menu->title_node[0], &menu->title[0]);
-	node_move(&menu->title_node[1], MENU_TITLE_X(menu) + 1, MENU_TITLE_Y(menu) + 1);
-	node_move(&menu->title_node[0], MENU_TITLE_X(menu), MENU_TITLE_Y(menu));
+	menu = MENU(self, coroutine);
+
+	/* Title shadow. */
+	ui_render(&texture, UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
+	node_wrap(&menu->title[0], &texture);
+
+	/* Title foreground. */
+	ui_render(&texture, UI_FONT_TITLE, UI_PALETTE_FG, "stris");
+	node_wrap(&menu->title[1], &texture);
+
+	menu->title[0].x  = menu->title[1].x = MENU_TITLE_X(menu);
+	menu->title[0].y  = menu->title[1].y = MENU_TITLE_Y(menu);
+	menu->title[0].x += 1;
+	menu->title[0].y += 1;
 
 	/* Main menu. */
 	menu->items[ITEM_PLAY].text = "Play";
@@ -99,13 +105,13 @@ menu_entry(struct coroutine *self)
 
 	switch (list_wait(&menu->list)) {
 	case ITEM_PLAY:
-		printf("play!!!\n");
 		break;
 	case ITEM_SCORES:
 		break;
 	case ITEM_SETTINGS:
 		break;
 	case ITEM_QUIT:
+		stris_quit();
 		break;
 	default:
 		break;
@@ -119,10 +125,8 @@ menu_terminate(struct coroutine *self)
 
 	list_finish(&menu->list);
 
-	for (size_t i = 0; i < 2; ++i) {
-		node_disable(&menu->title_node[i]);
-		tex_finish(&menu->title[i]);
-	}
+	for (size_t i = 0; i < 2; ++i)
+		node_finish(&menu->title[i]);
 }
 
 void

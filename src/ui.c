@@ -33,23 +33,22 @@
 #include "coroutine.h"
 #include "node.h"
 #include "stris.h"
-#include "tex.h"
+#include "texture.h"
 #include "ui.h"
 #include "util.h"
-
-static struct tex *target;
-
-SDL_Window *ui_win = NULL;
-SDL_Renderer *ui_rdr = NULL;
 
 #define PHY_W (UI_W * sconf.scale)
 #define PHY_H (UI_H * sconf.scale)
 
+static struct texture *target;
+
+SDL_Window *ui_win = NULL;
+SDL_Renderer *ui_rdr = NULL;
+
 /* Grid background. */
 static struct {
 	uint32_t target;
-	struct tex texture;
-	struct node node;
+	struct node background;
 	struct coroutine updater;
 } bg;
 
@@ -110,6 +109,7 @@ init_fonts(void)
 static void
 ui_bg_updater_entry(struct coroutine *)
 {
+	struct texture texture;
 	int rcur, gcur, bcur;
 	int rnxt, gnxt, bnxt;
 	uint32_t color, darken;
@@ -122,8 +122,8 @@ ui_bg_updater_entry(struct coroutine *)
 	w = h = UI_W / 10;
 
 	/* Prepare background texture. */
-	tex_new(&bg.texture, UI_W, UI_H);
-	node_enable(&bg.node, &bg.texture);
+	texture_init(&texture, UI_W, UI_H);
+	node_wrap(&bg.background, &texture);
 
 	x = y = 0;
 
@@ -137,9 +137,9 @@ ui_bg_updater_entry(struct coroutine *)
 			x = y = 0;
 
 		/* Gradually reach the target color. */
-		rcur = CR(color); rnxt = CR(bg.target);
-		gcur = CG(color); gnxt = CG(bg.target);
-		bcur = CB(color); bnxt = CB(bg.target);
+		rcur = UI_COLOR_R(color); rnxt = UI_COLOR_R(bg.target);
+		gcur = UI_COLOR_G(color); gnxt = UI_COLOR_G(bg.target);
+		bcur = UI_COLOR_B(color); bnxt = UI_COLOR_B(bg.target);
 
 		if (color != bg.target) {
 			if (rcur != rnxt)
@@ -149,20 +149,20 @@ ui_bg_updater_entry(struct coroutine *)
 			if (bcur != bnxt)
 				bcur += (bcur < bnxt) ? 1 : -1;
 
-			color = CHEX(rcur, gcur, bcur);
+			color = UI_COLOR(rcur, gcur, bcur, 0xff);
 		}
 
 		if (x == -w)
 			x = y = 0;
 
-		UI_BEGIN(&bg.texture);
+		UI_BEGIN(bg.background.texture);
 		ui_clear(color);
 
 		/* Darken color for grid pattern. */
-		r = clamp((long)CR(color) - 10, 0, 255);
-		g = clamp((long)CG(color) - 10, 0, 255);
-		b = clamp((long)CB(color) - 10, 0, 255);
-		darken = CHEX(r, g, b);
+		r = clamp((long)UI_COLOR_R(color) - 10, 0, 255);
+		g = clamp((long)UI_COLOR_G(color) - 10, 0, 255);
+		b = clamp((long)UI_COLOR_B(color) - 10, 0, 255);
+		darken = UI_COLOR(r, g, b, 0xff);
 
 		for (int r = 0; r < 21; ++r)
 			for (int c = 0; c < 11; c += 2)
@@ -187,24 +187,29 @@ finish_fonts(void)
 }
 
 static void
-render(struct tex *t, enum ui_font f, uint32_t color, const char *fmt, va_list ap)
+render(struct texture *texture, enum ui_font f, uint32_t color, const char *fmt, va_list ap)
 {
 	char buf[128];
-	SDL_Color c = { CR(color), CG(color), CB(color), CA(color) };
+	SDL_Color c = {};
 	SDL_Surface *sf;
 	float w, h;
+
+	c.r = UI_COLOR_R(color);
+	c.g = UI_COLOR_G(color);
+	c.b = UI_COLOR_B(color);
+	c.a = UI_COLOR_A(color);
 
 	vsnprintf(buf, sizeof (buf), fmt, ap);
 
 	if (!(sf = TTF_RenderText_Blended(fonts[f].font, buf, strlen(buf), c)))
 		die("abort: %s\n", SDL_GetError());
-	if (!(t->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
+	if (!(texture->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
 		die("abort: %s\n", SDL_GetError());
-	if (!SDL_GetTextureSize(t->handle, &w, &h))
+	if (!SDL_GetTextureSize(texture->handle, &w, &h))
 		die("abort: %s\n", SDL_GetError());
 
-	t->w = w;
-	t->h = h;
+	texture->w = w;
+	texture->h = h;
 
 	SDL_DestroySurface(sf);
 }
@@ -212,7 +217,12 @@ render(struct tex *t, enum ui_font f, uint32_t color, const char *fmt, va_list a
 static inline void
 set_color(uint32_t color)
 {
-	SDL_SetRenderDrawColor(ui_rdr, CR(color), CG(color), CB(color), CA(color));
+	SDL_SetRenderDrawColor(ui_rdr,
+	    UI_COLOR_R(color),
+	    UI_COLOR_G(color),
+	    UI_COLOR_B(color),
+	    UI_COLOR_A(color)
+	);
 }
 
 void
@@ -240,14 +250,14 @@ ui_resize(void)
 }
 
 void
-ui_render(struct tex *t, enum ui_font f, uint32_t color, const char *fmt, ...)
+ui_render(struct texture *texture, enum ui_font font, uint32_t color, const char *fmt, ...)
 {
 	assert(fmt);
 
 	va_list ap;
 
 	va_start(ap, fmt);
-	render(t, f, color, fmt, ap);
+	render(texture, font, color, fmt, ap);
 	va_end(ap);
 }
 
@@ -258,17 +268,17 @@ ui_clip(enum ui_font f, int *w, int *h, const char *fmt, ...)
 	assert(h);
 	assert(fmt);
 
-	struct tex tex;
+	struct texture texture;
 	va_list ap;
 
 	va_start(ap, fmt);
-	render(&tex, f, 0, fmt, ap);
+	render(&texture, f, 0, fmt, ap);
 	va_end(ap);
 
-	*w = tex.w;
-	*h = tex.h;
+	*w = texture.w;
+	*h = texture.h;
 
-	tex_finish(&tex);
+	texture_finish(&texture);
 }
 
 void
@@ -304,13 +314,13 @@ ui_present(void)
 	SDL_RenderPresent(ui_rdr);
 }
 
-struct tex *
-ui_target(struct tex *tex)
+struct texture *
+ui_target(struct texture *texture)
 {
-	struct tex *old = target;
+	struct texture *old = target;
 
-	SDL_SetRenderTarget(ui_rdr, tex ? tex->handle : NULL);
-	target = tex;
+	SDL_SetRenderTarget(ui_rdr, texture ? texture->handle : NULL);
+	target = texture;
 
 	return old;
 }

@@ -24,7 +24,7 @@
 #include "state-menu.h"
 #include "state-splash.h"
 #include "stris.h"
-#include "tex.h"
+#include "texture.h"
 #include "ui.h"
 #include "util.h"
 
@@ -32,33 +32,34 @@
         (CONTAINER_OF(Ptr, struct splash, Field))
 
 struct splash {
-	struct tex background;
-	struct node background_node;
-
-	struct tex title;
-	struct node title_node;
-
+	struct node background;
+	struct node title;
 	struct coroutine coroutine;
 };
 
 static void
 splash_entry(struct coroutine *self)
 {
+	struct texture texture;
 	struct splash *splash;
 
 	splash = SPLASH(self, coroutine);
 
-	/* Init graphical nodes. */
-	ui_render(&splash->title, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
+	/* Background. */
+	texture_init(&texture, UI_W, UI_H);
 
-	tex_new(&splash->background, UI_W, UI_H);
-	UI_BEGIN(&splash->background);
+	UI_BEGIN(&texture);
 	ui_clear(UI_PALETTE_SPLASH_BG);
 	UI_END();
 
-	node_enable(&splash->background_node, &splash->background);
-	node_enable(&splash->title_node, &splash->title);
-	node_move(&splash->title_node, (UI_W - splash->title.w) / 2, (UI_H - splash->title.h) / 2);
+	node_wrap(&splash->background, &texture);
+
+	/* Center brag. */
+	ui_render(&texture, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
+
+	node_wrap(&splash->title, &texture);
+	splash->title.x = (UI_W - splash->title.texture->w) / 2;
+	splash->title.y = (UI_H - splash->title.texture->h) / 2;
 
 	/* Wait for splash to show up. */
 	sound_play(SOUND_CHIME);
@@ -73,11 +74,8 @@ splash_terminate(struct coroutine *self)
 {
 	struct splash *splash = SPLASH(self, coroutine);
 
-	node_disable(&splash->title_node);
-	tex_finish(&splash->title);
-
-	node_disable(&splash->background_node);
-	tex_finish(&splash->background);
+	node_finish(&splash->title);
+	node_finish(&splash->background);
 
 	free(splash);
 }

@@ -19,6 +19,14 @@
 #ifndef STRIS_STATE_SPLASH_H
 #define STRIS_STATE_SPLASH_H
 
+/**
+ * \file state-splash.h
+ * \brief Simple advertising splash screen.
+ */
+
+/**
+ * Run splash screen.
+ */
 void
 splash_run(void);
 

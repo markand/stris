@@ -19,32 +19,81 @@
 #ifndef STRIS_NODE_H
 #define STRIS_NODE_H
 
+/**
+ * \file node.h
+ * \brief Graphical object on scene.
+ */
+
+struct texture;
+
+/**
+ * \struct node
+ * \brief Graphical texture to be drawn on scene.
+ */
 struct node {
-	struct tex *texture;
-	int hide;
+	/**
+	 * (read-write)
+	 *
+	 * Texture to render.
+	 */
+	struct texture *texture;
+
+	/**
+	 * (read-write)
+	 *
+	 * Position in x.
+	 */
 	int x;
+
+	/**
+	 * (read-write)
+	 *
+	 * Position in y.
+	 */
 	int y;
-#if 0
-	float angle;
-#endif
+
+	/**
+	 * (read-write)
+	 *
+	 * Non-zero to skip texture when rendering.
+	 */
+	int hide;
+
+	/* Non-zero if texture is owned by node. */
+	int own;
 };
 
+/**
+ * Initialize a rendering node and attach it to the game window.
+ */
 void
-node_enable(struct node *node, struct tex *texture);
+node_init(struct node *node);
 
+/**
+ * Convenient function that takes ownership of the texture and will destroy
+ * it when the node is destroyed.
+ *
+ * The texture content is moved internally and its content reset. Caller can
+ * discard the object and ::texture_finish is no-op.
+ *
+ * \param texture the texture to borrow (not NULL)
+ */
 void
-node_disable(struct node *node);
+node_wrap(struct node *node, struct texture *texture);
 
-void
-node_move(struct node *node, int x, int y);
-
-void
-node_show(struct node *node);
-
-void
-node_hide(struct node *node);
-
+/**
+ * Render the node on the screen.
+ */
 void
 node_render(struct node *node);
+
+/**
+ * Remove node from stris main loop and destroy it.
+ *
+ * If the node owns the texture (as if ::node_wrap) was used, the underlying
+ * texture is destroyed as well.
+ */
+void
+node_finish(struct node *node);
 
 #endif /* !STRIS_NODE_H */

@@ -19,62 +19,105 @@
 #ifndef STRIS_UI_H
 #define STRIS_UI_H
 
-#include <stdint.h>
+/**
+ * \file ui.h
+ * \brief User interface rendering.
+ */
 
-#include <SDL3/SDL.h>
+#include <stdint.h>
 
 /**
  * Store the current texture in a temporary variable and switch to the
  * rendering target provided as argument.
  *
- * \param tex the texture to use
+ * \param Texture the texture to use
  */
-#define UI_BEGIN(Tex)                                                   \
-do {                                                                    \
-        struct tex *__current_texture__;                                \
-                                                                        \
-        __current_texture__ = ui_target((Tex));
+#define UI_BEGIN(Texture)                                                       \
+do {                                                                            \
+        struct texture *ui__ctx;                                                \
+                                                                                \
+        ui__ctx = ui_target((Texture));
 
 /**
  * Pop the current rendering texture and restore the previous one.
  */
-#define UI_END()                                                        \
-        ui_target(__current_texture__);                                 \
+#define UI_END()                                                                \
+        ui_target(ui__ctx);                                                     \
 } while (0)
 
+/**
+ * Window width.
+ */
 #define UI_W 360
+
+/**
+ * Window height.
+ */
 #define UI_H 640
 
-/* TODO: rename. */
-#define CR(c) ((c >> 24) & 0xff)
-#define CG(c) ((c >> 16) & 0xff)
-#define CB(c) ((c >>  8) & 0xff)
-#define CA(c) (c         & 0xff)
-#define CHEX(r, g, b) ((uint32_t)r << 24 | (uint32_t)g << 16 | (uint32_t)b << 8 | 0xff)
+/**
+ * Expand red part of `Color`.
+ */
+#define UI_COLOR_R(Color) (((Color) >> 24) & 0xff)
 
-// https://lospec.com/palette-list/give-me-grey-52
-#define UI_PALETTE_SPLASH_BG    0x3f4a69ff
-#define UI_PALETTE_FG           0xffffffff
-#define UI_PALETTE_MENU_BG      0xb3b9d1ff
-#define UI_PALETTE_MENU_LOW     0xa6a6a6ff
-#define UI_PALETTE_MENU_HIGH    0xd87823ff
-#define UI_PALETTE_SHADOW       0x0c0101ff
-#define UI_PALETTE_BORDER       0x666655ff
+/**
+ * Expand green part of `Color`.
+ */
+#define UI_COLOR_G(Color) (((Color) >> 16) & 0xff)
 
-enum ui_font {
-	UI_FONT_SPLASH,
-	UI_FONT_TITLE,
-	UI_FONT_MENU,
-	UI_FONT_MENU_SMALL,
-	UI_FONT_STATS
+/**
+ * Expand blue part of `Color`.
+ */
+#define UI_COLOR_B(Color) (((Color) >>  8) & 0xff)
+
+/**
+ * Expand alpha part of `Color`.
+ */
+#define UI_COLOR_A(Color) (((Color) >>  0) & 0xff)
+
+/**
+ * Expand to a color using all four RGBA components.
+ */
+#define UI_COLOR(R, G, B, A) (                                                  \
+        ((uint32_t)(R) << 24) & (uint32_t)0xff000000 |                          \
+        ((uint32_t)(G) << 16) & (uint32_t)0x00ff0000 |                          \
+        ((uint32_t)(B) <<  8) & (uint32_t)0x0000ff00 |                          \
+        ((uint32_t)(A) <<  0) & (uint32_t)0x000000ff                            \
+)
+
+struct texture;
+
+/**
+ * \enum ui_palette
+ * \brief Predefined color palette.
+ *
+ * Based on https://lospec.com/palette-list/give-me-grey-52.
+ */
+enum ui_palette : uint32_t {
+	UI_PALETTE_SPLASH_BG = 0x3f4a69ff,
+	UI_PALETTE_FG = 0xffffffff,
+	UI_PALETTE_MENU_BG = 0xb3b9d1ff,
+	UI_PALETTE_MENU_LOW = 0xa6a6a6ff,
+	UI_PALETTE_MENU_HIGH = 0xd87823ff,
+	UI_PALETTE_SHADOW = 0x0c0101ff,
+	UI_PALETTE_BORDER = 0x666655ff
 };
 
-struct tex;
+/**
+ * \enum ui_font
+ * \brief Font atlas index.
+ */
+enum ui_font {
+	UI_FONT_SPLASH,         /*!< splash screen font */
+	UI_FONT_TITLE,          /*!< main menu title font */
+	UI_FONT_MENU,           /*!< main menu list font */
+	UI_FONT_MENU_SMALL,     /*!< alternative menu list font */
+	UI_FONT_STATS           /*!< menu for stats/scores */
+};
 
-/* Global window and its renderer. */
-extern SDL_Window *ui_win;
-extern SDL_Renderer *ui_rdr;
-
+/**
+ * Initialize user interface.
+ */
 void
 ui_init(void);
 
@@ -82,7 +125,7 @@ void
 ui_resize(void);
 
 void
-ui_render(struct tex *, enum ui_font, uint32_t, const char *, ...);
+ui_render(struct texture *, enum ui_font, uint32_t, const char *, ...);
 
 void
 ui_clip(enum ui_font, int *, int *, const char *, ...);
@@ -107,8 +150,8 @@ ui_draw_rect(uint32_t, int, int, int, int);
 void
 ui_present(void);
 
-struct tex *
-ui_target(struct tex *);
+struct texture *
+ui_target(struct texture *);
 
 void
 ui_finish(void);

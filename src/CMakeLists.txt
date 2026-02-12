@@ -38,8 +38,8 @@ set(
 	${stris_SOURCE_DIR}/stris.h
 	${stris_SOURCE_DIR}/sys.c
 	${stris_SOURCE_DIR}/sys.h
-	${stris_SOURCE_DIR}/tex.c
-	${stris_SOURCE_DIR}/tex.h
+	${stris_SOURCE_DIR}/texture.c
+	${stris_SOURCE_DIR}/texture.h
 	${stris_SOURCE_DIR}/ui.c
 	${stris_SOURCE_DIR}/ui.h
 	${stris_SOURCE_DIR}/util.c

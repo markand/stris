@@ -114,3 +114,13 @@ alloc(size_t n, size_t w)
 
 	return ptr;
 }
+
+void *
+allocdup(const void *src, size_t w)
+{
+	void *ptr;
+
+	ptr = alloc(1, w);
+
+	return memcpy(ptr, src, w);
+}

@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "texture.h"
 #include "list.h"
 #include "stris.h"
 #include "util.h"
@@ -52,15 +53,16 @@ static void
 setup(struct list *list)
 {
 	struct list_item *li;
+	struct texture texture;
 
 	for (size_t i = 0; i < list->itemsz; ++i) {
 		li = &list->items[i];
 
-		ui_render(&li->texture[0], list->font, UI_PALETTE_FG, li->text);
-		ui_render(&li->texture[1], list->font, UI_PALETTE_SHADOW, li->text);
+		ui_render(&texture, list->font, UI_PALETTE_SHADOW, li->text);
+		node_wrap(&li->node[0], &texture);
 
-		node_enable(&li->node[1], &li->texture[1]);
-		node_enable(&li->node[0], &li->texture[0]);
+		ui_render(&texture, list->font, UI_PALETTE_FG, li->text);
+		node_wrap(&li->node[1], &texture);
 	}
 }
 
@@ -70,16 +72,16 @@ halign(struct list *l)
 	for (size_t i = 0; i < l->itemsz; ++i) {
 		switch (l->halign) {
 		case -1:
-			l->items[i].node[0].x = l->x + l->p;
-			l->items[i].node[1].x = l->x + l->p + 1;
+			l->items[i].node[0].x = l->x + l->p + 1;
+			l->items[i].node[1].x = l->x + l->p;
 			break;
 		case 1:
-			l->items[i].node[0].x = l->x + l->w - l->items[i].texture[0].w - l->p;
-			l->items[i].node[1].x = l->x + l->w - l->items[i].texture[1].w - l->p + 1;
+			l->items[i].node[0].x = l->x + l->w - l->items[i].node[0].texture->w - l->p + 1;
+			l->items[i].node[1].x = l->x + l->w - l->items[i].node[1].texture->w - l->p;
 			break;
 		default:
-			l->items[i].node[0].x = l->x + (l->w - l->items[i].texture[0].w) / 2;
-			l->items[i].node[1].x = l->x + (l->w - l->items[i].texture[0].w) / 2 + 1;
+			l->items[i].node[0].x = l->x + (l->w - l->items[i].node[0].texture->w) / 2 + 1;
+			l->items[i].node[1].x = l->x + (l->w - l->items[i].node[1].texture->w) / 2;
 			break;
 		}
 	}
@@ -97,13 +99,13 @@ valign(struct list *l)
 		break;
 	default:
 		ystart = 0;
-		vspace = (l->h - (l->items[0].texture[0].h * l->itemsz)) / (l->itemsz + 1);
+		vspace = (l->h - (l->items[0].node[0].texture->h * l->itemsz)) / (l->itemsz + 1);
 		break;
 	}
 
 	for (size_t i = 0; i < l->itemsz; ++i) {
-		l->items[i].node[0].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].texture[0].h));
-		l->items[i].node[1].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].texture[1].h)) + 1;
+		l->items[i].node[0].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].node[0].texture->h)) + 1;
+		l->items[i].node[1].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].node[1].texture->h));
 	}
 }
 
@@ -139,9 +141,9 @@ list_colorizer_entry(struct coroutine *self)
 			li = &list->items[i];
 
 			if (list->selection == i)
-				tex_colorize(&li->texture[0], TEX_COLORIZE_MODE_ADD, color);
+				texture_colorize(li->node[1].texture, TEX_COLORIZE_MODE_ADD, color);
 			else
-				tex_colorize(&li->texture[0], TEX_COLORIZE_MODE_ADD, UI_PALETTE_FG);
+				texture_colorize(li->node[1].texture, TEX_COLORIZE_MODE_ADD, UI_PALETTE_FG);
 		}
 	}
 }
@@ -152,10 +154,8 @@ list_colorizer_terminate(struct coroutine *self)
 	struct list *list = LIST(self, colorizer);
 
 	for (size_t i = 0; i < list->itemsz; ++i) {
-		node_disable(&list->items[i].node[0]);
-		node_disable(&list->items[i].node[1]);
-		tex_finish(&list->items[i].texture[0]);
-		tex_finish(&list->items[i].texture[1]);
+		node_finish(&list->items[i].node[0]);
+		node_finish(&list->items[i].node[1]);
 	}
 }
 

@@ -41,4 +41,7 @@ nrand(int min, int max);
 void *
 alloc(size_t n, size_t w);
 
+void *
+allocdup(const void *ptr, size_t w);
+
 #endif /* !STRIS_UTIL_H */

@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <SDL3/SDL.h>
+
 #if 0
 #include "joy.h"
 #include "key.h"
@@ -316,6 +318,7 @@ stris_pressed(void)
 void
 stris_quit(void)
 {
+	stris.run = 0;
 }
 
 int
