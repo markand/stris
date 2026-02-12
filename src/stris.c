@@ -42,6 +42,7 @@
 #include "coroutine.h"
 #include "node.h"
 #include "sound.h"
+#include "state-menu.h"
 #include "state-splash.h"
 #include "stris.h"
 #include "sys.h"
@@ -79,7 +80,8 @@ init(void)
 	if (sconf.sound)
 		sound_init();
 #endif
-	splash_run();
+	//splash_run();
+	menu_run();
 }
 
 static void
@@ -246,10 +248,8 @@ update(int diff)
 		if (!stris.coroutines[i])
 			continue;
 
-		if (coroutine_resume(stris.coroutines[i], diff)) {
+		if (coroutine_resume(stris.coroutines[i], diff))
 			coroutine_finish(stris.coroutines[i]);
-			stris.coroutines[i] = NULL;
-		}
 	}
 }
 
@@ -300,6 +300,17 @@ finish(void)
 		sound_finish();
 
 	ui_finish();
+}
+
+enum key
+stris_pressed(void)
+{
+	enum key current = stris.keys;
+
+	while (current == stris.keys)
+		coroutine_yield();
+
+	return stris.keys;
 }
 
 void

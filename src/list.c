@@ -16,12 +16,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include <assert.h>
 #include <math.h>
 
-#include "key.h"
 #include "list.h"
-#include "tex.h"
+#include "stris.h"
+#include "util.h"
+
+#define LIST(Ptr, Field) \
+        (CONTAINER_OF(Ptr, struct list, Field))
 
 #define GAP 4
 
@@ -35,86 +40,46 @@ inc(uint8_t cmpcur, uint8_t cmpdst, int gap)
 }
 
 static inline uint32_t
-add(const struct list_item *item, unsigned int shift)
+add(uint32_t cur, uint32_t dst, unsigned int shift)
 {
-	const uint8_t cmpcur = (item->colorcur >> shift) & 0xff;
-	const uint8_t cmpdst = (item->colordst >> shift) & 0xff;
+	const uint8_t cmpcur = (cur >> shift) & 0xff;
+	const uint8_t cmpdst = (dst >> shift) & 0xff;
 
 	return inc(cmpcur, cmpdst, cmpdst >= cmpcur ? +GAP : -GAP);
 }
 
 static void
-take(struct list_item *item)
+setup(struct list *list)
 {
-	item->selected = 1;
-	item->spent = 0;
-	item->colorcur = UI_PALETTE_MENU_SEL;
-	item->colordst = UI_PALETTE_FG;
-}
+	struct list_item *li;
 
-static void
-discard(struct list_item *item)
-{
-	item->selected = 0;
-	item->spent = 0;
-	item->colorcur = UI_PALETTE_FG;
-	item->colordst = UI_PALETTE_FG;
-}
+	for (size_t i = 0; i < list->itemsz; ++i) {
+		li = &list->items[i];
 
-static void
-update(struct list_item *item, int ticks)
-{
-	if (!item->selected)
-		return;
+		ui_render(&li->texture[0], list->font, UI_PALETTE_FG, li->text);
+		ui_render(&li->texture[1], list->font, UI_PALETTE_SHADOW, li->text);
 
-	item->spent += ticks;
-
-	if (item->spent >= 30) {
-		item->spent = 0;
-
-		// Reached color destination, change direction.
-		if (item->colorcur == item->colordst)
-			item->colordst = item->colordst == UI_PALETTE_FG
-				? UI_PALETTE_MENU_SEL
-				: UI_PALETTE_FG;
-
-		item->colorcur = add(item, 24) << 24 |
-		                 add(item, 16) << 16 |
-		                 add(item, 8)  << 8 |
-		                 0xff;
+		node_enable(&li->node[1], &li->texture[1]);
+		node_enable(&li->node[0], &li->texture[0]);
 	}
-}
-
-static void
-draw(const struct list *l, const struct list_item *item)
-{
-	struct tex tex;
-
-	ui_render(&tex, l->font, UI_PALETTE_SHADOW, item->text);
-	tex_draw(&tex, item->x + 1, item->y + 1);
-	tex_finish(&tex);
-
-	ui_render(&tex, l->font, item->colorcur, item->text);
-	tex_draw(&tex, item->x, item->y);
-	tex_finish(&tex);
 }
 
 static void
 halign(struct list *l)
 {
 	for (size_t i = 0; i < l->itemsz; ++i) {
-		ui_clip(l->font, &l->items[i].w, &l->items[i].h,
-		    "%s", l->items[i].text);
-
 		switch (l->halign) {
 		case -1:
-			l->items[i].x = l->x + l->p;
+			l->items[i].node[0].x = l->x + l->p;
+			l->items[i].node[1].x = l->x + l->p + 1;
 			break;
 		case 1:
-			l->items[i].x = l->x + l->w - l->items[i].w - l->p;
+			l->items[i].node[0].x = l->x + l->w - l->items[i].texture[0].w - l->p;
+			l->items[i].node[1].x = l->x + l->w - l->items[i].texture[1].w - l->p + 1;
 			break;
 		default:
-			l->items[i].x = l->x + (l->w - l->items[i].w) / 2;
+			l->items[i].node[0].x = l->x + (l->w - l->items[i].texture[0].w) / 2;
+			l->items[i].node[1].x = l->x + (l->w - l->items[i].texture[0].w) / 2 + 1;
 			break;
 		}
 	}
@@ -131,95 +96,128 @@ valign(struct list *l)
 		vspace = l->p;
 		break;
 	default:
-		// Center.
 		ystart = 0;
-		vspace = (l->h - (l->items[0].h * l->itemsz)) / (l->itemsz + 1);
+		vspace = (l->h - (l->items[0].texture[0].h * l->itemsz)) / (l->itemsz + 1);
 		break;
 	}
 
-	for (size_t i = 0; i < l->itemsz; ++i)
-		l->items[i].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].h));
+	for (size_t i = 0; i < l->itemsz; ++i) {
+		l->items[i].node[0].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].texture[0].h));
+		l->items[i].node[1].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].texture[1].h)) + 1;
+	}
+}
+
+static void
+list_colorizer_entry(struct coroutine *self)
+{
+	struct list_item *li;
+	struct list *list;
+	uint32_t color, target;
+
+	list = LIST(self, colorizer);
+
+	setup(list);
+	halign(list);
+	valign(list);
+
+	color = UI_PALETTE_MENU_LOW;
+	target = UI_PALETTE_MENU_HIGH;
+
+	for (;;) {
+		coroutine_sleep(30);
+
+		/* Reached color target, change direction. */
+		if (color == target)
+			target = target == UI_PALETTE_MENU_HIGH ? UI_PALETTE_MENU_LOW : UI_PALETTE_MENU_HIGH;
+
+		color  = add(color, target, 24) << 24 |
+		         add(color, target, 16) << 16 |
+		         add(color, target, 8)  << 8;
+		color |= 0xff;
+
+		for (size_t i = 0; i < list->itemsz; ++i) {
+			li = &list->items[i];
+
+			if (list->selection == i)
+				tex_colorize(&li->texture[0], TEX_COLORIZE_MODE_ADD, color);
+			else
+				tex_colorize(&li->texture[0], TEX_COLORIZE_MODE_ADD, UI_PALETTE_FG);
+		}
+	}
+}
+
+static void
+list_colorizer_terminate(struct coroutine *self)
+{
+	struct list *list = LIST(self, colorizer);
+
+	for (size_t i = 0; i < list->itemsz; ++i) {
+		node_disable(&list->items[i].node[0]);
+		node_disable(&list->items[i].node[1]);
+		tex_finish(&list->items[i].texture[0]);
+		tex_finish(&list->items[i].texture[1]);
+	}
+}
+
+static void
+list_selector_entry(struct coroutine *self)
+{
+	struct list *list;
+	enum key keys;
+
+	list = LIST(self, selector);
+
+	for (;;) {
+		keys = stris_pressed();
+
+		if (keys & KEY_UP) {
+			if (list->selection == 0)
+				list->selection = list->itemsz - 1;
+			else
+				list->selection -= 1;
+		} else if (keys & KEY_DOWN) {
+			if (list->selection >= list->itemsz - 1)
+				list->selection = 0;
+			else
+				list->selection += 1;
+		}
+	}
 }
 
 void
 list_init(struct list *l)
 {
 	assert(l);
+	assert(l->items);
+	assert(l->w);
+	assert(l->h);
 
-	halign(l);
-	valign(l);
+	/* Colorizer on selected items. */
+	l->colorizer.entry = list_colorizer_entry;
+	l->colorizer.terminate = list_colorizer_terminate;
+	coroutine_init(&l->colorizer);
+
+	/* Selector using keys. */
+	l->selector.entry = list_selector_entry;
+	coroutine_init(&l->selector);
+}
+
+size_t
+list_wait(struct list *l)
+{
+	assert(l);
+
+	while (!(stris_pressed() & KEY_SELECT))
+		coroutine_yield();
+
+	return l->selection;
 }
 
 void
-list_reset(struct list *l)
+list_finish(struct list *l)
 {
 	assert(l);
 
-	l->selection = 0;
-
-	for (size_t i = 0; i < l->itemsz; ++i)
-		discard(&l->items[i]);
-}
-
-void
-list_select(struct list *l, size_t index)
-{
-	assert(l);
-	assert(index < l->itemsz);
-
-	discard(&l->items[l->selection]);
-	take(&l->items[l->selection = index]);
-}
-
-int
-list_onkey(struct list *l, enum key key)
-{
-	assert(l);
-
-	size_t newsel = l->selection;
-	int ret = 0;
-
-	switch (key) {
-	case KEY_UP:
-		if (newsel == 0)
-			newsel = l->itemsz - 1;
-		else
-			newsel--;
-		break;
-	case KEY_DOWN:
-		if (newsel >= l->itemsz - 1)
-			newsel = 0;
-		else
-			newsel++;
-		break;
-	case KEY_SELECT:
-		ret = 1;
-		break;
-	default:
-		break;
-	}
-
-	// We also need to reset old one.
-	if (newsel != l->selection)
-		list_select(l, newsel);
-
-	return ret;
-}
-
-void
-list_update(struct list *l, int ticks)
-{
-	assert(l);
-
-	for (size_t i = 0; i < l->itemsz; ++i)
-		update(&l->items[i], ticks);
-}
-
-void
-list_draw(const struct list *l)
-{
-	assert(l);
-
-	for (size_t i = 0; i < l->itemsz; ++i)
-		draw(l, &l->items[i]);
+	coroutine_finish(&l->selector);
+	coroutine_finish(&l->colorizer);
 }

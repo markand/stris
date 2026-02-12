@@ -24,10 +24,14 @@ set(
 	${stris_SOURCE_DIR}/board.h
 	${stris_SOURCE_DIR}/coroutine.c
 	${stris_SOURCE_DIR}/coroutine.h
+	${stris_SOURCE_DIR}/list.c
+	${stris_SOURCE_DIR}/list.h
 	${stris_SOURCE_DIR}/node.c
 	${stris_SOURCE_DIR}/node.h
 	${stris_SOURCE_DIR}/sound.c
 	${stris_SOURCE_DIR}/sound.h
+	${stris_SOURCE_DIR}/state-menu.c
+	${stris_SOURCE_DIR}/state-menu.h
 	${stris_SOURCE_DIR}/state-splash.c
 	${stris_SOURCE_DIR}/state-splash.h
 	${stris_SOURCE_DIR}/stris.c

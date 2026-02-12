@@ -45,11 +45,19 @@ do {                                                                    \
 #define UI_W 360
 #define UI_H 640
 
+/* TODO: rename. */
+#define CR(c) ((c >> 24) & 0xff)
+#define CG(c) ((c >> 16) & 0xff)
+#define CB(c) ((c >>  8) & 0xff)
+#define CA(c) (c         & 0xff)
+#define CHEX(r, g, b) ((uint32_t)r << 24 | (uint32_t)g << 16 | (uint32_t)b << 8 | 0xff)
+
 // https://lospec.com/palette-list/give-me-grey-52
 #define UI_PALETTE_SPLASH_BG    0x3f4a69ff
 #define UI_PALETTE_FG           0xffffffff
 #define UI_PALETTE_MENU_BG      0xb3b9d1ff
-#define UI_PALETTE_MENU_SEL     0xd87823ff
+#define UI_PALETTE_MENU_LOW     0xa6a6a6ff
+#define UI_PALETTE_MENU_HIGH    0xd87823ff
 #define UI_PALETTE_SHADOW       0x0c0101ff
 #define UI_PALETTE_BORDER       0x666655ff
 
@@ -82,11 +90,13 @@ ui_clip(enum ui_font, int *, int *, const char *, ...);
 void
 ui_clear(uint32_t);
 
+/**
+ * Change the grid background color.
+ *
+ * This function is not immediate as the color changes gradually.
+ */
 void
-ui_update_background(uint32_t, int);
-
-void
-ui_draw_background(void);
+ui_background_set(uint32_t color);
 
 void
 ui_draw_line(uint32_t, int, int, int, int);

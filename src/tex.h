@@ -20,6 +20,7 @@
 #define STRIS_TEX_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 struct tex {
 	int w;
@@ -41,6 +42,14 @@ tex_scale(struct tex *, int, int, int, int);
 
 void
 tex_alpha(struct tex *, int);
+
+enum tex_colorize_mode {
+	TEX_COLORIZE_MODE_NONE,
+	TEX_COLORIZE_MODE_ADD,
+};
+
+void
+tex_colorize(struct tex *tex, enum tex_colorize_mode mode, uint32_t color);
 
 void
 tex_finish(struct tex *);

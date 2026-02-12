@@ -60,6 +60,9 @@ extern struct sconf {
 	int scale;
 } sconf;
 
+enum key
+stris_pressed(void);
+
 void
 stris_quit(void);
 

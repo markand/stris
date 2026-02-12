@@ -22,21 +22,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "coroutine.h"
+#include "node.h"
+#include "tex.h"
 #include "ui.h"
 
 struct list_item {
-	// User editable fields.
+	/**
+	 * (init)
+	 *
+	 * Text
+	 */
 	const char *text;
 
-	// Private fields.
-	int x;
-	int y;
-	int w;
-	int h;
-	int spent;
-	int selected;
-	uint32_t colorcur;
-	uint32_t colordst;
+	struct tex texture[2];
+	struct node node[2];
 };
 
 struct list {
@@ -51,6 +51,8 @@ struct list {
 	size_t selection;
 	struct list_item *items;
 	size_t itemsz;
+	struct coroutine colorizer;
+	struct coroutine selector;
 };
 
 void
@@ -60,7 +62,7 @@ void
 list_reset(struct list *);
 
 size_t
-list_wait(struct list *, size_t);
+list_wait(struct list *);
 
 void
 list_finish(struct list *);

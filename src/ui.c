@@ -42,30 +42,16 @@ static struct tex *target;
 SDL_Window *ui_win = NULL;
 SDL_Renderer *ui_rdr = NULL;
 
-#define CR(c) ((c >> 24) & 0xff)
-#define CG(c) ((c >> 16) & 0xff)
-#define CB(c) ((c >>  8) & 0xff)
-#define CA(c) (c         & 0xff)
-#define CHEX(r, g, b) ((uint32_t)r << 24 | (uint32_t)g << 16 | (uint32_t)b << 8 | 0xff)
-
 #define PHY_W (UI_W * sconf.scale)
 #define PHY_H (UI_H * sconf.scale)
 
+/* Grid background. */
 static struct {
-	int x;
-	int y;
-	int w;
-	int h;
-	uint32_t color;
 	uint32_t target;
 	struct tex texture;
 	struct node node;
 	struct coroutine updater;
-} bg = {
-	.w = UI_W / 10,
-	.h = UI_W / 10,
-	.color = UI_PALETTE_MENU_BG
-};
+} bg;
 
 static struct {
 	const unsigned char *data;
@@ -126,25 +112,36 @@ ui_bg_updater_entry(struct coroutine *)
 {
 	int rcur, gcur, bcur;
 	int rnxt, gnxt, bnxt;
+	uint32_t color, darken;
+	int w, h, x, y, r, g, b;
 
 	/* Initial color. */
-	bg.target = UI_PALETTE_MENU_BG;
+	bg.target = color = UI_PALETTE_MENU_BG;
+
+	/* Size of individual square */
+	w = h = UI_W / 10;
+
+	/* Prepare background texture. */
+	tex_new(&bg.texture, UI_W, UI_H);
+	node_enable(&bg.node, &bg.texture);
+
+	x = y = 0;
 
 	for (;;) {
 		coroutine_sleep(50);
 
 		if (sconf.psychedelic) {
-			bg.x--;
-			bg.y--;
+			x--;
+			y--;
 		} else
-			bg.x = bg.y = 0;
+			x = y = 0;
 
-		// Also update the color if we haven't reached yet.
-		rcur = CR(bg.color); rnxt = CR(bg.target);
-		gcur = CG(bg.color); gnxt = CG(bg.target);
-		bcur = CB(bg.color); bnxt = CB(bg.target);
+		/* Gradually reach the target color. */
+		rcur = CR(color); rnxt = CR(bg.target);
+		gcur = CG(color); gnxt = CG(bg.target);
+		bcur = CB(color); bnxt = CB(bg.target);
 
-		if (bg.color != bg.target) {
+		if (color != bg.target) {
 			if (rcur != rnxt)
 				rcur += (rcur < rnxt) ? 1 : -1;
 			if (gcur != gnxt)
@@ -152,19 +149,32 @@ ui_bg_updater_entry(struct coroutine *)
 			if (bcur != bnxt)
 				bcur += (bcur < bnxt) ? 1 : -1;
 
-			bg.color = CHEX(rcur, gcur, bcur);
+			color = CHEX(rcur, gcur, bcur);
 		}
 
-		if (bg.x == -bg.w)
-			bg.x = bg.y = 0;
+		if (x == -w)
+			x = y = 0;
+
+		UI_BEGIN(&bg.texture);
+		ui_clear(color);
+
+		/* Darken color for grid pattern. */
+		r = clamp((long)CR(color) - 10, 0, 255);
+		g = clamp((long)CG(color) - 10, 0, 255);
+		b = clamp((long)CB(color) - 10, 0, 255);
+		darken = CHEX(r, g, b);
+
+		for (int r = 0; r < 21; ++r)
+			for (int c = 0; c < 11; c += 2)
+				ui_draw_rect(darken, (x + w * c) + (r % 2 == 0 ? w : 0), (y + h * r), w, h);
+
+		UI_END();
 	}
 }
 
 static void
 init_bg(void)
 {
-	tex_new(&bg.texture, UI_W, UI_H);
-
 	bg.updater.entry = ui_bg_updater_entry;
 	coroutine_init(&bg.updater);
 }
@@ -269,26 +279,9 @@ ui_clear(uint32_t color)
 }
 
 void
-ui_draw_background(void)
+ui_background_set(uint32_t color)
 {
-	int x, y, r, g, b;
-	uint32_t color = bg.color;
-
-	ui_draw_rect(color, 0, 0, UI_W, UI_H);
-
-	// Darken color.
-	r = clamp((long)CR(color) - 10, 0, 255);
-	g = clamp((long)CG(color) - 10, 0, 255);
-	b = clamp((long)CB(color) - 10, 0, 255);
-	color = CHEX(r, g, b);
-
-	for (int r = 0; r < 21; ++r) {
-		for (int c = 0; c < 11; c += 2) {
-			x = (bg.x + bg.w * c) + (r % 2 == 0 ? bg.w : 0);
-			y = (bg.y + bg.h * r);
-			ui_draw_rect(color, x, y, bg.w, bg.h);
-		}
-	}
+	bg.target = color;
 }
 
 void

@@ -63,6 +63,9 @@ splash_entry(struct coroutine *self)
 	/* Wait for splash to show up. */
 	sound_play(SOUND_CHIME);
 	coroutine_sleep(1500);
+
+	/* Switch to menu. */
+	menu_run();
 }
 
 static void

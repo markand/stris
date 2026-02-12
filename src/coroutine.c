@@ -136,6 +136,14 @@ coroutine_finish(struct coroutine *co)
 	if ((rc = mco_destroy(co->handle)) != MCO_SUCCESS)
 		die("mco_destroy: %d\n", rc);
 
+	/* Remove coroutine from stris. */
+	for (size_t i = 0; i < LEN(stris.coroutines); ++i) {
+		if (stris.coroutines[i] == co) {
+			stris.coroutines[i] = NULL;
+			break;
+		}
+	}
+
 	co->handle = NULL;
 
 	if (co->terminate)

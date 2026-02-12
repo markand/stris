@@ -19,6 +19,7 @@
 #ifndef STRIS_STATE_MENU_H
 #define STRIS_STATE_MENU_H
 
-extern struct state state_menu;
+void
+menu_run(void);
 
 #endif /* !STRIS_STATE_MENU_H */

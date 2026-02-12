@@ -16,8 +16,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include "coroutine.h"
 #include "list.h"
+#include "node.h"
 #include "state-mode.h"
 #include "state-scores.h"
 #include "state-settings.h"
@@ -28,6 +31,11 @@
 
 #define MENU(Ptr, Field) \
         (CONTAINER_OF(Ptr, struct menu, Field))
+
+#define MENU_TITLE_X(Menu) \
+        ((UI_W - (Menu)->title[0].w) / 2)
+#define MENU_TITLE_Y(Menu) \
+        ((Menu)->title[0].h / 2)
 
 /*
  * View is as following:
@@ -44,68 +52,60 @@
  * +----------------+     -v-
  */
 
-enum state_menu {
-	STATE_MENU_PLAY,
-	STATE_MENU_SCORES,
-	STATE_MENU_SETTINGS,
-	STATE_MENU_QUIT,
-	STATE_MENU_LAST
-};
-
-static struct {
-	struct tex tex[2];
-	int x;
-	int y;
-	int h;
-} title;
-
-static struct list_item items[STATE_MENU_LAST] = {
-	[STATE_MENU_PLAY]       = { .text = "Play"      },
-	[STATE_MENU_SCORES]     = { .text = "Scores"    },
-	[STATE_MENU_SETTINGS]   = { .text = "Settings"  },
-	[STATE_MENU_QUIT]       = { .text = "Quit"      }
-};
-
-static struct list menu = {
-	.font = UI_FONT_MENU,
-	.items = items,
-	.itemsz = STATE_MENU_LAST
+enum item {
+	ITEM_PLAY,
+	ITEM_SCORES,
+	ITEM_SETTINGS,
+	ITEM_QUIT,
+	ITEM_LAST
 };
 
 struct menu {
+	/* Title and its shadow */
+	struct tex title[2];
+	struct node title_node[2];
+
+	/* Menu list and its items. */
+	struct list_item items[ITEM_LAST];
+	struct list list;
 	struct coroutine coroutine;
 };
 
 static void
-init(void)
+menu_entry(struct coroutine *self)
 {
-}
+	struct menu *menu = MENU(self, coroutine);
 
-static void
-resume(void)
-{
-	list_reset(&menu);
-	list_select(&menu, 0);
-}
+	/* Title and its shadow */
+	ui_render(&menu->title[0], UI_FONT_TITLE, UI_PALETTE_FG, "stris");
+	ui_render(&menu->title[1], UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
+	node_enable(&menu->title_node[1], &menu->title[1]);
+	node_enable(&menu->title_node[0], &menu->title[0]);
+	node_move(&menu->title_node[1], MENU_TITLE_X(menu) + 1, MENU_TITLE_Y(menu) + 1);
+	node_move(&menu->title_node[0], MENU_TITLE_X(menu), MENU_TITLE_Y(menu));
 
-static void
-onkey(enum key key, int state)
-{
-	if (!state || !list_onkey(&menu, key))
-		return;
+	/* Main menu. */
+	menu->items[ITEM_PLAY].text = "Play";
+	menu->items[ITEM_SCORES].text = "Scores";
+	menu->items[ITEM_SETTINGS].text = "Settings";
+	menu->items[ITEM_QUIT].text = "Quit";
+	menu->list.font = UI_FONT_MENU;
+	menu->list.items = menu->items;
+	menu->list.itemsz = ITEM_LAST;
+	menu->list.y = 4 * (UI_H / 16);
+	menu->list.w = UI_W;
+	menu->list.h = 12 * (UI_H / 16);
+	list_init(&menu->list);
 
-	switch (menu.selection) {
-	case STATE_MENU_PLAY:
-		stris_switch(&state_mode);
+	switch (list_wait(&menu->list)) {
+	case ITEM_PLAY:
+		printf("play!!!\n");
 		break;
-	case STATE_MENU_SCORES:
-		stris_switch(&state_scores);
+	case ITEM_SCORES:
 		break;
-	case STATE_MENU_SETTINGS:
-		stris_switch(&state_settings);
+	case ITEM_SETTINGS:
 		break;
-	case STATE_MENU_QUIT:
-		stris_quit();
+	case ITEM_QUIT:
 		break;
 	default:
 		break;
@@ -113,45 +113,25 @@ onkey(enum key key, int state)
 }
 
 static void
-update(int ticks)
+menu_terminate(struct coroutine *self)
 {
-	list_update(&menu, ticks);
-	ui_update_background(UI_PALETTE_MENU_BG, ticks);
-}
+	struct menu *menu = MENU(self, coroutine);
 
-static void
-draw(void)
-{
-	ui_clear(UI_PALETTE_MENU_BG);
-	ui_draw_background();
+	list_finish(&menu->list);
 
-	tex_draw(&title.tex[1], title.x + 1, title.y + 1);
-	tex_draw(&title.tex[0], title.x, title.y);
-
-	list_draw(&menu);
-	ui_present();
-}
-
-static void
-menu_entry(struct coroutine *self)
-{
-	// Title.
-	ui_render(&title.tex[0], UI_FONT_TITLE, UI_PALETTE_FG, "stris");
-	ui_render(&title.tex[1], UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
-	title.x = (UI_W - title.tex[0].w) / 2;
-	title.h = (UI_H * 4) / 16;
-	title.y = (title.h - title.tex[0].h) / 2;
-
-	// Main menu.
-	menu.y = title.h;
-	menu.w = UI_W;
-	menu.h = UI_H - title.h;
-	list_init(&menu);
+	for (size_t i = 0; i < 2; ++i) {
+		node_disable(&menu->title_node[i]);
+		tex_finish(&menu->title[i]);
+	}
 }
 
 void
 menu_run(void)
 {
-	menu.coroutine.entry = menu_entry;
-	coroutine_init(&menu.coroutine);
+	struct menu *menu;
+
+	menu = alloc(1, sizeof (*menu));
+	menu->coroutine.entry = menu_entry;
+	menu->coroutine.terminate = menu_terminate;
+	coroutine_init(&menu->coroutine);
 }

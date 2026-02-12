@@ -107,6 +107,19 @@ tex_alpha(struct tex *t, int alpha)
 }
 
 void
+tex_colorize(struct tex *tex, enum tex_colorize_mode mode, uint32_t color)
+{
+	assert(tex);
+	assert(tex->handle);
+
+	if (mode) {
+		SDL_SetTextureBlendMode(tex->handle, SDL_BLENDMODE_ADD);
+		SDL_SetTextureColorMod(tex->handle, CR(color), CG(color), CB(color));
+	} else
+		SDL_SetTextureBlendMode(tex->handle, SDL_BLENDMODE_NONE);
+}
+
+void
 tex_finish(struct tex *t)
 {
 	assert(t);
