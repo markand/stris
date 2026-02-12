@@ -45,18 +45,16 @@ static void
 splash_entry(struct coroutine *self)
 {
 	struct splash *splash;
-	struct tex *current;
 
 	splash = SPLASH(self, coroutine);
 
 	/* Init graphical nodes. */
 	ui_render(&splash->title, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
 
-	/* TODO: add begin/end helpers */
 	tex_new(&splash->background, UI_W, UI_H);
-	current = ui_target(&splash->background);
+	UI_BEGIN(&splash->background);
 	ui_clear(UI_PALETTE_SPLASH_BG);
-	ui_target(current);
+	UI_END();
 
 	node_enable(&splash->background_node, &splash->background);
 	node_enable(&splash->title_node, &splash->title);
@@ -64,7 +62,7 @@ splash_entry(struct coroutine *self)
 
 	/* Wait for splash to show up. */
 	sound_play(SOUND_CHIME);
-	coroutine_sleep(3000);
+	coroutine_sleep(1500);
 }
 
 static void

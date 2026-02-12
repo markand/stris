@@ -63,6 +63,7 @@ struct sconf sconf = {
 };
 
 struct stris stris = {
+	.run = 1
 };
 
 static void
@@ -219,6 +220,7 @@ handle(void)
 	while (SDL_PollEvent(&ev)) {
 		switch (ev.type) {
 		case SDL_EVENT_QUIT:
+			stris.run = 0;
 			break;
 		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
 			handle_controller_axis_motion(&ev.gaxis);
@@ -251,8 +253,6 @@ update(int diff)
 	}
 }
 
-#include <stdio.h>
-
 static inline void
 draw(void)
 {
@@ -274,7 +274,7 @@ loop(void)
 
 	start = end = SDL_GetTicks();
 
-	for (;;) {
+	while (stris.run) {
 		diff = end - start;
 		start = SDL_GetTicks();
 		fstart = SDL_GetPerformanceCounter();

@@ -51,6 +51,7 @@ extern struct stris {
 	 * Keys being pressed.
 	 */
 	enum key keys;
+	int run;
 } stris;
 
 extern struct sconf {

@@ -23,6 +23,25 @@
 
 #include <SDL3/SDL.h>
 
+/**
+ * Store the current texture in a temporary variable and switch to the
+ * rendering target provided as argument.
+ *
+ * \param tex the texture to use
+ */
+#define UI_BEGIN(Tex)                                                   \
+do {                                                                    \
+        struct tex *__current_texture__;                                \
+                                                                        \
+        __current_texture__ = ui_target((Tex));
+
+/**
+ * Pop the current rendering texture and restore the previous one.
+ */
+#define UI_END()                                                        \
+        ui_target(__current_texture__);                                 \
+} while (0)
+
 #define UI_W 360
 #define UI_H 640
 

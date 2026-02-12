@@ -30,10 +30,12 @@
 #include "fonts/instruction.h"
 #include "fonts/typography-ties.h"
 
-#include "ui.h"
-#include "util.h"
+#include "coroutine.h"
+#include "node.h"
 #include "stris.h"
 #include "tex.h"
+#include "ui.h"
+#include "util.h"
 
 static struct tex *target;
 
@@ -54,8 +56,11 @@ static struct {
 	int y;
 	int w;
 	int h;
-	int spent;
 	uint32_t color;
+	uint32_t target;
+	struct tex texture;
+	struct node node;
+	struct coroutine updater;
 } bg = {
 	.w = UI_W / 10,
 	.h = UI_W / 10,
@@ -109,11 +114,59 @@ load_font(const unsigned char *data, size_t datasz, int size)
 	return font;
 }
 
-static inline void
+static void
 init_fonts(void)
 {
 	for (size_t i = 0; i < LEN(fonts); ++i)
 		fonts[i].font = load_font(fonts[i].data, fonts[i].datasz, fonts[i].size);
+}
+
+static void
+ui_bg_updater_entry(struct coroutine *)
+{
+	int rcur, gcur, bcur;
+	int rnxt, gnxt, bnxt;
+
+	/* Initial color. */
+	bg.target = UI_PALETTE_MENU_BG;
+
+	for (;;) {
+		coroutine_sleep(50);
+
+		if (sconf.psychedelic) {
+			bg.x--;
+			bg.y--;
+		} else
+			bg.x = bg.y = 0;
+
+		// Also update the color if we haven't reached yet.
+		rcur = CR(bg.color); rnxt = CR(bg.target);
+		gcur = CG(bg.color); gnxt = CG(bg.target);
+		bcur = CB(bg.color); bnxt = CB(bg.target);
+
+		if (bg.color != bg.target) {
+			if (rcur != rnxt)
+				rcur += (rcur < rnxt) ? 1 : -1;
+			if (gcur != gnxt)
+				gcur += (gcur < gnxt) ? 1 : -1;
+			if (bcur != bnxt)
+				bcur += (bcur < bnxt) ? 1 : -1;
+
+			bg.color = CHEX(rcur, gcur, bcur);
+		}
+
+		if (bg.x == -bg.w)
+			bg.x = bg.y = 0;
+	}
+}
+
+static void
+init_bg(void)
+{
+	tex_new(&bg.texture, UI_W, UI_H);
+
+	bg.updater.entry = ui_bg_updater_entry;
+	coroutine_init(&bg.updater);
 }
 
 static inline void
@@ -167,6 +220,7 @@ ui_init(void)
 	SDL_HideCursor();
 
 	init_fonts();
+	init_bg();
 }
 
 void
@@ -212,44 +266,6 @@ ui_clear(uint32_t color)
 {
 	set_color(color);
 	SDL_RenderClear(ui_rdr);
-}
-
-void
-ui_update_background(uint32_t color, int ticks)
-{
-	int rcur, gcur, bcur;
-	int rnxt, gnxt, bnxt;
-
-	bg.spent += ticks;
-
-	if (bg.spent >= 50) {
-		bg.spent = 0;
-
-		if (sconf.psychedelic) {
-			bg.x--;
-			bg.y--;
-		} else
-			bg.x = bg.y = 0;
-
-		// Also update the color if we haven't reached yet.
-		rcur = CR(bg.color); rnxt = CR(color);
-		gcur = CG(bg.color); gnxt = CG(color);
-		bcur = CB(bg.color); bnxt = CB(color);
-
-		if (bg.color != color) {
-			if (rcur != rnxt)
-				rcur += (rcur < rnxt) ? 1 : -1;
-			if (gcur != gnxt)
-				gcur += (gcur < gnxt) ? 1 : -1;
-			if (bcur != bnxt)
-				bcur += (bcur < bnxt) ? 1 : -1;
-
-			bg.color = CHEX(rcur, gcur, bcur);
-		}
-	}
-
-	if (bg.x == -bg.w)
-		bg.x = bg.y = 0;
 }
 
 void
