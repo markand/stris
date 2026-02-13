@@ -118,10 +118,6 @@ list_colorizer_entry(struct coroutine *self)
 
 	list = LIST(self, colorizer);
 
-	setup(list);
-	halign(list);
-	valign(list);
-
 	color = UI_PALETTE_MENU_LOW;
 	target = UI_PALETTE_MENU_HIGH;
 
@@ -185,21 +181,25 @@ list_selector_entry(struct coroutine *self)
 }
 
 void
-list_init(struct list *l)
+list_init(struct list *list)
 {
-	assert(l);
-	assert(l->items);
-	assert(l->w);
-	assert(l->h);
+	assert(list);
+	assert(list->items);
+	assert(list->w);
+	assert(list->h);
+
+	setup(list);
+	halign(list);
+	valign(list);
 
 	/* Colorizer on selected items. */
-	l->colorizer.entry = list_colorizer_entry;
-	l->colorizer.terminate = list_colorizer_terminate;
-	coroutine_init(&l->colorizer);
+	list->colorizer.entry = list_colorizer_entry;
+	list->colorizer.terminate = list_colorizer_terminate;
+	coroutine_init(&list->colorizer);
 
 	/* Selector using keys. */
-	l->selector.entry = list_selector_entry;
-	coroutine_init(&l->selector);
+	list->selector.entry = list_selector_entry;
+	coroutine_init(&list->selector);
 }
 
 size_t

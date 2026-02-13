@@ -16,133 +16,177 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 
-#include "key.h"
 #include "list.h"
 #include "sound.h"
 #include "state-menu.h"
-#include "state.h"
 #include "stris.h"
 #include "sys.h"
-#include "tex.h"
+#include "texture.h"
 #include "ui.h"
 #include "util.h"
 
-enum menu {
-	MENU_SOUND,
-	MENU_PSYCHEDELIC,
-	MENU_SCALE,
-	MENU_LAST
+#define SETTINGS(Ptr, Field) \
+        (CONTAINER_OF(Ptr, struct settings, Field))
+
+enum item {
+	ITEM_SOUND,
+	ITEM_PSYCHEDELIC,
+	ITEM_SCALE,
+	ITEM_LAST
 };
 
-static struct list_item items[] = {
-	[MENU_SOUND]            = { .text = "Sounds"            },
-	[MENU_PSYCHEDELIC]      = { .text = "Psychedelic"       },
-	[MENU_SCALE]            = { .text = "Scaling"           },
+struct value {
+	struct texture texture[2];
+	struct node node[2];
 };
 
-static struct list menu = {
-	.font = UI_FONT_MENU_SMALL,
-	.items = items,
-	.itemsz = MENU_LAST,
-	.halign = -1,
-	.valign = -1,
-	.p = 10
+struct settings {
+	/* Values shown for each element. */
+	struct value values[ITEM_LAST];
+
+	/* Menu list and its items. */
+	struct list_item items[ITEM_LAST];
+	struct list list;
+	struct coroutine configurator;
+
+	/* Coroutine for escaping. */
+	struct coroutine handler;
 };
 
+/*
+ * Convert a value settings as human readable format.
+ *
+ * Re-render the texture and adjust its position on screen on its sibling menu
+ * item.
+ */
 static void
-draw_val(size_t index, const char *what)
+settings_valuize(struct settings *settings, size_t row, const char *fmt, ...)
 {
-	struct tex tex;
+	struct value *value;
+	char str[16] = {};
+	va_list ap;
 
-	ui_render(&tex, UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, what);
-	tex_draw(&tex, UI_W - tex.w - 9, menu.items[index].y + 1);
-	tex_finish(&tex);
+	va_start(ap, fmt);
+	vsnprintf(str, sizeof (str), fmt, ap);
+	va_end(ap);
 
-	ui_render(&tex, UI_FONT_MENU_SMALL, menu.items[index].colorcur, what);
-	tex_draw(&tex, UI_W - tex.w - 10, menu.items[index].y);
-	tex_finish(&tex);
+	value = &settings->values[row];
+
+	ui_render(&value->texture[0], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, str);
+	ui_render(&value->texture[1], UI_FONT_MENU_SMALL, UI_PALETTE_FG, str);
+
+	/* Register the nodes if it was not already done. */
+	value->node[1].x = UI_W - value->texture[0].w - settings->list.p;
+	value->node[0].x = value->node[1].x + 1;
+
+	value->node[1].y = settings->items[row].node->y;
+	value->node[0].y = value->node[1].y + 1;
+
 }
 
 static void
-init(void)
+settings_configurator_entry(struct coroutine *self)
 {
-	list_init(&menu);
-}
+	struct settings *settings = SETTINGS(self, configurator);
 
-static void
-resume(void)
-{
-	list_reset(&menu);
-	list_select(&menu, 0);
-}
+	settings->items[ITEM_SOUND].text = "Sounds";
+	settings->items[ITEM_PSYCHEDELIC].text = "Psychedelic";
+	settings->items[ITEM_SCALE].text = "Scaling";
 
-static void
-onkey(enum key key, int state)
-{
-	if (!state)
-		return;
+	settings->list.font = UI_FONT_MENU_SMALL;
+	settings->list.items = settings->items;
+	settings->list.itemsz = ITEM_LAST;
+	settings->list.halign = -1;
+	settings->list.valign = -1;
+	settings->list.w = UI_W;
+	settings->list.h = UI_H;
+	settings->list.p = 10;
+	list_init(&settings->list);
 
-	list_onkey(&menu, key);
+	for (size_t i = 0; i < ITEM_LAST; ++i) {
+		settings->values[i].node[0].texture = &settings->values[i].texture[0];
+		settings->values[i].node[1].texture = &settings->values[i].texture[1];
+		node_init(&settings->values[i].node[0]);
+		node_init(&settings->values[i].node[1]);
+	}
 
-	switch (key) {
-	case KEY_CANCEL:
-		stris_switch(&state_menu);
-		break;
-	case KEY_SELECT:
-		switch (menu.selection) {
-		case MENU_SOUND:
+	for (;;) {
+		/* Re-render values. */
+		settings_valuize(settings, 0, sconf.sound ? "Yes" : "No");
+		settings_valuize(settings, 1, sconf.psychedelic ? "Yes" : "No");
+		settings_valuize(settings, 2, "%d", sconf.scale);
+
+		switch (list_wait(&settings->list)) {
+		case ITEM_SOUND:
 			if ((sconf.sound = !sconf.sound))
 				sound_init();
 			else
 				sound_finish();
 			break;
-		case MENU_PSYCHEDELIC:
+		case ITEM_PSYCHEDELIC:
 			sconf.psychedelic = !sconf.psychedelic;
 			break;
-		case MENU_SCALE:
+		case ITEM_SCALE:
 			sconf.scale = clamp((++sconf.scale % 3), 1, 2);
 			ui_resize();
 			break;
 		default:
 			break;
 		}
+
 		sys_conf_write();
-		break;
-	default:
-		break;
 	}
 }
 
 static void
-update(int ticks)
+settings_configurator_terminate(struct coroutine *self)
 {
-	list_update(&menu, ticks);
-	ui_update_background(UI_PALETTE_MENU_BG, ticks);
+	struct settings *settings = SETTINGS(self, configurator);
+
+	list_finish(&settings->list);
+
+	for (size_t i = 0; i < ITEM_LAST; ++i) {
+		node_finish(&settings->values[i].node[0]);
+		node_finish(&settings->values[i].node[1]);
+		texture_finish(&settings->values[i].texture[0]);
+		texture_finish(&settings->values[i].texture[1]);
+	}
 }
 
 static void
-draw(void)
+settings_handler_entry(struct coroutine *)
 {
-	char str[16];
+	while (!(stris_pressed() & KEY_CANCEL))
+		continue;
 
-	ui_clear(UI_PALETTE_MENU_BG);
-	ui_draw_background();
-	list_draw(&menu);
-
-	draw_val(0, sconf.sound ? "Yes" : "No");
-	draw_val(1, sconf.psychedelic ? "Yes" : "No");
-	snprintf(str, sizeof (str), "%d", sconf.scale);
-	draw_val(2, str);
-
-	ui_present();
+	menu_run();
 }
 
-struct state state_settings = {
-	.init = init,
-	.resume = resume,
-	.onkey = onkey,
-	.update = update,
-	.draw = draw
-};
+static void
+settings_handler_terminate(struct coroutine *self)
+{
+	struct settings *settings = SETTINGS(self, handler);
+
+	coroutine_finish(&settings->configurator);
+}
+
+void
+settings_run(void)
+{
+	struct settings *settings;
+
+	settings = alloc(1, sizeof (*settings));
+
+	/* Long living menu settings */
+	settings->configurator.entry = settings_configurator_entry;
+	settings->configurator.terminate = settings_configurator_terminate;
+	coroutine_init(&settings->configurator);
+
+	/* State handler */
+	settings->handler.entry = settings_handler_entry;
+	settings->handler.terminate = settings_handler_terminate;
+	coroutine_init(&settings->handler);
+}

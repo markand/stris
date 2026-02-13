@@ -32,6 +32,8 @@ set(
 	${stris_SOURCE_DIR}/sound.h
 	${stris_SOURCE_DIR}/state-menu.c
 	${stris_SOURCE_DIR}/state-menu.h
+	${stris_SOURCE_DIR}/state-settings.c
+	${stris_SOURCE_DIR}/state-settings.h
 	${stris_SOURCE_DIR}/state-splash.c
 	${stris_SOURCE_DIR}/state-splash.h
 	${stris_SOURCE_DIR}/stris.c

@@ -19,6 +19,7 @@
 #ifndef STRIS_STATE_SETTINGS_H
 #define STRIS_STATE_SETTINGS_H
 
-extern struct state state_settings;
+void
+settings_run(void);
 
-#endif // !STRIS_STATE_SETTINGS_H */
+#endif /* !STRIS_STATE_SETTINGS_H */

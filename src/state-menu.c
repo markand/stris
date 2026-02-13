@@ -109,6 +109,7 @@ menu_entry(struct coroutine *self)
 	case ITEM_SCORES:
 		break;
 	case ITEM_SETTINGS:
+		settings_run();
 		break;
 	case ITEM_QUIT:
 		stris_quit();

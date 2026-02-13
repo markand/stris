@@ -23,41 +23,14 @@
 
 #include <SDL3/SDL.h>
 
-#if 0
-#include "joy.h"
-#include "key.h"
-#include "sound.h"
-#include "state-dead.h"
-#include "state-menu.h"
-#include "state-mode.h"
-#include "state-play.h"
-#include "state-scores.h"
-#include "state-settings.h"
-#include "state-splash.h"
-#include "state.h"
-#include "stris.h"
-#include "sys.h"
-#include "ui.h"
-#include "util.h"
-#endif
-
 #include "coroutine.h"
 #include "node.h"
 #include "sound.h"
-#include "state-menu.h"
 #include "state-splash.h"
 #include "stris.h"
 #include "sys.h"
 #include "ui.h"
 #include "util.h"
-
-#if 0
-struct {
-	int run;
-} stris = {
-	.run = 1,
-};
-#endif
 
 struct sconf sconf = {
 	.sound = 1,
@@ -78,12 +51,10 @@ init(void)
 	ui_init();
 	//joy_init();
 
-#if 0
 	if (sconf.sound)
 		sound_init();
-#endif
-	//splash_run();
-	menu_run();
+
+	splash_run();
 }
 
 static void
