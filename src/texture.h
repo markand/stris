@@ -23,15 +23,6 @@
 #include <stdint.h>
 
 /**
- * \enum texture_colorize_mode
- * \brief Add color modulation on texture.
- */
-enum texture_colorize_mode {
-	TEX_COLORIZE_MODE_NONE, /*!< No color modulation. */
-	TEX_COLORIZE_MODE_ADD   /*!< Color modulation is added. */
-};
-
-/**
  * \struct texture
  * \brief Rendering texture.
  */
@@ -97,13 +88,18 @@ void
 texture_alpha(struct texture *texture, unsigned int alpha);
 
 /**
- * Change texture color modulation.
+ * Apply color modulation by adding `color` to current blend mode.
  *
- * \param mode color modulation method
- * \param color the color to apply (0 if TEXTURE_COLORIZE_MODE_NONE)
+ * \param color the color to apply
  */
 void
-texture_colorize(struct texture *texture, enum texture_colorize_mode mode, uint32_t color);
+texture_color_add(struct texture *texture, uint32_t color);
+
+void
+texture_color_multiply(struct texture *texture, uint32_t color);
+
+void
+texture_color_none(struct texture *texture);
 
 /**
  * Destroy the texture.

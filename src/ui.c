@@ -187,9 +187,9 @@ finish_fonts(void)
 }
 
 static void
-render(struct texture *texture, enum ui_font f, uint32_t color, const char *fmt, va_list ap)
+ui_vprintf(struct texture *texture, enum ui_font f, uint32_t color, const char *fmt, va_list ap)
 {
-	char buf[128];
+	char text[128] = {};
 	SDL_Color c = {};
 	SDL_Surface *sf;
 	float w, h;
@@ -199,9 +199,9 @@ render(struct texture *texture, enum ui_font f, uint32_t color, const char *fmt,
 	c.b = UI_COLOR_B(color);
 	c.a = UI_COLOR_A(color);
 
-	vsnprintf(buf, sizeof (buf), fmt, ap);
+	vsnprintf(text, sizeof (text), fmt, ap);
 
-	if (!(sf = TTF_RenderText_Blended(fonts[f].font, buf, strlen(buf), c)))
+	if (!(sf = TTF_RenderText_Blended(fonts[f].font, text, strlen(text), c)))
 		die("abort: %s\n", SDL_GetError());
 	if (!(texture->handle = SDL_CreateTextureFromSurface(ui_rdr, sf)))
 		die("abort: %s\n", SDL_GetError());
@@ -212,6 +212,29 @@ render(struct texture *texture, enum ui_font f, uint32_t color, const char *fmt,
 	texture->h = h;
 
 	SDL_DestroySurface(sf);
+}
+
+static inline void
+ui_printf(struct texture *texture, enum ui_font font, uint32_t color, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	ui_vprintf(texture, font, color, fmt, ap);
+	va_end(ap);
+}
+
+static inline void
+ui_vclip(enum ui_font font, unsigned int *w, unsigned int *h, const char *fmt, va_list ap)
+{
+	struct texture texture;
+
+	ui_vprintf(&texture, font, 0, fmt, ap);
+
+	*w = texture.w;
+	*h = texture.h;
+
+	texture_finish(&texture);
 }
 
 static inline void
@@ -257,28 +280,54 @@ ui_render(struct texture *texture, enum ui_font font, uint32_t color, const char
 	va_list ap;
 
 	va_start(ap, fmt);
-	render(texture, font, color, fmt, ap);
+	ui_printf(texture, font, color, fmt, ap);
 	va_end(ap);
 }
 
 void
-ui_clip(enum ui_font f, int *w, int *h, const char *fmt, ...)
+ui_render_shadowed(struct texture *texture, enum ui_font font, uint32_t color, const char *fmt, ...)
+{
+	assert(fmt);
+
+	struct texture text;
+	unsigned int w, h;
+	va_list ap, args;
+
+	va_start(ap, fmt);
+
+	/* Compute texture dimension. */
+	va_copy(args, ap);
+	ui_vclip(font, &w, &h, fmt, args);
+
+	/* Initialize texture with +1 in w/h for shadow. */
+	texture_init(texture, w + 1, h + 1);
+
+	/* Render shadow first at +1;+1 and then the actual color. */
+	UI_BEGIN(texture);
+	va_copy(args, ap);
+	ui_vprintf(&text, font, UI_PALETTE_SHADOW, fmt, args);
+	texture_render(&text, 1, 1);
+	texture_finish(&text);
+	ui_vprintf(&text, font, color, fmt, args);
+	texture_render(&text, 0, 0);
+	texture_finish(&text);
+	UI_END();
+
+	va_end(ap);
+}
+
+void
+ui_clip(enum ui_font font, unsigned int *w, unsigned int *h, const char *fmt, ...)
 {
 	assert(w);
 	assert(h);
 	assert(fmt);
 
-	struct texture texture;
 	va_list ap;
 
 	va_start(ap, fmt);
-	render(&texture, f, 0, fmt, ap);
+	ui_vclip(font, w, h, fmt, ap);
 	va_end(ap);
-
-	*w = texture.w;
-	*h = texture.h;
-
-	texture_finish(&texture);
 }
 
 void

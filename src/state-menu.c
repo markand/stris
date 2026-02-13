@@ -32,9 +32,11 @@
 #define MENU(Ptr, Field) \
         (CONTAINER_OF(Ptr, struct menu, Field))
 
-#define MENU_TITLE_X(Menu) ((UI_W - (Menu)->title[0].texture->w) / 2)
+#define MENU_TITLE_X(Menu) \
+        ((UI_W - (Menu)->title.texture->w) / 2)
 
-#define MENU_TITLE_Y(Menu) ((Menu)->title[0].texture->h / 2)
+#define MENU_TITLE_Y(Menu) \
+        ((Menu)->title.texture->h / 2)
 
 /*
  * View is as following:
@@ -60,8 +62,8 @@ enum item {
 };
 
 struct menu {
-	/* Title and its shadow */
-	struct node title[2];
+	/* STris on top. */
+	struct node title;
 
 	/* Menu list and its items. */
 	struct list_item items[ITEM_LAST];
@@ -77,18 +79,12 @@ menu_entry(struct coroutine *self)
 
 	menu = MENU(self, coroutine);
 
-	/* Title shadow. */
-	ui_render(&texture, UI_FONT_TITLE, UI_PALETTE_SHADOW, "stris");
-	node_wrap(&menu->title[0], &texture);
-
-	/* Title foreground. */
+	/* STris on top. */
 	ui_render(&texture, UI_FONT_TITLE, UI_PALETTE_FG, "stris");
-	node_wrap(&menu->title[1], &texture);
+	node_wrap(&menu->title, &texture);
 
-	menu->title[0].x  = menu->title[1].x = MENU_TITLE_X(menu);
-	menu->title[0].y  = menu->title[1].y = MENU_TITLE_Y(menu);
-	menu->title[0].x += 1;
-	menu->title[0].y += 1;
+	menu->title.x = MENU_TITLE_X(menu);
+	menu->title.y = MENU_TITLE_Y(menu);
 
 	/* Main menu. */
 	menu->items[ITEM_PLAY].text = "Play";
@@ -107,6 +103,7 @@ menu_entry(struct coroutine *self)
 	case ITEM_PLAY:
 		break;
 	case ITEM_SCORES:
+		scores_run();
 		break;
 	case ITEM_SETTINGS:
 		settings_run();
@@ -125,9 +122,7 @@ menu_terminate(struct coroutine *self)
 	struct menu *menu = MENU(self, coroutine);
 
 	list_finish(&menu->list);
-
-	for (size_t i = 0; i < 2; ++i)
-		node_finish(&menu->title[i]);
+	node_finish(&menu->title);
 }
 
 void

@@ -58,11 +58,8 @@ setup(struct list *list)
 	for (size_t i = 0; i < list->itemsz; ++i) {
 		li = &list->items[i];
 
-		ui_render(&texture, list->font, UI_PALETTE_SHADOW, li->text);
-		node_wrap(&li->node[0], &texture);
-
-		ui_render(&texture, list->font, UI_PALETTE_FG, li->text);
-		node_wrap(&li->node[1], &texture);
+		ui_render_shadowed(&texture, list->font, UI_PALETTE_FG, li->text);
+		node_wrap(&li->node, &texture);
 	}
 }
 
@@ -72,16 +69,13 @@ halign(struct list *l)
 	for (size_t i = 0; i < l->itemsz; ++i) {
 		switch (l->halign) {
 		case -1:
-			l->items[i].node[0].x = l->x + l->p + 1;
-			l->items[i].node[1].x = l->x + l->p;
+			l->items[i].node.x = l->x + l->p;
 			break;
 		case 1:
-			l->items[i].node[0].x = l->x + l->w - l->items[i].node[0].texture->w - l->p + 1;
-			l->items[i].node[1].x = l->x + l->w - l->items[i].node[1].texture->w - l->p;
+			l->items[i].node.x = l->x + l->w - l->items[i].node.texture->w - l->p;
 			break;
 		default:
-			l->items[i].node[0].x = l->x + (l->w - l->items[i].node[0].texture->w) / 2 + 1;
-			l->items[i].node[1].x = l->x + (l->w - l->items[i].node[1].texture->w) / 2;
+			l->items[i].node.x = l->x + (l->w - l->items[i].node.texture->w) / 2;
 			break;
 		}
 	}
@@ -99,14 +93,12 @@ valign(struct list *l)
 		break;
 	default:
 		ystart = 0;
-		vspace = (l->h - (l->items[0].node[0].texture->h * l->itemsz)) / (l->itemsz + 1);
+		vspace = (l->h - (l->items[0].node.texture->h * l->itemsz)) / (l->itemsz + 1);
 		break;
 	}
 
-	for (size_t i = 0; i < l->itemsz; ++i) {
-		l->items[i].node[0].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].node[0].texture->h)) + 1;
-		l->items[i].node[1].y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].node[1].texture->h));
-	}
+	for (size_t i = 0; i < l->itemsz; ++i)
+		l->items[i].node.y = l->y + ystart + (((i + 1) * vspace) + (i * l->items[0].node.texture->h));
 }
 
 static void
@@ -137,9 +129,9 @@ list_colorizer_entry(struct coroutine *self)
 			li = &list->items[i];
 
 			if (list->selection == i)
-				texture_colorize(li->node[1].texture, TEX_COLORIZE_MODE_ADD, color);
+				texture_color_add(li->node.texture, color);
 			else
-				texture_colorize(li->node[1].texture, TEX_COLORIZE_MODE_ADD, UI_PALETTE_FG);
+				texture_color_none(li->node.texture);
 		}
 	}
 }
@@ -149,10 +141,8 @@ list_colorizer_terminate(struct coroutine *self)
 {
 	struct list *list = LIST(self, colorizer);
 
-	for (size_t i = 0; i < list->itemsz; ++i) {
-		node_finish(&list->items[i].node[0]);
-		node_finish(&list->items[i].node[1]);
-	}
+	for (size_t i = 0; i < list->itemsz; ++i)
+		node_finish(&list->items[i].node);
 }
 
 static void
@@ -203,14 +193,24 @@ list_init(struct list *list)
 }
 
 size_t
-list_wait(struct list *l)
+list_wait(struct list *list)
 {
-	assert(l);
+	assert(list);
 
-	while (!(stris_pressed() & KEY_SELECT))
-		coroutine_yield();
+	enum key keys;
 
-	return l->selection;
+	for (;;) {
+		keys = stris_pressed();
+
+		if (keys & KEY_SELECT)
+			break;
+		if (keys & KEY_CANCEL) {
+			list->selection = (size_t)-1;
+			break;
+		}
+	}
+
+	return list->selection;
 }
 
 void

@@ -39,8 +39,8 @@ enum item {
 };
 
 struct value {
-	struct texture texture[2];
-	struct node node[2];
+	struct texture texture;
+	struct node node;
 };
 
 struct settings {
@@ -50,10 +50,7 @@ struct settings {
 	/* Menu list and its items. */
 	struct list_item items[ITEM_LAST];
 	struct list list;
-	struct coroutine configurator;
-
-	/* Coroutine for escaping. */
-	struct coroutine handler;
+	struct coroutine coroutine;
 };
 
 /*
@@ -66,31 +63,22 @@ static void
 settings_valuize(struct settings *settings, size_t row, const char *fmt, ...)
 {
 	struct value *value;
-	char str[16] = {};
 	va_list ap;
-
-	va_start(ap, fmt);
-	vsnprintf(str, sizeof (str), fmt, ap);
-	va_end(ap);
 
 	value = &settings->values[row];
 
-	ui_render(&value->texture[0], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, str);
-	ui_render(&value->texture[1], UI_FONT_MENU_SMALL, UI_PALETTE_FG, str);
+	va_start(ap, fmt);
+	ui_render_shadowed(&value->texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, fmt, ap);
+	va_end(ap);
 
-	/* Register the nodes if it was not already done. */
-	value->node[1].x = UI_W - value->texture[0].w - settings->list.p;
-	value->node[0].x = value->node[1].x + 1;
-
-	value->node[1].y = settings->items[row].node->y;
-	value->node[0].y = value->node[1].y + 1;
-
+	value->node.x = UI_W - value->texture.w - settings->list.p;
+	value->node.y = settings->items[row].node.y;
 }
 
 static void
-settings_configurator_entry(struct coroutine *self)
+settings_entry(struct coroutine *self)
 {
-	struct settings *settings = SETTINGS(self, configurator);
+	struct settings *settings = SETTINGS(self, coroutine);
 
 	settings->items[ITEM_SOUND].text = "Sounds";
 	settings->items[ITEM_PSYCHEDELIC].text = "Psychedelic";
@@ -107,17 +95,15 @@ settings_configurator_entry(struct coroutine *self)
 	list_init(&settings->list);
 
 	for (size_t i = 0; i < ITEM_LAST; ++i) {
-		settings->values[i].node[0].texture = &settings->values[i].texture[0];
-		settings->values[i].node[1].texture = &settings->values[i].texture[1];
-		node_init(&settings->values[i].node[0]);
-		node_init(&settings->values[i].node[1]);
+		settings->values[i].node.texture = &settings->values[i].texture;
+		node_init(&settings->values[i].node);
 	}
 
 	for (;;) {
 		/* Re-render values. */
-		settings_valuize(settings, 0, sconf.sound ? "Yes" : "No");
-		settings_valuize(settings, 1, sconf.psychedelic ? "Yes" : "No");
-		settings_valuize(settings, 2, "%d", sconf.scale);
+		settings_valuize(settings, ITEM_SOUND, sconf.sound ? "Yes" : "No");
+		settings_valuize(settings, ITEM_PSYCHEDELIC, sconf.psychedelic ? "Yes" : "No");
+		settings_valuize(settings, ITEM_SCALE, "%d", sconf.scale);
 
 		switch (list_wait(&settings->list)) {
 		case ITEM_SOUND:
@@ -134,6 +120,8 @@ settings_configurator_entry(struct coroutine *self)
 			ui_resize();
 			break;
 		default:
+			/* Exit */
+			menu_run();
 			break;
 		}
 
@@ -142,35 +130,16 @@ settings_configurator_entry(struct coroutine *self)
 }
 
 static void
-settings_configurator_terminate(struct coroutine *self)
+settings_terminate(struct coroutine *self)
 {
-	struct settings *settings = SETTINGS(self, configurator);
+	struct settings *settings = SETTINGS(self, coroutine);
 
 	list_finish(&settings->list);
 
 	for (size_t i = 0; i < ITEM_LAST; ++i) {
-		node_finish(&settings->values[i].node[0]);
-		node_finish(&settings->values[i].node[1]);
-		texture_finish(&settings->values[i].texture[0]);
-		texture_finish(&settings->values[i].texture[1]);
+		node_finish(&settings->values[i].node);
+		texture_finish(&settings->values[i].texture);
 	}
-}
-
-static void
-settings_handler_entry(struct coroutine *)
-{
-	while (!(stris_pressed() & KEY_CANCEL))
-		continue;
-
-	menu_run();
-}
-
-static void
-settings_handler_terminate(struct coroutine *self)
-{
-	struct settings *settings = SETTINGS(self, handler);
-
-	coroutine_finish(&settings->configurator);
 }
 
 void
@@ -179,14 +148,7 @@ settings_run(void)
 	struct settings *settings;
 
 	settings = alloc(1, sizeof (*settings));
-
-	/* Long living menu settings */
-	settings->configurator.entry = settings_configurator_entry;
-	settings->configurator.terminate = settings_configurator_terminate;
-	coroutine_init(&settings->configurator);
-
-	/* State handler */
-	settings->handler.entry = settings_handler_entry;
-	settings->handler.terminate = settings_handler_terminate;
-	coroutine_init(&settings->handler);
+	settings->coroutine.entry = settings_entry;
+	settings->coroutine.terminate = settings_terminate;
+	coroutine_init(&settings->coroutine);
 }

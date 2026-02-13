@@ -27,13 +27,14 @@
 #include "node.h"
 #include "sound.h"
 #include "state-splash.h"
+#include "state-scores.h"
 #include "stris.h"
 #include "sys.h"
 #include "ui.h"
 #include "util.h"
 
 struct sconf sconf = {
-	.sound = 1,
+	.sound = 0,
 	.psychedelic = 1,
 	.scale = 1
 };
@@ -41,6 +42,8 @@ struct sconf sconf = {
 struct stris stris = {
 	.run = 1
 };
+
+#include "state-menu.h"
 
 static void
 init(void)
@@ -54,7 +57,8 @@ init(void)
 	if (sconf.sound)
 		sound_init();
 
-	splash_run();
+	//scores_run();
+	menu_run();
 }
 
 static void

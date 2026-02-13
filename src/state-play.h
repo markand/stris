@@ -19,4 +19,9 @@
 #ifndef STRIS_STATE_PLAY
 #define STRIS_STATE_PLAY
 
+enum mode : int;
+
+void
+play_run(enum mode mode);
+
 #endif /* !STRIS_STATE_PLAY */

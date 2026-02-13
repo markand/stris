@@ -109,21 +109,49 @@ texture_alpha(struct texture *texture, unsigned int alpha)
 	SDL_SetTextureAlphaMod(texture->handle, alpha);
 }
 
+static inline void
+texture_colorize(struct texture *texture, int blend, uint32_t color)
+{
+	uint8_t r, g, b;
+
+	if (!SDL_SetTextureBlendMode(texture->handle, blend))
+		die("SDL_SetTextureBlendMode: %s\n", SDL_GetError());
+
+	if (blend != SDL_BLENDMODE_NONE) {
+		r = UI_COLOR_R(color);
+		g = UI_COLOR_G(color);
+		b = UI_COLOR_B(color);
+
+		if (!SDL_SetTextureColorMod(texture->handle, r, g, b))
+			die("SDL_SetTextureColorMod: %s\n", SDL_GetError());
+	}
+}
+
 void
-texture_colorize(struct texture *texture, enum texture_colorize_mode mode, uint32_t color)
+texture_color_add(struct texture *texture, uint32_t color)
 {
 	assert(texture);
 	assert(texture->handle);
 
-	if (mode) {
-		SDL_SetTextureBlendMode(texture->handle, SDL_BLENDMODE_ADD);
-		SDL_SetTextureColorMod(texture->handle,
-			UI_COLOR_R(color),
-			UI_COLOR_G(color),
-			UI_COLOR_B(color)
-		);
-	} else
-		SDL_SetTextureBlendMode(texture->handle, SDL_BLENDMODE_NONE);
+	texture_colorize(texture, SDL_BLENDMODE_ADD, color);
+}
+
+void
+texture_color_multiply(struct texture *texture, uint32_t color)
+{
+	assert(texture);
+	assert(texture->handle);
+
+	texture_colorize(texture, SDL_BLENDMODE_MUL, color);
+}
+
+void
+texture_color_none(struct texture *texture)
+{
+	assert(texture);
+	assert(texture->handle);
+
+	texture_colorize(texture, SDL_BLENDMODE_NONE, 0);
 }
 
 void

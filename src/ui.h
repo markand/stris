@@ -128,7 +128,10 @@ void
 ui_render(struct texture *, enum ui_font, uint32_t, const char *, ...);
 
 void
-ui_clip(enum ui_font, int *, int *, const char *, ...);
+ui_render_shadowed(struct texture *, enum ui_font, uint32_t, const char *, ...);
+
+void
+ui_clip(enum ui_font font, unsigned int *w, unsigned int *h, const char *fmt, ...);
 
 void
 ui_clear(uint32_t);

@@ -18,75 +18,60 @@
 
 #include <assert.h>
 
-#include "key.h"
 #include "list.h"
 #include "state-menu.h"
 #include "state-play.h"
-#include "state.h"
 #include "stris.h"
 #include "ui.h"
 #include "util.h"
 
-static struct list_item items[] = {
-	[STRIS_MODE_STANDARD]   = { .text = "standard"  },
-	[STRIS_MODE_EXTENDED]   = { .text = "extended"  },
-	[STRIS_MODE_NIGHTMARE]  = { .text = "nightmare" }
-};
+#define STATE(Ptr, Field) \
+        (CONTAINER_OF(Ptr, struct state, Field))
 
-static struct list menu = {
-	.font = UI_FONT_MENU_SMALL,
-	.items = items,
-	.itemsz = LEN(items),
-	.w = UI_W,
-	.h = UI_H
+struct state {
+	struct list_item items[MODE_LAST];
+	struct list list;
+	struct coroutine coroutine;
 };
 
 static void
-init(void)
+mode_entry(struct coroutine *self)
 {
-	list_init(&menu);
+	struct state *state = STATE(self, coroutine);
+
+	state->items[MODE_STANDARD].text = "standard";
+	state->items[MODE_EXTENDED].text = "extended";
+	state->items[MODE_NIGHTMARE].text = "nightmare";
+
+	state->list.font = UI_FONT_MENU_SMALL;
+	state->list.items = state->items;
+	state->list.itemsz = LEN(state->items);
+	state->list.w = UI_W;
+	state->list.h = UI_H;
+	list_init(&state->list);
+	list_wait(&state->list);
+
+	if (state->list.selection == (size_t)-1)
+		menu_run();
+	else
+		play_run(state->list.selection);
 }
 
 static void
-resume(void)
+mode_terminate(struct coroutine *self)
 {
-	list_reset(&menu);
-	list_select(&menu, 0);
+	struct state *state = STATE(self, coroutine);
+
+	list_finish(&state->list);
 }
 
-static void
-onkey(enum key key, int state)
+void
+mode_run(void)
 {
-	if (!state)
-		return;
+	struct state *state;
 
-	if (key == KEY_CANCEL)
-		stris_switch(&state_menu);
-	else if (list_onkey(&menu, key)) {
-		state_play_mode = menu.selection;
-		stris_switch(&state_play);
-	}
+	state = alloc(1, sizeof (*state));
+	state->coroutine.entry = mode_entry;
+	state->coroutine.terminate = mode_terminate;
+	coroutine_init(&state->coroutine);
 }
-
-static void
-update(int ticks)
-{
-	ui_update_background(UI_PALETTE_MENU_BG, ticks);
-}
-
-static void
-draw(void)
-{
-	ui_clear(UI_PALETTE_MENU_BG);
-	ui_draw_background();
-	list_draw(&menu);
-	ui_present();
-}
-
-struct state state_mode = {
-	.init = init,
-	.resume = resume,
-	.onkey = onkey,
-	.update = update,
-	.draw = draw
-};

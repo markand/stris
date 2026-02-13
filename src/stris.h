@@ -25,7 +25,8 @@ struct coroutine;
 enum mode : int {
 	MODE_STANDARD,
 	MODE_EXTENDED,
-	MODE_NIGHTMARE
+	MODE_NIGHTMARE,
+	MODE_LAST
 };
 
 enum key : unsigned int {

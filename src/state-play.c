@@ -16,6 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#if 0
 #include <stdint.h>
 #include <stdio.h>
 
@@ -725,3 +726,11 @@ struct state state_play = {
 	.suspend = suspend,
 	.finish = finish
 };
+#endif
+
+#include "stris.h"
+
+void
+play_run(enum mode)
+{
+}

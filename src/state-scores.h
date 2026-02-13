@@ -19,6 +19,7 @@
 #ifndef STRIS_STATE_SCORES_H
 #define STRIS_STATE_SCORES_H
 
-extern struct state state_scores;
+void
+scores_run(void);
 
 #endif /* !STRIS_STATE_SCORES_H */

@@ -19,6 +19,7 @@
 #ifndef STRIS_MODE_H
 #define STRIS_MODE_H
 
-extern struct state state_mode;
+void
+mode_run(void);
 
 #endif /* !STRIS_MODE_H */

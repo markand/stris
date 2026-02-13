@@ -44,7 +44,7 @@ struct list_item {
 	const char *text;
 
 	/* Rendering nodes. */
-	struct node node[2];
+	struct node node;
 };
 
 /**

@@ -19,50 +19,63 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "key.h"
+#include "coroutine.h"
 #include "list.h"
+#include "node.h"
 #include "score.h"
 #include "state-menu.h"
-#include "state.h"
 #include "stris.h"
-#include "tex.h"
+#include "texture.h"
 #include "ui.h"
+#include "util.h"
 
 #define HEADER_HEIGHT (2 * UI_H / 16)
 
-//
-// View is as following:
-//
-// +----------------+ -^-
-// | <    Mode    > |  |          2 * (UI_H / 16)
-// +----------------+ -v-
-// | Jean       123 |
-// | Francis    100 |
-// | Liloutre    80 |
-// |                |
-// |                |
-// |                |
-// +----------------+
-//
+#define SCORES(Ptr, Field) \
+        (CONTAINER_OF(Ptr, struct scores, Field))
+
+/*
+ * View is as following:
+ *
+ * +----------------+ -^-
+ * | <    Mode    > |  |          2 * (UI_H / 16)
+ * +----------------+ -v-
+ * | Jean       123 |
+ * | Francis    100 |
+ * | Liloutre    80 |
+ * |                |
+ * |                |
+ * |                |
+ * +----------------+
+ */
+
 struct view {
+	struct node header[2];
 	char names[SCORE_LIST_MAX][SCORE_NAME_MAX];
 	char lines[SCORE_LIST_MAX][16];
+
+#if 0
 	struct list_item item_names[SCORE_LIST_MAX];
 	struct list_item item_lines[SCORE_LIST_MAX];
 	struct list list_names;
 	struct list list_lines;
+#endif
 };
 
-//
-// 0: standard
-// 1: extended
-// 2: nightmare
-//
-static struct view views[3];
-static size_t selected;
-static struct tex arrow_left[2];
-static struct tex arrow_right[2];
+/*
+ * 0: standard
+ * 1: extended
+ * 2: nightmare
+ */
 
+struct scores {
+	struct view views[3];
+	struct node arrow_left[2];
+	struct node arrow_right[2];
+	struct coroutine handler;
+};
+
+#if 0
 static void
 init(void)
 {
@@ -92,12 +105,6 @@ init(void)
 	// Lines are right aligned.
 	for (size_t m = 0; m < 3; ++m)
 		views[m].list_lines.halign = 1;
-
-	// Create left/right arrows.
-	ui_render(&arrow_left[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, "<");
-	ui_render(&arrow_left[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "<");
-	ui_render(&arrow_right[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, ">");
-	ui_render(&arrow_right[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, ">");
 
 }
 
@@ -184,20 +191,6 @@ onkey(enum key key, int state)
 	if (!state)
 		return;
 
-	switch (key) {
-	case KEY_LEFT:
-		if (selected == 0)
-			selected = 2;
-		else
-			selected --;
-		break;
-	case KEY_SELECT:
-	case KEY_RIGHT:
-		if (selected == 2)
-			selected = 0;
-		else
-			selected ++;
-		break;
 	case KEY_CANCEL:
 		stris_switch(&state_menu);
 		break;
@@ -231,12 +224,65 @@ finish(void)
 	tex_finish(&arrow_right[0]);
 	tex_finish(&arrow_right[1]);
 }
+#endif
 
-struct state state_scores = {
-	.init = init,
-	.resume = resume,
-	.onkey = onkey,
-	.update = update,
-	.draw = draw,
-	.finish = finish
-};
+static void
+scores_handler_entry(struct coroutine *self)
+{
+	struct texture texture = {};
+	struct node node = {};
+	struct scores *scores;
+	size_t selected = 0;
+	enum key keys;
+
+	scores = SCORES(self, handler);
+	ui_render_shadowed(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "TEST 222");
+	node_wrap(&node, &texture);
+
+	/* Create left/right arrows. */
+#if 0
+	ui_render(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "<");
+	ui_render(&scores->arrow_left[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "<");
+	ui_render(&scores->arrow_right[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, ">");
+	ui_render(&scores->arrow_right[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, ">");
+#endif
+
+	do {
+		keys = stris_pressed();
+
+		if (keys & KEY_LEFT) {
+			if (selected == 0)
+				selected = 2;
+			else
+				selected --;
+
+			//scores_redraw(scores, selected);
+		} else if (keys & KEY_RIGHT) {
+			if (selected == 2)
+				selected = 0;
+			else
+				selected ++;
+
+			//scores_redraw(scores, selected);
+		}
+	} while (!(keys & KEY_CANCEL));
+
+	menu_run();
+}
+
+static void
+scores_handler_terminate(struct coroutine *self)
+{
+	struct scores *scores = SCORES(self, handler);
+}
+
+void
+scores_run(void)
+{
+	struct scores *scores;
+
+	scores = alloc(1, sizeof (*scores));
+	scores->handler.entry = scores_handler_entry;
+	scores->handler.terminate = scores_handler_terminate;
+	coroutine_init(&scores->handler);
+}
