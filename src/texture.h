@@ -96,6 +96,9 @@ void
 texture_color_add(struct texture *texture, uint32_t color);
 
 void
+texture_color_blend(struct texture *texture, uint32_t color);
+
+void
 texture_color_multiply(struct texture *texture, uint32_t color);
 
 void

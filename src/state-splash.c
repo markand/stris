@@ -55,7 +55,7 @@ splash_entry(struct coroutine *self)
 	node_wrap(&splash->background, &texture);
 
 	/* Center brag. */
-	ui_render(&texture, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
+	ui_printf(&texture, UI_FONT_SPLASH, UI_PALETTE_FG, "malikania");
 
 	node_wrap(&splash->title, &texture);
 	splash->title.x = (UI_W - splash->title.texture->w) / 2;

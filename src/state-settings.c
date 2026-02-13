@@ -68,7 +68,7 @@ settings_valuize(struct settings *settings, size_t row, const char *fmt, ...)
 	value = &settings->values[row];
 
 	va_start(ap, fmt);
-	ui_render_shadowed(&value->texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, fmt, ap);
+	ui_vprintf_shadowed(&value->texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, fmt, ap);
 	va_end(ap);
 
 	value->node.x = UI_W - value->texture.w - settings->list.p;
@@ -79,6 +79,7 @@ static void
 settings_entry(struct coroutine *self)
 {
 	struct settings *settings = SETTINGS(self, coroutine);
+	int running = 1;
 
 	settings->items[ITEM_SOUND].text = "Sounds";
 	settings->items[ITEM_PSYCHEDELIC].text = "Psychedelic";
@@ -99,7 +100,7 @@ settings_entry(struct coroutine *self)
 		node_init(&settings->values[i].node);
 	}
 
-	for (;;) {
+	while (running) {
 		/* Re-render values. */
 		settings_valuize(settings, ITEM_SOUND, sconf.sound ? "Yes" : "No");
 		settings_valuize(settings, ITEM_PSYCHEDELIC, sconf.psychedelic ? "Yes" : "No");
@@ -120,13 +121,14 @@ settings_entry(struct coroutine *self)
 			ui_resize();
 			break;
 		default:
-			/* Exit */
-			menu_run();
+			running = 0;
 			break;
 		}
 
 		sys_conf_write();
 	}
+
+	menu_run();
 }
 
 static void

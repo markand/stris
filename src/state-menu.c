@@ -80,7 +80,7 @@ menu_entry(struct coroutine *self)
 	menu = MENU(self, coroutine);
 
 	/* STris on top. */
-	ui_render(&texture, UI_FONT_TITLE, UI_PALETTE_FG, "stris");
+	ui_printf(&texture, UI_FONT_TITLE, UI_PALETTE_FG, "stris");
 	node_wrap(&menu->title, &texture);
 
 	menu->title.x = MENU_TITLE_X(menu);

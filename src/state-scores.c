@@ -227,16 +227,16 @@ finish(void)
 #endif
 
 static void
-scores_handler_entry(struct coroutine *self)
+scores_handler_entry(struct coroutine *)
 {
 	struct texture texture = {};
 	struct node node = {};
-	struct scores *scores;
+	//struct scores *scores;
 	size_t selected = 0;
 	enum key keys;
 
-	scores = SCORES(self, handler);
-	ui_render_shadowed(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "TEST 222");
+	//scores = SCORES(self, handler);
+	ui_printf_shadowed(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "TEST 222");
 	node_wrap(&node, &texture);
 
 	/* Create left/right arrows. */
@@ -271,9 +271,9 @@ scores_handler_entry(struct coroutine *self)
 }
 
 static void
-scores_handler_terminate(struct coroutine *self)
+scores_handler_terminate(struct coroutine *)
 {
-	struct scores *scores = SCORES(self, handler);
+	//struct scores *scores = SCORES(self, handler);
 }
 
 void

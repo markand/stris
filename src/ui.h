@@ -24,7 +24,10 @@
  * \brief User interface rendering.
  */
 
+#include <stdarg.h>
 #include <stdint.h>
+
+#include "port.h"
 
 /**
  * Store the current texture in a temporary variable and switch to the
@@ -135,20 +138,38 @@ ui_resize(void);
  * \param color the text color
  * \param fmt a printf(3) format string
  */
+PORT_PRINTF(4, 5)
 void
-ui_render(struct texture *texture,
+ui_printf(struct texture *texture,
           enum ui_font font,
           uint32_t color,
           const char *fmt, ...);
 
-/**
- * Similar to ::ui_render but the generated texture has a shadow effect.
- */
+PORT_PRINTF(4, 0)
 void
-ui_render_shadowed(struct texture *texture,
+ui_vprintf(struct texture *texture,
+           enum ui_font font,
+           uint32_t color,
+           const char *fmt,
+           va_list ap);
+
+/**
+ * Similar to ::ui_printf but the generated texture has a shadow effect.
+ */
+PORT_PRINTF(4, 5)
+void
+ui_printf_shadowed(struct texture *texture,
                    enum ui_font font,
                    uint32_t color,
                    const char *fmt, ...);
+
+PORT_PRINTF(4, 0)
+void
+ui_vprintf_shadowed(struct texture *texture,
+                    enum ui_font font,
+                    uint32_t color,
+                    const char *fmt,
+                    va_list ap);
 
 /**
  * Compute a text dimension required.

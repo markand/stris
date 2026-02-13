@@ -58,7 +58,7 @@ setup(struct list *list)
 	for (size_t i = 0; i < list->itemsz; ++i) {
 		li = &list->items[i];
 
-		ui_render_shadowed(&texture, list->font, UI_PALETTE_FG, li->text);
+		ui_printf_shadowed(&texture, list->font, UI_PALETTE_FG, "%s", li->text);
 		node_wrap(&li->node, &texture);
 	}
 }
@@ -129,9 +129,9 @@ list_colorizer_entry(struct coroutine *self)
 			li = &list->items[i];
 
 			if (list->selection == i)
-				texture_color_add(li->node.texture, color);
+				texture_color_blend(li->node.texture, color);
 			else
-				texture_color_none(li->node.texture);
+				texture_color_blend(li->node.texture, UI_PALETTE_FG);
 		}
 	}
 }

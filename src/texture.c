@@ -137,6 +137,15 @@ texture_color_add(struct texture *texture, uint32_t color)
 }
 
 void
+texture_color_blend(struct texture *texture, uint32_t color)
+{
+	assert(texture);
+	assert(texture->handle);
+
+	texture_colorize(texture, SDL_BLENDMODE_BLEND, color);
+}
+
+void
 texture_color_multiply(struct texture *texture, uint32_t color)
 {
 	assert(texture);
