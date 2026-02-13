@@ -19,28 +19,64 @@
 #ifndef STRIS_UTIL_H
 #define STRIS_UTIL_H
 
+/**
+ * \file util.h
+ * \brief Utilities.
+ */
+
 #include <stddef.h>
 
+#include "port.h"
+
+/**
+ * Expand to array size.
+ */
 #define LEN(x) (sizeof (x) / sizeof (x[0]))
 
+/**
+ * Expand to parent struture from inner field.
+ */
 #define CONTAINER_OF(Ptr, Type, Field) \
 	(Type *)((char *)(1 ? (Ptr) : &((Type *)0)->Field) - offsetof(Type, Field))
 
+/**
+ * Terminate program on error.
+ *
+ * Format as printf(3).
+ */
+PORT_PRINTF(1, 2)
 void
-die(const char *, ...);
+die(const char *fmt, ...);
 
+/**
+ * Clamp value `v` in range `min..max`.
+ */
 long long int
-clamp(long long int, long long int, long long int);
+clamp(long long int v, long long int min, long long int max);
 
+/**
+ * Get user account name.
+ */
 const char *
 username(void);
 
+/**
+ * Generate random number in range min..max (max excluded).
+ */
 int
 nrand(int min, int max);
 
+/**
+ * Allocate `n * w` bytes or exit with code 1.
+ *
+ * Bytes are zero'ed.
+ */
 void *
 alloc(size_t n, size_t w);
 
+/**
+ * Duplicate pointer `ptr` of `w` number of bytes.
+ */
 void *
 allocdup(const void *ptr, size_t w);
 

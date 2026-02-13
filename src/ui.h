@@ -121,20 +121,51 @@ enum ui_font {
 void
 ui_init(void);
 
+/**
+ * Resize window.
+ */
 void
 ui_resize(void);
 
+/**
+ * Render a string into a texture
+ *
+ * \param texture the texture to initialize (not NULL)
+ * \param font the font index to use
+ * \param color the text color
+ * \param fmt a printf(3) format string
+ */
 void
-ui_render(struct texture *, enum ui_font, uint32_t, const char *, ...);
+ui_render(struct texture *texture,
+          enum ui_font font,
+          uint32_t color,
+          const char *fmt, ...);
 
+/**
+ * Similar to ::ui_render but the generated texture has a shadow effect.
+ */
 void
-ui_render_shadowed(struct texture *, enum ui_font, uint32_t, const char *, ...);
+ui_render_shadowed(struct texture *texture,
+                   enum ui_font font,
+                   uint32_t color,
+                   const char *fmt, ...);
 
+/**
+ * Compute a text dimension required.
+ *
+ * \param font the font index to use
+ * \param w the pointer to write width
+ * \param h the pointer to write height
+ * \param fmt a printf(3) format string
+ */
 void
 ui_clip(enum ui_font font, unsigned int *w, unsigned int *h, const char *fmt, ...);
 
+/**
+ * Clear current target with given color.
+ */
 void
-ui_clear(uint32_t);
+ui_clear(uint32_t color);
 
 /**
  * Change the grid background color.
@@ -144,18 +175,39 @@ ui_clear(uint32_t);
 void
 ui_background_set(uint32_t color);
 
+/**
+ * Render a line with specified color at coordinates x1;y1 to x2;y2.
+ */
 void
-ui_draw_line(uint32_t, int, int, int, int);
+ui_draw_line(uint32_t color, int x1, int y1, int x2, int y2);
 
+/**
+ * Render a filled rectangle with specified color at coordinates x;y of size
+ * w*h.
+ */
 void
-ui_draw_rect(uint32_t, int, int, int, int);
+ui_draw_rect(uint32_t color, int x, int y, int w, int h);
 
+/**
+ * Flush rendering sequence.
+ */
 void
 ui_present(void);
 
+/**
+ * Change rendering context, returning current rendering.
+ *
+ * Passing NULL restore main window context.
+ *
+ * \param target the rendering context (may be NULL)
+ * \return current rendering context (may be NULL)
+ */
 struct texture *
-ui_target(struct texture *);
+ui_target(struct texture *target);
 
+/**
+ * Destroy UI.
+ */
 void
 ui_finish(void);
 
