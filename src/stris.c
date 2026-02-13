@@ -164,15 +164,19 @@ handle_keyboard(const SDL_KeyboardEvent *ev)
 		key = KEY_SELECT;
 		break;
 	case SDL_SCANCODE_UP:
+	case SDL_SCANCODE_K:
 		key = KEY_UP;
 		break;
 	case SDL_SCANCODE_RIGHT:
+	case SDL_SCANCODE_L:
 		key = KEY_RIGHT;
 		break;
 	case SDL_SCANCODE_DOWN:
+	case SDL_SCANCODE_J:
 		key = KEY_DOWN;
 		break;
 	case SDL_SCANCODE_LEFT:
+	case SDL_SCANCODE_H:
 		key = KEY_LEFT;
 		break;
 	case SDL_SCANCODE_SPACE:
