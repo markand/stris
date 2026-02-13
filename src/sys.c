@@ -1,5 +1,5 @@
 /*
- * sys.c -- operating system dependant routines
+ * sys.c -- operating system dependent routines
  *
  * Copyright (c) 2011-2026 David Demelier <markand@malikania.fr>
  *
@@ -94,8 +94,10 @@ path(void)
 	if (!(base = SDL_GetPrefPath(ORG, APP)))
 		return NULL;
 
-	// Silently create the directory now, it will fail anyway when trying
-	// to write.
+	/*
+	 * Silently create the directory now, it will fail anyway when trying to
+	 * write.
+	 */
 	if (mkpath(base) < 0)
 		fprintf(stderr, "warning: unable to create %s\n", base);
 
@@ -119,7 +121,7 @@ sys_conf_read(void)
 	fscanf(fp, "%d %d\n", &sconf.sound, &sconf.scale);
 	fclose(fp);
 
-	// Reset to normal values if invalid.
+	/* Reset to normal values if invalid. */
 	sconf.scale = clamp(sconf.scale, 1, 2);
 }
 

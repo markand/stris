@@ -1,5 +1,5 @@
 /*
- * sys.h -- operating system dependant routines
+ * sys.h -- operating system dependent routines
  *
  * Copyright (c) 2011-2026 David Demelier <markand@malikania.fr>
  *
@@ -19,10 +19,21 @@
 #ifndef STRIS_SYS_H
 #define STRIS_SYS_H
 
+/**
+ * \file sys.h
+ * \brief Operating system dependent routines.
+ */
+
+/**
+ * Read system configuration and fills global ::sconf.
+ */
 void
 sys_conf_read(void);
 
+/**
+ * Write global ::sconf on disk.
+ */
 void
 sys_conf_write(void);
 
-#endif // !STRIS_SYS_H
+#endif /* !STRIS_SYS_H */
