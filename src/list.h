@@ -126,6 +126,13 @@ struct list {
 	 */
 	size_t itemsz;
 
+	/**
+	 * (optional)
+	 *
+	 * Set to non-zero to use the list as a display only.
+	 */
+	unsigned int readonly;
+
 	size_t selection;               /* currently selected */
 	struct coroutine colorizer;     /* hover glower */
 	struct coroutine selector;      /* list selector */

@@ -133,6 +133,9 @@ coroutine_finish(struct coroutine *co)
 
 	int rc;
 
+	if (!co->handle)
+		return;
+
 	if ((rc = mco_destroy(co->handle)) != MCO_SUCCESS)
 		die("mco_destroy: %d\n", rc);
 

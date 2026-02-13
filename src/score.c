@@ -99,7 +99,7 @@ basedir(void)
 #endif
 
 const char *
-score_path(enum stris_mode mode)
+score_path(enum mode mode)
 {
 	static const char * const filenames[] = {
 		"scores-s",

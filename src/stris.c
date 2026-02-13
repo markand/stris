@@ -26,8 +26,8 @@
 #include "coroutine.h"
 #include "node.h"
 #include "sound.h"
+#include "state-menu.h"
 #include "state-splash.h"
-#include "state-scores.h"
 #include "stris.h"
 #include "sys.h"
 #include "ui.h"
@@ -43,8 +43,6 @@ struct stris stris = {
 	.run = 1
 };
 
-#include "state-menu.h"
-
 static void
 init(void)
 {
@@ -57,7 +55,6 @@ init(void)
 	if (sconf.sound)
 		sound_init();
 
-	//scores_run();
 	menu_run();
 }
 

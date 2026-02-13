@@ -49,205 +49,122 @@
  * +----------------+
  */
 
-struct view {
-	struct node header[2];
-	char names[SCORE_LIST_MAX][SCORE_NAME_MAX];
+struct scores {
+	/* array of score */
+	char names[SCORE_LIST_MAX][SCORE_NAME_MAX + 1];
 	char lines[SCORE_LIST_MAX][16];
 
-#if 0
+	/* names and their scores */
 	struct list_item item_names[SCORE_LIST_MAX];
 	struct list_item item_lines[SCORE_LIST_MAX];
 	struct list list_names;
 	struct list list_lines;
-#endif
+
+	/* <> selector */
+	struct node arrow_left;
+	struct node arrow_right;
+
+	/* mode name on top */
+	struct node mode[MODE_LAST];
+
+	/* main entrypoint */
+	struct coroutine coroutine;
 };
 
-/*
- * 0: standard
- * 1: extended
- * 2: nightmare
- */
-
-struct scores {
-	struct view views[3];
-	struct node arrow_left[2];
-	struct node arrow_right[2];
-	struct coroutine handler;
+static const char *mode_names[] = {
+	[MODE_STANDARD]  = "standard",
+	[MODE_EXTENDED]  = "extended",
+	[MODE_NIGHTMARE] = "nightmare"
 };
 
-#if 0
 static void
-init(void)
-{
-	// Common properties for both lists.
-	for (size_t m = 0; m < 3; ++m) {
-		views[m].list_names.font   = views[m].list_lines.font   = UI_FONT_MENU_SMALL;
-		views[m].list_names.valign = views[m].list_lines.valign = -1;
-		views[m].list_names.p      = views[m].list_lines.p      = 10;
-		views[m].list_names.y      = views[m].list_lines.y      = HEADER_HEIGHT;
-		views[m].list_names.w      = views[m].list_lines.w      = UI_W;
-		views[m].list_names.h      = views[m].list_lines.h      = UI_H - views[m].list_names.y;
-
-		views[m].list_names.items  = views[m].item_names;
-		views[m].list_lines.items  = views[m].item_lines;
-
-		// Link list items to the appropriate strings.
-		for (size_t i = 0; i < SCORE_LIST_MAX; ++i) {
-			views[m].item_names[i].text = views[m].names[i];
-			views[m].item_lines[i].text = views[m].lines[i];
-		}
-	}
-
-	// Names are left aligned.
-	for (size_t m = 0; m < 3; ++m)
-		views[m].list_names.halign = -1;
-
-	// Lines are right aligned.
-	for (size_t m = 0; m < 3; ++m)
-		views[m].list_lines.halign = 1;
-
-}
-
-static void
-populate(struct view *v, const char *path)
+scores_load(struct scores *scores, const char *path)
 {
 	struct score_list list;
 
-	// Open score file before filling up the list.
+	/* Cleanup and destroy before refilling. */
+	list_finish(&scores->list_names);
+	list_finish(&scores->list_lines);
+
 	score_read(&list, path);
 
-	// Populate left (names) and right (lines) lists with that score file.
+	/* Populate left (names) and right (lines) lists with that score file. */
 	for (size_t i = 0; i < list.scoresz; ++i) {
-		snprintf(v->names[i], sizeof (v->names[i]), "%s", list.scores[i].who);
-		snprintf(v->lines[i], sizeof (v->lines[i]), "%d", list.scores[i].lines);
+		snprintf(scores->names[i], sizeof (scores->names[i]), "%s", list.scores[i].who);
+		snprintf(scores->lines[i], sizeof (scores->lines[i]), "%d", list.scores[i].lines);
 	}
 
-	v->list_names.itemsz = v->list_lines.itemsz = list.scoresz;
+	scores->list_names.font   = scores->list_lines.font   = UI_FONT_MENU_SMALL;
+	scores->list_names.valign = scores->list_lines.valign = -1;
+	scores->list_names.p      = scores->list_lines.p      = 10;
+	scores->list_names.y      = scores->list_lines.y      = HEADER_HEIGHT;
+	scores->list_names.w      = scores->list_lines.w      = UI_W;
+	scores->list_names.h      = scores->list_lines.h      = UI_H - scores->list_names.y;
+	scores->list_names.items  = scores->item_names;
+	scores->list_lines.items  = scores->item_lines;
+	scores->list_names.itemsz = scores->list_lines.itemsz = list.scoresz;
 
-	list_init(&v->list_names);
-	list_reset(&v->list_names);
+	/* Not selectable. */
+	scores->list_lines.readonly = 1;
+	scores->list_names.readonly = 1;
 
-	list_init(&v->list_lines);
-	list_reset(&v->list_lines);
-}
+	/* Link list items to the appropriate strings. */
+	for (size_t i = 0; i < SCORE_LIST_MAX; ++i) {
+		scores->item_names[i].text = scores->names[i];
+		scores->item_lines[i].text = scores->lines[i];
+	}
 
-static void
-draw_header(void)
-{
-	static const char * const names[] = { "standard", "extended", "nightmare" };
-	struct tex tex[2];
-	int x, y;
-
-	ui_render(&tex[0], UI_FONT_MENU, UI_PALETTE_FG, names[selected]);
-	ui_render(&tex[1], UI_FONT_MENU, UI_PALETTE_SHADOW, names[selected]);
-
-	x = (UI_W - tex[0].w) / 2;
-	y = (HEADER_HEIGHT / 2) - (tex[0].h / 2);
-
-	tex_draw(&tex[1], x + 1, y + 1);
-	tex_draw(&tex[0], x, y);
-	tex_finish(&tex[0]);
-	tex_finish(&tex[1]);
-}
-
-static void
-draw_arrows(void)
-{
-	int x, y;
-
-	// <
-	x = 10;
-	y = (HEADER_HEIGHT / 2) - (arrow_left[0].h / 2);
-	tex_draw(&arrow_left[1], x + 1 , y + 1);
-	tex_draw(&arrow_left[0], x, y);
-
-	// >
-	x = UI_W - arrow_right[0].w - 10;
-	tex_draw(&arrow_right[1], x + 1 , y + 1);
-	tex_draw(&arrow_right[0], x, y);
-
-}
-
-static inline void
-draw_lists(void)
-{
-	list_draw(&views[selected].list_names);
-	list_draw(&views[selected].list_lines);
-}
-
-
-static void
-resume(void)
-{
+	/* Names are left aligned. */
 	for (size_t m = 0; m < 3; ++m)
-		populate(&views[m], score_path(m));
+		scores->list_names.halign = -1;
 
-	selected = 0;
+	/* Lines are right aligned. */
+	for (size_t m = 0; m < 3; ++m)
+		scores->list_lines.halign = 1;
+
+	list_init(&scores->list_names);
+	list_init(&scores->list_lines);
 }
 
 static void
-onkey(enum key key, int state)
-{
-	if (!state)
-		return;
-
-	case KEY_CANCEL:
-		stris_switch(&state_menu);
-		break;
-	default:
-		break;
-	}
-}
-
-static void
-update(int ticks)
-{
-	ui_update_background(UI_PALETTE_MENU_BG, ticks);
-}
-
-static void
-draw(void)
-{
-	ui_clear(UI_PALETTE_MENU_BG);
-	ui_draw_background();
-	draw_header();
-	draw_arrows();
-	draw_lists();
-	ui_present();
-}
-
-static void
-finish(void)
-{
-	tex_finish(&arrow_left[0]);
-	tex_finish(&arrow_left[1]);
-	tex_finish(&arrow_right[0]);
-	tex_finish(&arrow_right[1]);
-}
-#endif
-
-static void
-scores_handler_entry(struct coroutine *)
+scores_entry(struct coroutine *self)
 {
 	struct texture texture = {};
-	struct node node = {};
-	//struct scores *scores;
+	struct scores *scores;
 	size_t selected = 0;
 	enum key keys;
 
-	//scores = SCORES(self, handler);
-	ui_printf_shadowed(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "TEST 222");
-	node_wrap(&node, &texture);
+	scores = SCORES(self, coroutine);
 
-	/* Create left/right arrows. */
-#if 0
-	ui_render(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "<");
-	ui_render(&scores->arrow_left[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, "<");
-	ui_render(&scores->arrow_right[0], UI_FONT_MENU_SMALL, UI_PALETTE_FG, ">");
-	ui_render(&scores->arrow_right[1], UI_FONT_MENU_SMALL, UI_PALETTE_SHADOW, ">");
-#endif
+	/* < */
+	ui_printf_shadowed(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "<");
+	scores->arrow_left.x = 10;
+	scores->arrow_left.y = (HEADER_HEIGHT / 2) - (texture.h / 2);
+	node_wrap(&scores->arrow_left, &texture);
 
+	/* > */
+	ui_printf_shadowed(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, ">");
+	scores->arrow_right.x = UI_W - texture.w - 10;
+	scores->arrow_right.y = (HEADER_HEIGHT / 2) - (texture.h / 2);
+	node_wrap(&scores->arrow_right, &texture);
+
+	/* The three titles, we will hide/show depending on selection. */
+	for (size_t i = 0; i < MODE_LAST; ++i) {
+		ui_printf_shadowed(&texture, UI_FONT_MENU_SMALL, UI_PALETTE_FG, "%s", mode_names[i]);
+		scores->mode[i].y = (HEADER_HEIGHT / 2) - (texture.h / 2);
+		scores->mode[i].x = (UI_W / 2) - (texture.w / 2);
+		scores->mode[i].hide = 1;
+		node_wrap(&scores->mode[i], &texture);
+	}
+
+	scores->mode->hide = 0;
+
+	/* Common properties for both lists. */
 	do {
+		/* Reload scores depending on the mode. */
+		scores_load(scores, score_path(selected));
+
+		/* Wait for something. */
 		keys = stris_pressed();
 
 		if (keys & KEY_LEFT) {
@@ -255,25 +172,36 @@ scores_handler_entry(struct coroutine *)
 				selected = 2;
 			else
 				selected --;
-
-			//scores_redraw(scores, selected);
 		} else if (keys & KEY_RIGHT) {
 			if (selected == 2)
 				selected = 0;
 			else
 				selected ++;
-
-			//scores_redraw(scores, selected);
 		}
+
+		/* Hide every title but the currently selected. */
+		for (size_t i = 0; i < MODE_LAST; ++i)
+			scores->mode[i].hide = 1;
+
+		scores->mode[selected].hide = 0;
 	} while (!(keys & KEY_CANCEL));
 
 	menu_run();
 }
 
 static void
-scores_handler_terminate(struct coroutine *)
+scores_terminate(struct coroutine *self)
 {
-	//struct scores *scores = SCORES(self, handler);
+	struct scores *scores = SCORES(self, coroutine);
+
+	for (size_t i = 0; i < MODE_LAST; ++i)
+		node_finish(&scores->mode[i]);
+
+	node_finish(&scores->arrow_right);
+	node_finish(&scores->arrow_left);
+
+	list_finish(&scores->list_lines);
+	list_finish(&scores->list_names);
 }
 
 void
@@ -282,7 +210,7 @@ scores_run(void)
 	struct scores *scores;
 
 	scores = alloc(1, sizeof (*scores));
-	scores->handler.entry = scores_handler_entry;
-	scores->handler.terminate = scores_handler_terminate;
-	coroutine_init(&scores->handler);
+	scores->coroutine.entry = scores_entry;
+	scores->coroutine.terminate = scores_terminate;
+	coroutine_init(&scores->coroutine);
 }

@@ -114,6 +114,11 @@ list_colorizer_entry(struct coroutine *self)
 	target = UI_PALETTE_MENU_HIGH;
 
 	for (;;) {
+		if (list->readonly) {
+			coroutine_yield();
+			continue;
+		}
+
 		coroutine_sleep(30);
 
 		/* Reached color target, change direction. */
