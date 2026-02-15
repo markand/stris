@@ -29,24 +29,7 @@ Quick install.
     $ tar -xvf stris-x.y.z-tar.xz
     $ cd stris-x.y.z
     $ make
-    # sudo make install
-
-On most UNIX systems, you need to install the game if you want to register high
-scores. This is done using the setgid permission so every user on the same
-machine can update the score database file.
-
-You can tweak the installation with the following make variables at compile and
-install time:
-
-- `PREFIX`: default root directory for installation (default: /usr/local).
-- `BINDIR`: programs directory (default: ${PREFIX}/bin).
-- `MANDIR`: manual pages directory (default: ${PREFIX}/share/man).
-- `VARDIR`: database and logs directory (default: ${PREFIX}/var).
-
-To alter the setgid permissions, use the following variables:
-
-- `UID`: owner uid/name (default: root).
-- `GID`: group uid/name (default: games).
+    # make install
 
 Platform: Windows
 -----------------
@@ -70,26 +53,9 @@ Note: replace `x86_64` with `i686` if you have a deprecated system or if you
 
 Remove `clang-` prefix if you need to use gcc for some reasons.
 
-### Visual Studio
-
-With Visual Studio you will have to build/download libraries yourself or use the
-[prebuilt][devkit] one specifically for stris (it may contains other unused
-libraries though).
-
-Then, make sure to have a common root prefix for all libraries in a folder of
-choice:
-
-- <dir>/bin
-- <dir>/lib
-- <dir>/include
-
-Use CMake to generate IDE files of your choice. Use `CMAKE_PREFIX_PATH` pointing
-to *dir* and add *dir/bin* to your `PATH` to help CMake finding libraries.
-
 [MSYS2]: https://www.msys2.org
 [SDL3]: http://libsdl.org
 [SDL3_image]: https://www.libsdl.org/projects/SDL_image
 [SDL3_mixer]: https://www.libsdl.org/projects/SDL_mixer
 [SDL3_ttf]: https://www.libsdl.org/projects/SDL_ttf
 [cmake]: https://cmake.org
-[devkit]: https://releases.malikania.fr/devkit
