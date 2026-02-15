@@ -7,7 +7,7 @@ Requirements
 ------------
 
 - C23 compliant compiler.
-- [cmake][], CMake.
+- [make][], GNU make
 - [SDL3][], Multimedia library.
 - [SDL3_image][], Image loading addon for SDL3.
 - [SDL3_mixer][], Audio addon for SDL3.
@@ -58,4 +58,4 @@ Remove `clang-` prefix if you need to use gcc for some reasons.
 [SDL3_image]: https://www.libsdl.org/projects/SDL_image
 [SDL3_mixer]: https://www.libsdl.org/projects/SDL_mixer
 [SDL3_ttf]: https://www.libsdl.org/projects/SDL_ttf
-[cmake]: https://cmake.org
+[make]: https://www.gnu.org/software/make

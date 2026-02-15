@@ -62,12 +62,9 @@ On macOS, when run inside a bundle application the scores are located inside
 the application bundle using a world writable file. If ran as a standalone
 executable it follows the same rules as UNIX (see below).
 .Ss Other UNIXes
-On every other platforms, the path to the scores is shared using the setgid
-permission in
+On every other platforms, the path to the scores is shared at
 .Pa @VARDIR@/db/stris
-directory. The
-.Nm
-executable is running as setgid to write this directory.
+directory.
 .Sh AUTHORS
 The
 .Nm

@@ -2,7 +2,10 @@
 \.a$
 \.d$
 \.o$
-^data/.*\.h$
+^assets/.*\.h$
+
+extern/bcc/bcc
+src/stris
 
 # vim/emacs specific.
 ^tags$
@@ -21,10 +24,10 @@
 ^STris-\d\.\d.\d
 
 # Environments.
-^build
 ^\.vscode
 
 # misc.
 ^config.*\.mk$
+^compile_commands\.json$
 ^\.clangd$
 ^\.cache
