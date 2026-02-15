@@ -16,125 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if 0
-static void
-nightmarize(void)
-{
-	for (int r = 16; r < BOARD_H; ++r)
-		for (int c = 0; c < BOARD_W; ++c)
-			if (nrand(0, 1) == 0)
-				game.board[r][c] = nrand(0, LEN(shapes) - 1);
-}
-
-static void
-draw_stats(void)
-{
-	snprintf(ui.stat_level, sizeof (ui.stat_level), "level %d", level());
-	snprintf(ui.stat_lines, sizeof (ui.stat_lines), "lines %d", game.lines);
-	list_draw(&ui.stat_list);
-}
-
-static void
-draw_borders(void)
-{
-	// -
-	ui_draw_line(UI_PALETTE_BORDER,
-	    ui.board_geo.x - 1,
-	    ui.board_geo.y - 1,
-	    ui.board_geo.x + ui.board_geo.w,
-	    ui.board_geo.y - 1);
-	ui_draw_line(UI_PALETTE_BORDER,
-	    ui.board_geo.x - 1,
-	    ui.board_geo.y + ui.board_geo.h,
-	    ui.board_geo.x + ui.board_geo.w,
-	    ui.board_geo.y + ui.board_geo.h);
-
-	// |
-	ui_draw_line(UI_PALETTE_BORDER,
-	    ui.board_geo.x - 1,
-	    ui.board_geo.y - 1,
-	    ui.board_geo.x - 1,
-	    ui.board_geo.y + ui.board_geo.h);
-	ui_draw_line(UI_PALETTE_BORDER,
-	    ui.board_geo.x + ui.board_geo.w,
-	    ui.board_geo.y - 1,
-	    ui.board_geo.x + ui.board_geo.w,
-	    ui.board_geo.y + ui.board_geo.h);
-}
-
-static void
-update_anim(int ticks)
-{
-	// Make the line blink.
-	ui.anim_ticks += ticks;
-	ui.anim_blinkticks += ticks;
-
-	if (ui.anim_blinkticks >= ANIM_BLINK) {
-		ui.anim_blink = !ui.anim_blink;
-		ui.anim_blinkticks = 0;
-	}
-
-	if (ui.anim_ticks >= ANIM_DELAY) {
-		ui.anim_ticks = ui.anim_blink = ui.anim_blinkticks = 0;
-
-		// Remove all lines.
-		for (int i = 0; i < 20; ++i)
-			if (ui.anim_lines >> i & 0x1)
-				board_pop(game.board, i);
-
-		ui.anim_lines = 0;
-		spawn();
-	}
-}
-
-static void
-update_game(int ticks)
-{
-	ui.ticks += ticks;
-
-	if (ui.ticks >= FALLRATE_INIT - (level() * FALLRATE_DECR)) {
-		ui.ticks = 0;
-
-		// At the bottom? Spawn a new shape otherwise just place the
-		// new position.
-		if (!fall())
-			cleanup();
-	}
-}
-
-static void
-init(void)
-{
-	init_shapes();
-	init_ui_pause();
-	init_ui_board();
-	init_ui_next_shape();
-	init_ui_stats();
-}
-
-static void
-resume(void)
-{
-	// Select new shapes and positionate the first one.
-	shuffle();
-
-	game.shape = game.shape_bag[game.shape_bag_iter++];
-	game.shape.y = 0;
-	game.shape.x = 3;
-
-	// Apply that shape.
-	board_clear(game.board);
-	board_set(game.board, &game.shape);
-
-	// In nightmare mode, we start with high level of blocks.
-	if (state_play_mode == STRIS_MODE_NIGHTMARE)
-		nightmarize();
-
-	// Disable pause and clear scores.
-	game.pause = game.lines = 0;
-}
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 
@@ -172,7 +53,7 @@ do {                                                                            
 
 enum fallrate {
 	FALLRATE_INIT = 900,
-	FALLRATE_DECR = 74,
+	FALLRATE_DECR = 74
 };
 
 enum state {
@@ -242,11 +123,29 @@ static void
 play_init_bg(struct scene *scene)
 {
 	struct texture texture;
+	unsigned int w, h;
 
-	texture_init(&texture, scene->shapes->w * BOARD_W, scene->shapes->h * BOARD_H);
+	/*
+	 * Background dimensions is number of blocks + 2 pixels in each
+	 * direction to add a small border.
+	 */
+	w = (scene->shapes->w * BOARD_W) + 2;
+	h = (scene->shapes->h * BOARD_H) + 2;
+
+	texture_init(&texture,  w, h);
+
 	UI_BEGIN(&texture);
-        texture_alpha(&texture, 90);
+	texture_alpha(&texture, 90);
 	ui_clear(UI_PALETTE_SHADOW);
+
+	/* - */
+	ui_draw_line(UI_PALETTE_BORDER, 0, 0, w, 0);
+	ui_draw_line(UI_PALETTE_BORDER, 0, h - 1, w, h - 1);
+
+	/* | */
+	ui_draw_line(UI_PALETTE_BORDER, 0, 0, 0, h);
+	ui_draw_line(UI_PALETTE_BORDER, w - 1, 0, w - 1, h);
+
 	scene->bg.x = (UI_W - texture.w) / 2;
 	scene->bg.y = (UI_H - texture.h) - scene->bg.x;
 	node_wrap(&scene->bg, &texture);
@@ -258,9 +157,13 @@ play_init_fg(struct scene *scene)
 {
 	struct texture texture;
 
-	texture_init(&texture, scene->bg.texture->w, scene->bg.texture->h);
-	scene->fg.x = scene->bg.x;
-	scene->fg.y = scene->bg.y;
+	/*
+	 * Foreground is off by 1 pixel because background contains a 1 pixel
+	 * border in each direction.
+	 */
+	texture_init(&texture, scene->bg.texture->w - 2, scene->bg.texture->h - 2);
+	scene->fg.x = scene->bg.x + 1;
+	scene->fg.y = scene->bg.y + 1;
 	node_wrap(&scene->fg, &texture);
 }
 
@@ -291,8 +194,6 @@ play_update_next_shape(struct scene *scene)
 	/* Adjust to texture size. */
 	w = columns * (scene->shapes->w / 2);
 	h = rows * (scene->shapes->h / 2);
-
-	//printf("shape %d of %u, %u requires %ux%u pixels\n", next->k, rows, columns, w, h);
 
 	/* Render the shape on the texture with half width/height. */
 	UI_BEGIN(scene->next.texture);
@@ -450,7 +351,7 @@ play_can_move(struct scene *scene, int dx, int dy)
 {
 	struct shape shape = scene->shape;
 
-	// Try to put in the new place.
+	/* Try to put in the new place. */
 	shape.x += dx;
 	shape.y += dy;
 
@@ -506,7 +407,7 @@ play_rotate(struct scene *scene, enum key keys)
 	board_unset(scene->board, &scene->shape);
 	shape_rotate(&scene->shape, 1);
 
-	// Cancel orientation.
+	/* Cancel orientation. */
 	if (!board_check(scene->board, &scene->shape))
 		scene->shape.o = o;
 	else
@@ -712,6 +613,11 @@ play_logic_entry(struct coroutine *self)
 		break;
 	case MODE_NIGHTMARE:
 		scene->shape_bag_rand = SHAPE_RAND_NIGHTMARE;
+
+		for (int r = 16; r < BOARD_H; ++r)
+			for (int c = 0; c < BOARD_W; ++c)
+				if (nrand(0, 1) == 0)
+					scene->board[r][c] = nrand(0, LEN(scene->shapes) - 1);
 		break;
 	default:
 		scene->shape_bag_rand = SHAPE_RAND_STANDARD;
