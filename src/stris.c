@@ -211,6 +211,9 @@ SDL_AppInit(void **, int, char **)
 {
 	srand(time(NULL));
 
+	SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60.0");
+	SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+
 	sys_conf_read();
 	ui_init();
 	joy_init();
@@ -219,8 +222,6 @@ SDL_AppInit(void **, int, char **)
 		sound_init();
 
 	splash_run();
-
-	SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60.0");
 
 	return SDL_APP_CONTINUE;
 }
