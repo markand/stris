@@ -22,7 +22,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #include "coroutine.h"
 #include "joy.h"
@@ -43,21 +45,6 @@ struct sconf sconf = {
 struct stris stris = {
 	.run = 1
 };
-
-static void
-init(void)
-{
-	srand(time(NULL));
-
-	sys_conf_read();
-	ui_init();
-	joy_init();
-
-	if (sconf.sound)
-		sound_init();
-
-	splash_run();
-}
 
 static void
 handle_controller_axis_motion(const SDL_GamepadAxisEvent *ev)
@@ -195,94 +182,6 @@ handle_keyboard(const SDL_KeyboardEvent *ev)
 		stris.keys &= ~key;
 }
 
-static void
-handle(void)
-{
-	SDL_Event ev;
-
-	while (SDL_PollEvent(&ev)) {
-		switch (ev.type) {
-		case SDL_EVENT_QUIT:
-			stris.run = 0;
-			break;
-		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-			handle_controller_axis_motion(&ev.gaxis);
-			break;
-		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-		case SDL_EVENT_GAMEPAD_BUTTON_UP:
-			handle_controller_button(&ev.gbutton);
-			break;
-		case SDL_EVENT_KEY_DOWN:
-		case SDL_EVENT_KEY_UP:
-			handle_keyboard(&ev.key);
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-static inline void
-update(int diff)
-{
-	for (size_t i = 0; i < LEN(stris.coroutines); ++i) {
-		if (!stris.coroutines[i] || stris.coroutines[i]->pause)
-			continue;
-
-		if (coroutine_resume(stris.coroutines[i], diff))
-			coroutine_finish(stris.coroutines[i]);
-	}
-}
-
-static inline void
-draw(void)
-{
-	ui_clear(0xffffffff);
-
-	for (size_t i = 0; i < LEN(stris.nodes); ++i)
-		if (stris.nodes[i])
-			node_render(stris.nodes[i]);
-
-	ui_present();
-}
-
-static void
-loop(void)
-{
-	uint32_t start, end, diff;
-	uint64_t fstart, fend;
-	float fspent;
-
-	start = end = SDL_GetTicks();
-
-	while (stris.run) {
-		diff = end - start;
-		start = SDL_GetTicks();
-		fstart = SDL_GetPerformanceCounter();
-
-		handle();
-		update(diff);
-		draw();
-
-		fend = SDL_GetPerformanceCounter();
-		fspent = (fend - fstart) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
-
-		if (fspent < 16.666f)
-			SDL_Delay(floor(16.666f - fspent));
-
-		end = SDL_GetTicks();
-	}
-}
-
-static void
-finish(void)
-{
-	if (sconf.sound)
-		sound_finish();
-
-	ui_finish();
-}
-
 enum key
 stris_pressed(void)
 {
@@ -307,12 +206,79 @@ stris_quit(void)
 	stris.run = 0;
 }
 
-int
-main(int, char **)
+SDL_AppResult
+SDL_AppInit(void **, int, char **)
 {
-	init();
-	loop();
-	finish();
+	srand(time(NULL));
 
-	return 0;
+	sys_conf_read();
+	ui_init();
+	joy_init();
+
+	if (sconf.sound)
+		sound_init();
+
+	splash_run();
+
+	SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60.0");
+
+	return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult
+SDL_AppIterate(void *)
+{
+	if (!stris.run)
+		return SDL_APP_SUCCESS;
+
+	for (size_t i = 0; i < LEN(stris.coroutines); ++i) {
+		if (!stris.coroutines[i] || stris.coroutines[i]->pause)
+			continue;
+
+		if (coroutine_resume(stris.coroutines[i], 16))
+			coroutine_finish(stris.coroutines[i]);
+	}
+
+	ui_clear(0xffffffff);
+
+	for (size_t i = 0; i < LEN(stris.nodes); ++i)
+		if (stris.nodes[i])
+			node_render(stris.nodes[i]);
+
+	ui_present();
+
+	return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult
+SDL_AppEvent(void *, SDL_Event *ev)
+{
+	switch (ev->type) {
+	case SDL_EVENT_QUIT:
+		return SDL_APP_SUCCESS;
+	case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+		handle_controller_axis_motion(&ev->gaxis);
+		break;
+	case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+	case SDL_EVENT_GAMEPAD_BUTTON_UP:
+		handle_controller_button(&ev->gbutton);
+		break;
+	case SDL_EVENT_KEY_DOWN:
+	case SDL_EVENT_KEY_UP:
+		handle_keyboard(&ev->key);
+		break;
+	default:
+		break;
+	}
+
+	return SDL_APP_CONTINUE;
+}
+
+void
+SDL_AppQuit(void *, SDL_AppResult)
+{
+	if (sconf.sound)
+		sound_finish();
+
+	ui_finish();
 }
