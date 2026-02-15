@@ -41,6 +41,7 @@ set(
 	sound/drop.wav
 	sound/move.wav
 	sound/startup.wav
+	sound/tick.wav
 )
 
 foreach (a ${ASSETS})

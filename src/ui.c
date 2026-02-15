@@ -193,8 +193,10 @@ ui_vclip(enum ui_font font, unsigned int *w, unsigned int *h, const char *fmt, v
 
 	ui_vprintf(&texture, font, 0, fmt, ap);
 
-	*w = texture.w;
-	*h = texture.h;
+	if (w)
+		*w = texture.w;
+	if (h)
+		*h = texture.h;
 
 	texture_finish(&texture);
 }
@@ -344,8 +346,6 @@ ui_vprintf_shadowed(struct texture *texture,
 void
 ui_clip(enum ui_font font, unsigned int *w, unsigned int *h, const char *fmt, ...)
 {
-	assert(w);
-	assert(h);
 	assert(fmt);
 
 	va_list ap;

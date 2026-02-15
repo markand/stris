@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -27,6 +28,7 @@
 #include "node.h"
 #include "sound.h"
 #include "state-menu.h"
+#include "state-play.h"
 #include "state-splash.h"
 #include "stris.h"
 #include "sys.h"
@@ -55,7 +57,7 @@ init(void)
 	if (sconf.sound)
 		sound_init();
 
-	menu_run();
+	play_run(MODE_NIGHTMARE);
 }
 
 static void
@@ -190,6 +192,13 @@ handle_keyboard(const SDL_KeyboardEvent *ev)
 		stris.keys |= key;
 	else
 		stris.keys &= ~key;
+
+#if 0
+	printf("[stris.keys: ");
+	for (int i = 0; i < 8; ++i)
+		printf(" %d ", (stris.keys >> i) & 1);
+	printf("]\n");
+#endif
 }
 
 static void
@@ -223,7 +232,7 @@ static inline void
 update(int diff)
 {
 	for (size_t i = 0; i < LEN(stris.coroutines); ++i) {
-		if (!stris.coroutines[i])
+		if (!stris.coroutines[i] || stris.coroutines[i]->pause)
 			continue;
 
 		if (coroutine_resume(stris.coroutines[i], diff))
@@ -283,12 +292,26 @@ finish(void)
 enum key
 stris_pressed(void)
 {
-	enum key current = stris.keys;
+	enum key current, diff;
 
-	while (current == stris.keys)
+	current = stris.keys;
+
+	/* Yield until only a new bit is pressent in stris.keys */
+	while ((current | stris.keys) == current) {
+		current = stris.keys;
 		coroutine_yield();
+	}
 
-	return stris.keys;
+	diff = current ^ stris.keys;
+
+#if 0
+	printf("[diff:       ");
+	for (int i = 0; i < 8; ++i)
+		printf(" %d ", (diff >> i) & 1);
+	printf("]\n");
+#endif
+
+	return diff;
 }
 
 void

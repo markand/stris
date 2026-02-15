@@ -24,7 +24,8 @@
 enum shape_rand {
 	SHAPE_RAND_STANDARD     = 7,
 	SHAPE_RAND_EXTENDED     = 10,
-	SHAPE_RAND_NIGHTMARE    = 12
+	SHAPE_RAND_NIGHTMARE    = 12,
+	SHAPE_RAND_MAX          = SHAPE_RAND_NIGHTMARE
 };
 
 struct shape {
@@ -34,6 +35,33 @@ struct shape {
 	int o;
 	int def[4][4][4];
 };
+
+/**
+ * Returns the maximum number of rows that this shape consists of.
+ *
+ * This function only applies on the original first rotation.
+ */
+unsigned int
+shape_max_rows(const struct shape *shape);
+
+/**
+ * Returns the maximum number of columns that this shape consists of.
+ *
+ * This function only applies on the original first rotation.
+ */
+unsigned int
+shape_max_columns(const struct shape *shape);
+
+#if 0
+/**
+ * Returns the number of blank initial rows that this shape consists of.
+ */
+unsigned int
+shape_gap_rows(const struct shape *shape);
+
+unsigned int
+shape_gap_columns(const struct shape *shape);
+#endif
 
 void
 shape_shuffle(struct shape *, size_t, enum shape_rand);

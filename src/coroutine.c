@@ -94,6 +94,22 @@ coroutine_sleep(unsigned int ms)
 		coroutine_yield();
 }
 
+void
+coroutine_rearm(struct coroutine *co)
+{
+	assert(co);
+
+	co->delay_acc = 0;
+}
+
+void
+coroutine_cancel(struct coroutine *co)
+{
+	assert(co);
+
+	co->delay_for = co->delay_acc;
+}
+
 int
 coroutine_resume(struct coroutine *co, unsigned int dt)
 {

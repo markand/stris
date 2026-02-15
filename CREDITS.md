@@ -15,6 +15,7 @@ Sounds:
 - https://freesound.org/people/MattRuthSound/sounds/562083
 - https://freesound.org/people/el_boss/sounds/560701
 - https://freesound.org/people/radian/sounds/63000
+- https://freesound.org/people/loganzsound/sounds/774640
 
 Fonts:
 

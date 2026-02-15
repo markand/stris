@@ -51,6 +51,15 @@ struct coroutine {
 	 */
 	void (*terminate)(struct coroutine *self);
 
+	/**
+	 * (optional)
+	 *
+	 * If non-zero, the coroutine is not resumed nor updated.
+	 *
+	 * This is useful for logic like pause.
+	 */
+	int pause;
+
 	struct mco_coro *handle;        /* minicoro handle */
 	unsigned int delay_acc;         /* coroutine_sleep accumulator */
 	unsigned int delay_for;         /* coroutine_sleep yield */
@@ -71,6 +80,23 @@ coroutine_init(struct coroutine *co);
  */
 void
 coroutine_sleep(unsigned int ms);
+
+/**
+ * If a coroutine is yielding in ::coroutine_sleep, this function called from
+ * another coroutine rearms its time to wait.
+ *
+ * It is somewhat similar to rearm a timer about to expire.
+ */
+void
+coroutine_rearm(struct coroutine *co);
+
+/**
+ * This function is the exact opposite of ::coroutine_rearm, it will cancel
+ * a coroutine yielding on ::coroutine_sleep by feeding the amount of
+ * remaining time immediately.
+ */
+void
+coroutine_cancel(struct coroutine *co);
 
 /**
  * Resume the coroutine if one of the condition applies:

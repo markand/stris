@@ -30,6 +30,8 @@ set(
 	${stris_SOURCE_DIR}/node.h
 	${stris_SOURCE_DIR}/score.c
 	${stris_SOURCE_DIR}/score.h
+	${stris_SOURCE_DIR}/shape.c
+	${stris_SOURCE_DIR}/shape.h
 	${stris_SOURCE_DIR}/sound.c
 	${stris_SOURCE_DIR}/sound.h
 	${stris_SOURCE_DIR}/state-menu.c

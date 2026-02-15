@@ -22,6 +22,7 @@
 #include "sound/drop.h"
 #include "sound/move.h"
 #include "sound/startup.h"
+#include "sound/tick.h"
 
 #include "sound.h"
 #include "stris.h"
@@ -38,7 +39,8 @@ static struct {
 	[SOUND_CHIME]   = SOUND_DEF(assets_sound_startup),
 	[SOUND_MOVE]    = SOUND_DEF(assets_sound_move),
 	[SOUND_DROP]    = SOUND_DEF(assets_sound_drop),
-	[SOUND_CLEAN]   = SOUND_DEF(assets_sound_clean)
+	[SOUND_CLEAN]   = SOUND_DEF(assets_sound_clean),
+	[SOUND_TICK]    = SOUND_DEF(assets_sound_tick)
 };
 
 static MIX_Mixer *mixer;

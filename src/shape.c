@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "shape.h"
@@ -356,6 +357,84 @@ static const int shapes[][4][4][4] = {
 	},
 	// }}}
 };
+
+unsigned int
+shape_max_rows(const struct shape *shape)
+{
+	assert(shape);
+
+	unsigned int rows = 0;
+
+	for (int r = 0; r < 4; ++r) {
+		for (int c = 0; c < 4; ++c) {
+			if (shape->def[0][r][c]) {
+				rows++;
+				break;
+			}
+		}
+	}
+
+	return rows;
+}
+
+unsigned int
+shape_max_columns(const struct shape *shape)
+{
+	assert(shape);
+
+	unsigned int columns = 0;
+
+	for (int c = 0; c < 4; ++c) {
+		for (int r = 0; r < 4; ++r) {
+			if (shape->def[0][r][c]) {
+				columns++;
+				break;
+			}
+		}
+	}
+
+	return columns;
+}
+
+unsigned int
+shape_gap_rows(const struct shape *shape)
+{
+	assert(shape);
+
+	unsigned int blanks = 0;
+
+	for (int r = 0; r < 4; ++r) {
+		for (int c = 0; c < 4; ++c) {
+			if (shape->def[0][r][c])
+				goto exit;
+		}
+
+		blanks++;
+	}
+
+exit:
+	return blanks;
+}
+
+unsigned int
+shape_gap_columns(const struct shape *shape)
+{
+	assert(shape);
+
+	unsigned int blanks = 0;
+
+	for (int c = 0; c < 4; ++c) {
+		for (int r = 0; r < 4; ++r) {
+			if (shape->def[0][r][c])
+				goto exit;
+		}
+
+		blanks++;
+	}
+
+exit:
+	return blanks;
+}
 
 void
 shape_shuffle(struct shape *bag, size_t bagsz, enum shape_rand r)
