@@ -35,17 +35,8 @@ MANDIR ?= $(PREFIX)/share/man
 # Path to libraries.
 MATH_LIBS ?= -lm
 
-SDL3_INCS ?= $(shell $(PKGCONF) --cflags sdl3)
-SDL3_LIBS ?= $(shell $(PKGCONF) --libs sdl3)
-
-SDL3_IMAGE_INCS ?= $(shell $(PKGCONF) --cflags sdl3-image)
-SDL3_IMAGE_LIBS ?= $(shell $(PKGCONF) --libs sdl3-image)
-
-SDL3_MIXER_INCS ?= $(shell $(PKGCONF) --cflags sdl3-mixer)
-SDL3_MIXER_LIBS ?= $(shell $(PKGCONF) --libs sdl3-mixer)
-
-SDL3_TTF_INCS ?= $(shell $(PKGCONF) --cflags sdl3-ttf)
-SDL3_TTF_LIBS ?= $(shell $(PKGCONF) --libs sdl3-ttf)
+SDL3_CFLAGS += $(shell $(PKGCONF) --cflags sdl3 sdl3-image sdl3-mixer sdl3-ttf)
+SDL3_LDFLAGS += $(shell $(PKGCONF) --libs sdl3 sdl3-image sdl3-mixer sdl3-ttf)
 
 # No user modifications below this line.
 
@@ -101,10 +92,7 @@ DEPS := $(SRCS:.c=.d)
 
 GCDB := https://raw.githubusercontent.com/mdqinc/SDL_GameControllerDB/refs/heads/master/gamecontrollerdb.txt
 
-override CFLAGS += $(SDL3_IMAGE_INCS)
-override CFLAGS += $(SDL3_INCS)
-override CFLAGS += $(SDL3_MIXER_INCS)
-override CFLAGS += $(SDL3_TTF_INCS)
+override CFLAGS += $(SDL3_CFLAGS)
 override CFLAGS += $(MD)
 override CFLAGS += -DVARDIR=\"$(VARDIR)\"
 override CFLAGS += -Iassets
@@ -112,10 +100,7 @@ override CFLAGS += -Iextern/minicoro
 override CFLAGS += -Isrc
 
 override LDLIBS += $(MATH_LIBS)
-override LDLIBS += $(SDL3_IMAGE_LIBS)
-override LDLIBS += $(SDL3_LIBS)
-override LDLIBS += $(SDL3_MIXER_LIBS)
-override LDLIBS += $(SDL3_TTF_LIBS)
+override LDLIBS += $(SDL3_LDFLAGS)
 
 CMD.cc ?= $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 CMD.link ?= $(CC) -o $@ $^ $(LDLIBS) $(LDFLAGS)
