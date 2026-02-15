@@ -22,6 +22,7 @@
 #include "board.h"
 #include "coroutine.h"
 #include "node.h"
+#include "score.h"
 #include "shape.h"
 #include "sound.h"
 #include "state-menu.h"
@@ -649,6 +650,8 @@ play_logic_entry(struct coroutine *self)
 static void
 play_logic_terminate(struct coroutine *self)
 {
+	struct score_list list = {};
+	struct score score = {};
 	struct scene *scene;
 
 	scene = SCENE(self, logic);
@@ -667,6 +670,16 @@ play_logic_terminate(struct coroutine *self)
 		texture_finish(&scene->shapes[i]);
 
 	node_finish(&scene->next);
+
+	/* Save scores. */
+	snprintf(score.who, sizeof (score.who), "%s", username());
+	score.lines = scene->lines;
+
+	if (scene->state == DEAD) {
+		score_read(&list, score_path(scene->mode));
+		score_add(&list, &score);
+		score_write(&list, score_path(scene->mode));
+	}
 
 	/* Back to the menu. */
 	ui_background_set(UI_PALETTE_MENU_BG);

@@ -28,8 +28,6 @@
 #include "node.h"
 #include "sound.h"
 #include "state-menu.h"
-#include "state-play.h"
-#include "state-splash.h"
 #include "stris.h"
 #include "sys.h"
 #include "ui.h"
@@ -57,7 +55,7 @@ init(void)
 	if (sconf.sound)
 		sound_init();
 
-	play_run(MODE_NIGHTMARE);
+	menu_run();
 }
 
 static void

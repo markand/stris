@@ -16,8 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "coroutine.h"
 #include "list.h"
 #include "node.h"
@@ -80,7 +78,7 @@ menu_entry(struct coroutine *self)
 	menu = MENU(self, coroutine);
 
 	/* STris on top. */
-	ui_printf(&texture, UI_FONT_TITLE, UI_PALETTE_FG, "stris");
+	ui_printf_shadowed(&texture, UI_FONT_TITLE, UI_PALETTE_FG, "stris");
 	node_wrap(&menu->title, &texture);
 
 	menu->title.x = MENU_TITLE_X(menu);
@@ -101,6 +99,7 @@ menu_entry(struct coroutine *self)
 
 	switch (list_wait(&menu->list)) {
 	case ITEM_PLAY:
+		mode_run();
 		break;
 	case ITEM_SCORES:
 		scores_run();
