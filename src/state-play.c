@@ -19,6 +19,8 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <SDL3/SDL.h>
+
 #include "board.h"
 #include "coroutine.h"
 #include "node.h"
@@ -672,7 +674,7 @@ play_logic_terminate(struct coroutine *self)
 	node_finish(&scene->next);
 
 	/* Save scores. */
-	snprintf(score.who, sizeof (score.who), "%s", username());
+	SDL_strlcpy(score.who, username(), sizeof (score.who));
 	score.lines = scene->lines;
 
 	if (scene->state == DEAD) {
