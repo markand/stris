@@ -6,6 +6,8 @@ STris 0.5.0 2022-??-??
 - Project renamed to STris (formerly SD-Tris).
 - Enable scaling support.
 - Simplified the game, the code and many other aspects of the project.
+- Added few animations.
+- Shapes are moved on new key press only.
 
 STris 0.4.0 2012-07-11
 ----------------------
