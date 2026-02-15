@@ -24,6 +24,8 @@ set(
 	${stris_SOURCE_DIR}/board.h
 	${stris_SOURCE_DIR}/coroutine.c
 	${stris_SOURCE_DIR}/coroutine.h
+	${stris_SOURCE_DIR}/joy.c
+	${stris_SOURCE_DIR}/joy.h
 	${stris_SOURCE_DIR}/list.c
 	${stris_SOURCE_DIR}/list.h
 	${stris_SOURCE_DIR}/node.c

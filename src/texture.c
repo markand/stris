@@ -155,15 +155,6 @@ texture_color_multiply(struct texture *texture, uint32_t color)
 }
 
 void
-texture_color_none(struct texture *texture)
-{
-	assert(texture);
-	assert(texture->handle);
-
-	texture_colorize(texture, SDL_BLENDMODE_NONE, 0);
-}
-
-void
 texture_finish(struct texture *texture)
 {
 	assert(texture);

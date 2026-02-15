@@ -19,6 +19,14 @@
 #ifndef STRIS_STATE_MENU_H
 #define STRIS_STATE_MENU_H
 
+/**
+ * \file state-menu.h
+ * \brief Main menu.
+ */
+
+/**
+ * Run the main menu.
+ */
 void
 menu_run(void);
 

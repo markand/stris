@@ -24,7 +24,7 @@
 #define SCORE_NAME_MAX 32
 #define SCORE_LIST_MAX 10
 
-enum mode : int;
+enum mode;
 
 struct score {
 	char who[SCORE_NAME_MAX + 1];

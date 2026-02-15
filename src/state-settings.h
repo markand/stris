@@ -19,6 +19,14 @@
 #ifndef STRIS_STATE_SETTINGS_H
 #define STRIS_STATE_SETTINGS_H
 
+/**
+ * \file state-settings.h
+ * \brief Game settings.
+ */
+
+/**
+ * Run the settings view list.
+ */
 void
 settings_run(void);
 

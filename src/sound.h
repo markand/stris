@@ -1,5 +1,5 @@
 /*
- * sound.h -- simple advertising splash screen
+ * sound.h -- sound support and registry
  *
  * Copyright (c) 2011-2026 David Demelier <markand@malikania.fr>
  *
@@ -19,20 +19,40 @@
 #ifndef STRIS_SOUND_H
 #define STRIS_SOUND_H
 
+/**
+ * \file sound.h
+ * \brief Sound support and registry.
+ */
+
+/**
+ * \enum sound
+ * \brief Sound identifier
+ */
 enum sound {
-	SOUND_CHIME,
-	SOUND_MOVE,
-	SOUND_DROP,
-	SOUND_CLEAN,
-	SOUND_TICK
+	SOUND_CHIME,    /*!< splash screen */
+	SOUND_MOVE,     /*!< shape rotation */
+	SOUND_DROP,     /*!< Full drop */
+	SOUND_CLEAN,    /*!< Line cleanup */
+	SOUND_TICK      /*!< Short tick for death animation */
 };
 
+/**
+ * Initialize the sound system.
+ */
 void
 sound_init(void);
 
+/**
+ * Play the given sound.
+ *
+ * \param sound the sound to play
+ */
 void
-sound_play(enum sound);
+sound_play(enum sound sound);
 
+/**
+ * Cleanup
+ */
 void
 sound_finish(void);
 

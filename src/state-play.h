@@ -19,8 +19,18 @@
 #ifndef STRIS_STATE_PLAY
 #define STRIS_STATE_PLAY
 
-enum mode : int;
+/**
+ * \file state-play.h
+ * \brief Game state.
+ */
 
+enum mode;
+
+/**
+ * Run the game.
+ *
+ * \param mode the game mode
+ */
 void
 play_run(enum mode mode);
 

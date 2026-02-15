@@ -19,6 +19,14 @@
 #ifndef STRIS_MODE_H
 #define STRIS_MODE_H
 
+/**
+ * \file state-mode.h
+ * \brief Mode selection.
+ */
+
+/**
+ * Run the mode selection.
+ */
 void
 mode_run(void);
 

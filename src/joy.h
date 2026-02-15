@@ -19,10 +19,23 @@
 #ifndef STRIS_JOY_H
 #define STRIS_JOY_H
 
+/**
+ * \file joy.h
+ * \brief Joystick handling.
+ */
+
+/**
+ * Initialize and find joysticks.
+ *
+ * This will enable event handling in main loop.
+ */
 void
 joy_init(void);
 
+/**
+ * Cleanup.
+ */
 void
 joy_finish(void);
 
-#endif // !STRIS_JOY_H
+#endif /* !STRIS_JOY_H */

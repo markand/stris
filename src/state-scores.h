@@ -19,6 +19,14 @@
 #ifndef STRIS_STATE_SCORES_H
 #define STRIS_STATE_SCORES_H
 
+/**
+ * \file state-scores.h
+ * \brief Show high scores.
+ */
+
+/**
+ * Run the high scores list
+ */
 void
 scores_run(void);
 

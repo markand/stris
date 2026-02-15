@@ -95,14 +95,21 @@ texture_alpha(struct texture *texture, unsigned int alpha);
 void
 texture_color_add(struct texture *texture, uint32_t color);
 
+/**
+ * Blend a color into the texture.
+ *
+ * \param color the color to apply
+ */
 void
 texture_color_blend(struct texture *texture, uint32_t color);
 
+/**
+ * Multiply the scaling color components into the texture.
+ *
+ * \param color the color to apply
+ */
 void
 texture_color_multiply(struct texture *texture, uint32_t color);
-
-void
-texture_color_none(struct texture *texture);
 
 /**
  * Destroy the texture.

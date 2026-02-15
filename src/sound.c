@@ -1,5 +1,5 @@
 /*
- * sound.c -- simple advertising splash screen
+ * sound.c -- sound support and registry
  *
  * Copyright (c) 2011-2026 David Demelier <markand@malikania.fr>
  *

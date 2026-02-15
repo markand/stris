@@ -25,9 +25,10 @@
 #include <SDL3/SDL.h>
 
 #include "coroutine.h"
+#include "joy.h"
 #include "node.h"
 #include "sound.h"
-#include "state-menu.h"
+#include "state-splash.h"
 #include "stris.h"
 #include "sys.h"
 #include "ui.h"
@@ -50,19 +51,21 @@ init(void)
 
 	sys_conf_read();
 	ui_init();
-	//joy_init();
+	joy_init();
 
 	if (sconf.sound)
 		sound_init();
 
-	menu_run();
+	splash_run();
 }
 
 static void
 handle_controller_axis_motion(const SDL_GamepadAxisEvent *ev)
 {
-	// Axis generates lots of event so we need to stop taking care of them
-	// unless we go back to the original state.
+	/*
+	 * Axis generates lots of event so we need to stop taking care of them
+	 * unless we go back to the original state.
+	 */
 	static enum key joy_x;
 	static enum key joy_y;
 
@@ -190,13 +193,6 @@ handle_keyboard(const SDL_KeyboardEvent *ev)
 		stris.keys |= key;
 	else
 		stris.keys &= ~key;
-
-#if 0
-	printf("[stris.keys: ");
-	for (int i = 0; i < 8; ++i)
-		printf(" %d ", (stris.keys >> i) & 1);
-	printf("]\n");
-#endif
 }
 
 static void
@@ -301,13 +297,6 @@ stris_pressed(void)
 	}
 
 	diff = current ^ stris.keys;
-
-#if 0
-	printf("[diff:       ");
-	for (int i = 0; i < 8; ++i)
-		printf(" %d ", (diff >> i) & 1);
-	printf("]\n");
-#endif
 
 	return diff;
 }

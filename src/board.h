@@ -19,26 +19,65 @@
 #ifndef STRIS_BOARD_H
 #define STRIS_BOARD_H
 
-#define BOARD_W         (10)
-#define BOARD_H         (20)
+/**
+ * \file board.h
+ * \brief Game main grid.
+ */
+
+/**
+ * Number of columns in the board.
+ */
+#define BOARD_W 10
+
+/**
+ * Number of rows in the board.
+ */
+#define BOARD_H 20
 
 struct shape;
 
+/**
+ * Typedef the board into two-dimensional array.
+ */
 typedef int Board[BOARD_H][BOARD_W];
 
+/**
+ * Clear the board.
+ */
 void
-board_clear(Board);
+board_clear(Board board);
 
+/**
+ * Remove a line in the board, moving every other lines by one.
+ *
+ * \param line the line row
+ */
 void
-board_pop(Board, int);
+board_pop(Board board, int line);
 
+/**
+ * Check if the shape can be placed at its position/orientation.
+ *
+ * \param shape the shape to check
+ * \return non-zero if does not collide
+ */
 int
-board_check(const Board, const struct shape *);
+board_check(const Board board, const struct shape *shape);
 
+/**
+ * Place the shape in the board.
+ *
+ * \param shape the shape to place
+ */
 void
-board_set(Board, const struct shape *);
+board_set(Board board, const struct shape *shape);
 
+/**
+ * Remove the shape from the board by emptying the cells.
+ *
+ * \param shape the shape to remove
+ */
 void
-board_unset(Board, const struct shape *);
+board_unset(Board board, const struct shape *shape);
 
 #endif /* STRIS_BOARD_H */

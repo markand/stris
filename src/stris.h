@@ -19,51 +19,95 @@
 #ifndef STRIS_H
 #define STRIS_H
 
+/**
+ * \file stris.h
+ * \brief Main stris file.
+ */
+
 struct node;
 struct coroutine;
 
-enum mode : int {
-	MODE_STANDARD,
-	MODE_EXTENDED,
-	MODE_NIGHTMARE,
-	MODE_LAST
+/**
+ * \enum mode
+ * \brief Gameplay mode
+ */
+enum mode {
+	MODE_STANDARD,          /*!< standard mode */
+	MODE_EXTENDED,          /*!< extra pieces added */
+	MODE_NIGHTMARE,         /*!< annoying pieces and messy board startup */
+	MODE_LAST               /*!< number of modes */
 };
 
+/**
+ * \enum key
+ * \brief Key usage.
+ */
 enum key : unsigned int {
-	KEY_NONE,
-	KEY_UP     = 1 << 0,
-	KEY_RIGHT  = 1 << 1,
-	KEY_DOWN   = 1 << 2,
-	KEY_LEFT   = 1 << 3,
-	KEY_CANCEL = 1 << 4,
-	KEY_SELECT = 1 << 5,
-	KEY_DROP   = 1 << 6,
+	KEY_NONE,               /*!< no keys */
+	KEY_UP     = 1 << 0,    /*!< up and rotate */
+	KEY_RIGHT  = 1 << 1,    /*!< right */
+	KEY_DOWN   = 1 << 2,    /*!< down */
+	KEY_LEFT   = 1 << 3,    /*!< left */
+	KEY_CANCEL = 1 << 4,    /*!< escape or pause */
+	KEY_SELECT = 1 << 5,    /*!< select menu entry */
+	KEY_DROP   = 1 << 6     /*!< drop shape */
 };
 
-extern struct stris {
-	/*
-	 * Object to draw on scene.
+/**
+ * \struct stris
+ * \brief Game object and scene rendering.
+ */
+struct stris {
+	/**
+	 * Objects to draw on scene.
 	 */
 	struct node *nodes[32];
 
+	/**
+	 * Coroutines to manage.
+	 */
 	struct coroutine *coroutines[16];
 
-	/*
+	/**
 	 * Keys being pressed.
 	 */
 	enum key keys;
+
+	/**
+	 * Non-zero as long as application should run.
+	 */
 	int run;
-} stris;
+};
 
-extern struct sconf {
-	int sound;
-	int psychedelic;
-	int scale;
-} sconf;
+/**
+ * \struct sconf
+ * \brief STris configuration.
+ */
+struct sconf {
+	int sound;              /*!< enable audio */
+	int psychedelic;        /*!< enable background psychedelic effect */
+	int scale;              /*!< increase window scaling */
+};
 
+/**
+ * Global game state.
+ */
+extern struct stris stris;
+
+/**
+ * Global game configuration.
+ */
+extern struct sconf sconf;
+
+/**
+ * Yield until a new key is pressed.
+ */
 enum key
 stris_pressed(void);
 
+/**
+ * Request to quit.
+ */
 void
 stris_quit(void);
 
