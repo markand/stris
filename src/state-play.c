@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 
 #include <SDL3/SDL.h>
@@ -239,10 +240,11 @@ play_update_board(struct scene *scene, unsigned int mask, unsigned int alpha)
 		0x801224ff,
 		0x590924ff,
 		0x424c6eff,
-		0x2a2f4eff
+		0x2a2f4eff,
+		0x1a1932ff
 	};
 
-	int s;
+	int level, s;
 
 	UI_BEGIN(scene->fg.texture);
 	ui_clear(0x00000000);
@@ -257,7 +259,10 @@ play_update_board(struct scene *scene, unsigned int mask, unsigned int alpha)
 			else
 				texture_alpha(&scene->shapes[s - 1], 255);
 
-			ui_background_set(ramp[scene->level - 1]);
+			/* Cap to level 11. */
+			level = fmin(scene->level, 11);
+
+			ui_background_set(ramp[level - 1]);
 			texture_render(&scene->shapes[s - 1],
 			    (c * scene->shapes[1].w),
 			    (r * scene->shapes[1].h));
@@ -607,6 +612,7 @@ static void
 play_logic_entry(struct coroutine *self)
 {
 	struct scene *scene;
+	int level;
 
 	scene = SCENE(self, logic);
 
@@ -641,8 +647,9 @@ play_logic_entry(struct coroutine *self)
 	while (scene->state == RUNNING) {
 		play_update_board(scene, 0, 0);
 
-		/* Wait for fall. */
-		coroutine_sleep(FALLRATE_INIT - (scene->level * FALLRATE_DECR));
+		/* Wait for fall, cap to level 10. */
+		level = fmin(scene->level, 10);
+		coroutine_sleep(FALLRATE_INIT - (level * FALLRATE_DECR));
 
 		if (!play_fall(scene))
 			play_cleanup(scene);
