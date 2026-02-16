@@ -32,6 +32,9 @@ BINDIR ?= $(PREFIX)/bin
 VARDIR ?= $(PREFIX)/var
 MANDIR ?= $(PREFIX)/share/man
 
+# Score group.
+GROUP ?= games
+
 # Path to libraries.
 MATH_LIBS ?= -lm
 
@@ -138,10 +141,20 @@ $(PROG): $(OBJS)
 install:
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp $(PROG) $(DESTDIR)$(BINDIR)
-	mkdir -p $(DESTDIR)$(VARDIR)/db/stris
-	chmod 775 $(DESTDIR)$(VARDIR)/db/stris
 	mkdir -p $(DESTDIR)$(MANDIR)/man6
 	sed -e "s,@VARDIR@,$(VARDIR),g" < src/stris.6 > $(DESTDIR)$(MANDIR)/man6/stris.6
+	-mkdir -p $(DESTDIR)$(VARDIR)/db/stris
+	-chmod 775 $(DESTDIR)$(VARDIR)/db/stris
+	-chgrp $(GID) $(DESTDIR)$(VARDIR)/db/stris
+	-touch $(DESTDIR)$(VARDIR)/db/stris/scores-e
+	-chmod 775 $(DESTDIR)$(VARDIR)/db/stris/scores-e
+	-chgrp $(GID) $(DESTDIR)$(VARDIR)/db/stris/scores-e
+	-touch $(DESTDIR)$(VARDIR)/db/stris/scores-n
+	-chmod 775 $(DESTDIR)$(VARDIR)/db/stris/scores-n
+	-chgrp $(GID) $(DESTDIR)$(VARDIR)/db/stris/scores-n
+	-touch $(DESTDIR)$(VARDIR)/db/stris/scores-s
+	-chmod 775 $(DESTDIR)$(VARDIR)/db/stris/scores-s
+	-chgrp $(GID) $(DESTDIR)$(VARDIR)/db/stris/scores-s
 
 .PHONY: macos-app
 macos-app:
