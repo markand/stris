@@ -11,3 +11,9 @@ The game supports the following features:
 
 The game is self-contained which means it's a unique executable without any data
 files to install along.
+
+Screenshots
+===========
+
+![menu](menu.png)
+![play](play.png)
