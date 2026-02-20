@@ -514,7 +514,7 @@ play_spawn(struct scene *scene)
 		 * Animate a line per line full board from bottom to top
 		 * gradually
 		 */
-		for (int r = BOARD_H; r >= 0; --r) {
+		for (int r = BOARD_H - 1; r >= 0; --r) {
 			sound_play(SOUND_TICK);
 
 			for (int c = 0; c < BOARD_W; ++c)
